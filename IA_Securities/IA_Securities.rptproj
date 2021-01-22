@@ -49,10 +49,12 @@
     <Reports>@(Report)</Reports>
   </PropertyGroup>
   <ItemGroup>
+    <DataSource Include="FW_qtrade.rds" />
     <DataSource Include="FW_Synchronisation.rds" />
     <DataSource Include="iAS_Portal.rds" />
   </ItemGroup>
   <ItemGroup>
+    <Report Include="iASProAccountReport.rdl" />
     <Report Include="New Account Setup Validation Report.rdl" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Reporting Services\Microsoft.ReportingServices.MSBuilder.targets" />
