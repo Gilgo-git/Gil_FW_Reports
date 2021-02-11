@@ -3,19 +3,19 @@
   <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="FW_Synchronisation">
-      <DataSourceReference>FW_Synchronisation</DataSourceReference>
+    <DataSource Name="FW_ClientSynchronization">
+      <DataSourceReference>FW_ClientSynchronization</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>c65926ba-0a31-45bb-96b0-18f870be1e2e</rd:DataSourceID>
+      <rd:DataSourceID>383abaf9-c25a-4c1f-95c9-80df0d083279</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DataSet1">
       <Query>
-        <DataSourceName>FW_Synchronisation</DataSourceName>
+        <DataSourceName>FW_ClientSynchronization</DataSourceName>
         <CommandText>SELECT
     ClientId,
-    LEFT(errormessage,CHARINDEX(' - ',errormessage) - 1) as 'Error',
+    LEFT(TL.ErrorMessage,COALESCE(CHARINDEX(' - ',TL.ErrorMessage),-1)) as 'Error',
     CAST(TimeStamp AS datetime2(0)) Timestamp
 FROM
     dbo.TransactionLogs TL
@@ -23,12 +23,12 @@ FROM
     (
         SELECT  TTLL.Id, ROW_NUMBER() OVER(PARTITION BY ClientId ORDER BY Timestamp DESC) RowNumber
         FROM    dbo.TransactionLogs TTLL
-        WHERE   Target = 'SC'               
+        WHERE   Target = 'SC'              
                 and ISNULL(ErrorMessage,'') not like '0267%'
     ) RN ON RN.Id = TL.Id AND RN.RowNumber = 1
 WHERE
     TL.Success = 0 AND
-       TL.Subsidiary = 'Investia'
+       TL.Subsidiary = 'investia'
 ORDER BY
     TimeStamp</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>

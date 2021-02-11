@@ -49,11 +49,13 @@
     <Reports>@(Report)</Reports>
   </PropertyGroup>
   <ItemGroup>
+    <DataSource Include="FW_ClientSynchronization.rds" />
     <DataSource Include="FW_Synchronisation.rds" />
     <DataSource Include="iAS_Portal.rds" />
   </ItemGroup>
   <ItemGroup>
-    <Report Include="ClientRejectSync.rdl" />
+    <Report Include="FundexClientRejectSync.rdl" />
+    <Report Include="InvestiaClientRejectSync.rdl" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Reporting Services\Microsoft.ReportingServices.MSBuilder.targets" />
 </Project>
