@@ -15,7 +15,7 @@
         <DataSourceName>FW_ClientSynchronization</DataSourceName>
         <CommandText>SELECT
     ClientId,
-    LEFT(TL.ErrorMessage,COALESCE(CHARINDEX(' - ',TL.ErrorMessage),-1)) as 'Error',
+    IIF(TL.Target = 'SC',LEFT(errormessage,COALESCE(CHARINDEX(' - ',errormessage),-1)), errormessage)  as 'Error',
     CAST(TimeStamp AS datetime2(0)) Timestamp
 FROM
     dbo.TransactionLogs TL
@@ -23,8 +23,7 @@ FROM
     (
         SELECT  TTLL.Id, ROW_NUMBER() OVER(PARTITION BY ClientId ORDER BY Timestamp DESC) RowNumber
         FROM    dbo.TransactionLogs TTLL
-        WHERE   Target = 'SC'              
-                and ISNULL(ErrorMessage,'') not like '0267%'
+        WHERE   ISNULL(ErrorMessage,'') not like '0267%'
     ) RN ON RN.Id = TL.Id AND RN.RowNumber = 1
 WHERE
     TL.Success = 0 AND
