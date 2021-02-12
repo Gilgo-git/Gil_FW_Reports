@@ -23,7 +23,7 @@ FROM
     (
         SELECT  TTLL.Id, ROW_NUMBER() OVER(PARTITION BY ClientId ORDER BY Timestamp DESC) RowNumber
         FROM    dbo.TransactionLogs TTLL
-        WHERE   Target <> 'Parties'               
+        WHERE   Target &lt;&gt; 'Parties'               
                 and ISNULL(ErrorMessage,'') not like '0267%'
     ) RN ON RN.Id = TL.Id AND RN.RowNumber = 1
 WHERE
