@@ -3,16 +3,16 @@
   <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="FW_Synchronisation">
-      <DataSourceReference>FW_Synchronisation</DataSourceReference>
+    <DataSource Name="FW_ClientSynchronization">
+      <DataSourceReference>FW_ClientSynchronization</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>c65926ba-0a31-45bb-96b0-18f870be1e2e</rd:DataSourceID>
+      <rd:DataSourceID>da4c98d1-b59a-4308-987d-163020852ba7</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DataSet1">
       <Query>
-        <DataSourceName>FW_Synchronisation</DataSourceName>
+        <DataSourceName>FW_ClientSynchronization</DataSourceName>
         <CommandText>SELECT
     ClientId,
     LEFT(errormessage,CHARINDEX(' - ',errormessage) - 1) as 'Error',
