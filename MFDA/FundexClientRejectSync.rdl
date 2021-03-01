@@ -3,7 +3,7 @@
   <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="FW_ClientSynchronization_c">
+    <DataSource Name="FW_ClientSynchronization">
       <DataSourceReference>FW_ClientSynchronization</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
       <rd:DataSourceID>c437aadb-2319-4106-9bfe-e52586828790</rd:DataSourceID>
@@ -12,7 +12,7 @@
   <DataSets>
     <DataSet Name="DataSet1">
       <Query>
-        <DataSourceName>FW_ClientSynchronization_c</DataSourceName>
+        <DataSourceName>FW_ClientSynchronization</DataSourceName>
         <CommandText>SELECT
     ClientId,
     IIF(TL.Target = 'SC',LEFT(errormessage,COALESCE(CHARINDEX(' - ',errormessage),-1)), errormessage)  as 'Error',
