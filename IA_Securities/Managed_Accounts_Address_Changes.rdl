@@ -1,0 +1,1522 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="iAS_Portal">
+      <DataSourceReference>iAS_Portal</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>f27503ba-4f70-4ed6-97ae-2755572bd7b5</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>SELECT 
+   b.A_C_Client,
+   b.A_C_ID,
+   b.A_C_Representative,
+   c.repName,
+   b.ASC_3_Managed_Type,
+   CONVERT(date, b.A_C_Closing_Date) AS A_C_Closing_Date,
+   b.Major_Sort,
+   b.Address_ID,
+   b.Address_Line_Type_1,
+   b.Address_Line_Type_2,
+   b.Address_Line_Type_3,
+   b.Address_Line_Type_4,
+   b.Address_Line_Type_5,
+   b.Address_Line_Type_6,
+   b.Address_Line_Name,
+   b.Address_Line_1,
+   b.Address_Line_2,
+   b.Address_Line_3,
+   b.Address_Line_4,
+   b.Address_Line_5,
+   a.Address_Line_Type_1 AS Address_Line_Type_1_PD,
+   a.Address_Line_Type_2 AS Address_Line_Type_2_PD,
+   a.Address_Line_Type_3 AS Address_Line_Type_3_PD,
+   a.Address_Line_Type_4 AS Address_Line_Type_4_PD,
+   a.Address_Line_Type_5 AS Address_Line_Type_5_PD,
+   a.Address_Line_Type_6 AS Address_Line_Type_6_PD,
+   a.Address_Line_Name AS Address_Line_Name_PD,
+   a.Address_Line_1 AS Address_Line_1_PD,
+   a.Address_Line_2 AS Address_Line_2_PD,
+   a.Address_Line_3 AS Address_Line_3_PD,
+   a.Address_Line_4 AS Address_Line_4_PD,
+   a.Address_Line_5 AS Address_Line_5_PD 
+FROM
+   
+ BACKOFFICE.IAVMADR_PREV a
+JOIN
+   BACKOFFICE.IAVMADR b
+ON
+   b.Address_ID = a.Address_ID
+LEFT JOIN
+   IAVM.rep c
+ON
+   c.repId = b.A_C_Representative
+WHERE --#b.A_C_ID IN ('37ML11A','37MFRGB','37F30DE','37F207W','37F3G8S','37F5QLS','37F8LNA','37G1DVW','37A5PUA') AND  
+--#b.A_C_Client IN ('38D4T2','38G0SD','38GWY4','38FCRD','38F1BW') AND 
+(
+   b.Address_Line_Type_1 != a.Address_Line_Type_1 OR
+   b.Address_Line_Type_2 != a.Address_Line_Type_2 OR
+   b.Address_Line_Type_3 != a.Address_Line_Type_3 OR
+   b.Address_Line_Type_4 != a.Address_Line_Type_4 OR
+   b.Address_Line_Type_5 != a.Address_Line_Type_5 OR
+   b.Address_Line_Type_6 != a.Address_Line_Type_6 OR
+   b.Address_Line_Name != a.Address_Line_Name OR
+   b.Address_Line_1 != a.Address_Line_1 OR
+   b.Address_Line_2 != a.Address_Line_2 OR
+   b.Address_Line_3 != a.Address_Line_3 OR
+   b.Address_Line_4 != a.Address_Line_4 OR
+   b.Address_Line_5 != a.Address_Line_5 )
+
+
+ORDER BY
+   b.A_C_ID,
+   b.Major_Sort</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="A_C_Client">
+          <DataField>A_C_Client</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="A_C_ID">
+          <DataField>A_C_ID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="A_C_Representative">
+          <DataField>A_C_Representative</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="repName">
+          <DataField>repName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ASC_3_Managed_Type">
+          <DataField>ASC_3_Managed_Type</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="A_C_Closing_Date">
+          <DataField>A_C_Closing_Date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Major_Sort">
+          <DataField>Major_Sort</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_ID">
+          <DataField>Address_ID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_1">
+          <DataField>Address_Line_Type_1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_2">
+          <DataField>Address_Line_Type_2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_3">
+          <DataField>Address_Line_Type_3</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_4">
+          <DataField>Address_Line_Type_4</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_5">
+          <DataField>Address_Line_Type_5</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_6">
+          <DataField>Address_Line_Type_6</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Name">
+          <DataField>Address_Line_Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_1">
+          <DataField>Address_Line_1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_2">
+          <DataField>Address_Line_2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_3">
+          <DataField>Address_Line_3</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_4">
+          <DataField>Address_Line_4</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_5">
+          <DataField>Address_Line_5</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_1_PD">
+          <DataField>Address_Line_Type_1_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_2_PD">
+          <DataField>Address_Line_Type_2_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_3_PD">
+          <DataField>Address_Line_Type_3_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_4_PD">
+          <DataField>Address_Line_Type_4_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_5_PD">
+          <DataField>Address_Line_Type_5_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Type_6_PD">
+          <DataField>Address_Line_Type_6_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_Name_PD">
+          <DataField>Address_Line_Name_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_1_PD">
+          <DataField>Address_Line_1_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_2_PD">
+          <DataField>Address_Line_2_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_3_PD">
+          <DataField>Address_Line_3_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_4_PD">
+          <DataField>Address_Line_4_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address_Line_5_PD">
+          <DataField>Address_Line_5_PD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="table2">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>5.35417in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>5.77083in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>6.25694in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>4.5in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>4.74306in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.22in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox10">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Client</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox21">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Account</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox21</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox23">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Rep ID</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox25">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Rep Name</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox25</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox27">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Mng Type</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox27</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox29">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Date Closed</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox29</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox31">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Major Sort</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox31</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox33">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Address ID</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox33</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox46">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Current Address</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox35</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox45">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Current Address</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox35</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox37">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Previous Address</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox37</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox47">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Current AddressMay25</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox35</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox48">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Current AddressJune16</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox35</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.21in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="A_C_Client">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!A_C_Client.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>A_C_Client</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="A_C_ID">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!A_C_ID.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>A_C_ID</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="A_C_Representative">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!A_C_Representative.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>A_C_Representative</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="repName">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!repName.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>repName</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ASC_3_Managed_Type">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ASC_3_Managed_Type.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ASC_3_Managed_Type</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="A_C_Closing_Date">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!A_C_Closing_Date.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>A_C_Closing_Date</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Major_Sort">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Major_Sort.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Major_Sort</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Address_ID">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Address_ID.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Address_ID</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox8">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=iif(Fields!Address_Line_Type_1.Value = "N", Fields!Address_Line_Name.Value, "")
+ + iif(Fields!Address_Line_Type_2.Value = "N", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "N", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "N", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "N", " " + Fields!Address_Line_4.Value, "") 
+ 
+ 
+ 
+ 
+ +
+ iif(Fields!Address_Line_Type_1.Value = "A" Or Fields!Address_Line_Type_1.Value = "U", Fields!Address_Line_Name.Value, "") 
+ + iif(Fields!Address_Line_Type_2.Value = "A" Or Fields!Address_Line_Type_2.Value = "U",
+  iif( InStr(Fields!Address_Line_Name.Value,"AND/OR")&gt; 0," " + Fields!Address_Line_1.Value,System.Environment.NewLine + Fields!Address_Line_1.Value )
+   
+  , "") 
+ + iif(Fields!Address_Line_Type_3.Value = "A" Or Fields!Address_Line_Type_3.Value = "U", 
+ iif( InStr(Fields!Address_Line_1.Value,"JTWROS")&gt; 0 OR Len(Fields!Address_Line_1.Value)&gt;0,System.Environment.NewLine +  Fields!Address_Line_2.Value," " + Fields!Address_Line_2.Value)
+, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value = "U",
+ iif(Len(Fields!Address_Line_2.Value)&gt;0, System.Environment.NewLine + Fields!Address_Line_3.Value,
+  " " + Fields!Address_Line_3.Value)
+  , "") 
+ + iif(Fields!Address_Line_Type_5.Value = "A" Or Fields!Address_Line_Type_5.Value = "U", " " + Fields!Address_Line_4.Value, "") 
+
+ + System.Environment.NewLine &amp; RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1.Value = "B", Fields!Address_Line_Name.Value, "") 
+ + iif(Fields!Address_Line_Type_2.Value = "B", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "B", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "B", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "B", " " + Fields!Address_Line_4.Value, "")
+
+ ))</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox8</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=iif(Fields!Address_Line_Type_1.Value = "N", Fields!Address_Line_Name.Value, "")
+ + iif(Fields!Address_Line_Type_2.Value = "N", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "N", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "N", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "N", " " + Fields!Address_Line_4.Value, "") 
+ 
+ + iif( InStr(Fields!Address_Line_Name.Value,"AND/OR")&gt; 0,"",System.Environment.NewLine )
+ 
+ + RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1.Value = "A" Or Fields!Address_Line_Type_1.Value = "U", Fields!Address_Line_Name.Value, "") 
+ + iif(Len(
+ iif(Fields!Address_Line_Type_1.Value = "A" Or Fields!Address_Line_Type_1.Value = "U", Fields!Address_Line_Name.Value, "") 
+ ) &gt; 0, System.Environment.NewLine 
+           + iif(Fields!Address_Line_Type_2.Value = "A" Or Fields!Address_Line_Type_2.Value = "U",  Fields!Address_Line_1.Value, "")
+    ,iif(Fields!Address_Line_Type_2.Value = "A" Or Fields!Address_Line_Type_2.Value = "U",  Fields!Address_Line_1.Value, ""))
+
+ + iif(Len(
+  iif(Fields!Address_Line_Type_2.Value = "A" Or Fields!Address_Line_Type_2.Value = "U", " " + Fields!Address_Line_1.Value, "") 
+) &gt; 0 AND Len(Fields!Address_Line_2.Value) &gt; 0
+
+,   iif( InStr(Fields!Address_Line_1.Value,"JTWROS")&gt; 0,System.Environment.NewLine,"" )
+
+		+ iif(Fields!Address_Line_Type_3.Value = "A" Or Fields!Address_Line_Type_3.Value = "U",  Fields!Address_Line_2.Value, "")
+,  System.Environment.NewLine
+              + iif(Fields!Address_Line_Type_3.Value = "A" Or Fields!Address_Line_Type_3.Value = "U",  Fields!Address_Line_2.Value, ""))
+
++ iif(Len(
+iif(Fields!Address_Line_Type_3.Value = "A" Or Fields!Address_Line_Type_3.Value = "U", " " + Fields!Address_Line_2.Value, "") 
+)&gt;0 AND Len(Fields!Address_Line_3.Value) &gt;  0
+
+, System.Environment.NewLine  + iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value = "U",  Fields!Address_Line_3.Value, "") 
+, iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value = "U",  Fields!Address_Line_3.Value, "")  )
+
++ iif(Len(
+iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value = "U",  Fields!Address_Line_3.Value, "") 
+) &gt; 0  AND Len(Fields!Address_Line_4.Value) &gt; 0
+
+ ,System.Environment.NewLine  + iif(Fields!Address_Line_Type_5.Value = "A" Or Fields!Address_Line_Type_5.Value = "U", " " + Fields!Address_Line_4.Value, "") 
+,iif(Fields!Address_Line_Type_5.Value = "A" Or Fields!Address_Line_Type_5.Value = "U", " " + Fields!Address_Line_4.Value, ""))
+
+ ))
+
+ + 
+ iif(Len(
+
+  iif(Fields!Address_Line_Type_1.Value = "A" Or Fields!Address_Line_Type_1.Value = "U", Fields!Address_Line_Name.Value, "") +
+  iif(Fields!Address_Line_Type_2.Value = "A" Or Fields!Address_Line_Type_2.Value = "U", " " + Fields!Address_Line_1.Value, "") +
+ iif(Fields!Address_Line_Type_3.Value = "A" Or Fields!Address_Line_Type_3.Value = "U", " " + Fields!Address_Line_2.Value, "") +
+ iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value = "U",  Fields!Address_Line_3.Value, "") +
+ iif(Fields!Address_Line_Type_5.Value = "A" Or Fields!Address_Line_Type_5.Value = "U", " " + Fields!Address_Line_4.Value, "")
+ )&gt; 0  ,
+
+  System.Environment.NewLine + RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1.Value = "B", Fields!Address_Line_Name.Value, "") 
+ + iif(Fields!Address_Line_Type_2.Value = "B", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "B", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "B", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "B", " " + Fields!Address_Line_4.Value, "")
+ ))
+ ,
+   RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1.Value = "B", Fields!Address_Line_Name.Value, "") 
+ + iif(Fields!Address_Line_Type_2.Value = "B", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "B", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "B", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "B", " " + Fields!Address_Line_4.Value, "")
+ )
+ ))</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox39">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=iif(Fields!Address_Line_Type_1_PD.Value = "N", Fields!Address_Line_Name_PD.Value, "") 
++ iif(Fields!Address_Line_Type_2_PD.Value = "N", " " + Fields!Address_Line_1_PD.Value, "") 
++ iif(Fields!Address_Line_Type_3_PD.Value = "N", " " + Fields!Address_Line_2_PD.Value, "") 
++ iif(Fields!Address_Line_Type_4_PD.Value = "N", " " + Fields!Address_Line_3_PD.Value, "") 
++ iif(Fields!Address_Line_Type_5_PD.Value = "N", " " + Fields!Address_Line_4_PD.Value, "") 
++ System.Environment.NewLine 
++ RTRIM(LTRIM(
+iif(Fields!Address_Line_Type_1_PD.Value = "A" Or Fields!Address_Line_Type_1_PD.Value = "U", Fields!Address_Line_Name_PD.Value, "") 
++ iif(Fields!Address_Line_Type_2_PD.Value = "A" Or Fields!Address_Line_Type_2_PD.Value = "U", " " + Fields!Address_Line_1_PD.Value, "") 
++ iif(Fields!Address_Line_Type_3_PD.Value = "A" Or Fields!Address_Line_Type_3_PD.Value = "U", " " + Fields!Address_Line_2_PD.Value, "") 
++ iif(Fields!Address_Line_Type_4_PD.Value = "A" Or Fields!Address_Line_Type_4_PD.Value = "U", " " + Fields!Address_Line_3_PD.Value, "") 
++ iif(Fields!Address_Line_Type_5_PD.Value = "A" Or Fields!Address_Line_Type_5_PD.Value = "U", " " + Fields!Address_Line_4_PD.Value, "") 
+))
++ System.Environment.NewLine &amp; RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1_PD.Value = "B", Fields!Address_Line_Name_PD.Value, "") 
++ iif(Fields!Address_Line_Type_2_PD.Value = "B", " " + Fields!Address_Line_1_PD.Value, "") 
++ iif(Fields!Address_Line_Type_3_PD.Value = "B", " " + Fields!Address_Line_2_PD.Value, "") 
++ iif(Fields!Address_Line_Type_4_PD.Value = "B", " " + Fields!Address_Line_3_PD.Value, "") 
++ iif(Fields!Address_Line_Type_5_PD.Value = "B", " " + Fields!Address_Line_4_PD.Value, "")
+))</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox36</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox13">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=iif(Fields!Address_Line_Type_1.Value = "N", Fields!Address_Line_Name.Value, "")
+ + iif(Fields!Address_Line_Type_2.Value = "N", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "N", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "N", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "N", " " + Fields!Address_Line_4.Value, "") 
+ + System.Environment.NewLine + RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1.Value = "A" Or Fields!Address_Line_Type_1.Value = "U", Fields!Address_Line_Name.Value, "") 
+ + iif(Fields!Address_Line_Type_2.Value = "A" Or Fields!Address_Line_Type_2.Value = "U", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "A" Or Fields!Address_Line_Type_3.Value = "U", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value = "U", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "A" Or Fields!Address_Line_Type_5.Value = "U", " " + Fields!Address_Line_4.Value, "") 
+ ))
+ + System.Environment.NewLine &amp; RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1.Value = "B", Fields!Address_Line_Name.Value, "") 
+ + iif(Fields!Address_Line_Type_2.Value = "B", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "B", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "B", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "B", " " + Fields!Address_Line_4.Value, "")
+
+ ))</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox13</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox5">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=iif(Fields!Address_Line_Type_1.Value = "N", Fields!Address_Line_Name.Value, "")
+ + iif(Fields!Address_Line_Type_2.Value = "N", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "N", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "N", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "N", " " + Fields!Address_Line_4.Value, "") 
+ + System.Environment.NewLine + RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1.Value = "A" Or Fields!Address_Line_Type_1.Value = "U", Fields!Address_Line_Name.Value, "") 
+ + iif(Len(
+ iif(Fields!Address_Line_Type_1.Value = "A" Or Fields!Address_Line_Type_1.Value = "U", Fields!Address_Line_Name.Value, "") 
+ ) &gt; 0, System.Environment.NewLine + iif(Fields!Address_Line_Type_2.Value = "A" Or Fields!Address_Line_Type_2.Value = "U",  Fields!Address_Line_1.Value, "")
+    ,iif(Fields!Address_Line_Type_2.Value = "A" Or Fields!Address_Line_Type_2.Value = "U",  Fields!Address_Line_1.Value, ""))
+
+ + iif(Len(
+  iif(Fields!Address_Line_Type_2.Value = "A" Or Fields!Address_Line_Type_2.Value = "U", " " + Fields!Address_Line_1.Value, "") 
+) &gt; 0 AND Len(Fields!Address_Line_2.Value) &gt; 0
+
+,  System.Environment.NewLine + iif(Fields!Address_Line_Type_3.Value = "A" Or Fields!Address_Line_Type_3.Value = "U",  Fields!Address_Line_2.Value, "")
+,iif(Fields!Address_Line_Type_3.Value = "A" Or Fields!Address_Line_Type_3.Value = "U",  Fields!Address_Line_2.Value, ""))
+
++ iif(Len(
+iif(Fields!Address_Line_Type_3.Value = "A" Or Fields!Address_Line_Type_3.Value = "U", " " + Fields!Address_Line_2.Value, "") 
+)&gt;0 AND Len(Fields!Address_Line_3.Value) &gt;  0
+
+, System.Environment.NewLine  + iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value = "U",  Fields!Address_Line_3.Value, "") 
+, iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value = "U",  Fields!Address_Line_3.Value, "")  )
+
++ iif(Len(
+iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value = "U",  Fields!Address_Line_3.Value, "") 
+) &gt; 0  AND Len(Fields!Address_Line_4.Value) &gt; 0
+
+ ,System.Environment.NewLine  + iif(Fields!Address_Line_Type_5.Value = "A" Or Fields!Address_Line_Type_5.Value = "U", " " + Fields!Address_Line_4.Value, "") 
+,iif(Fields!Address_Line_Type_5.Value = "A" Or Fields!Address_Line_Type_5.Value = "U", " " + Fields!Address_Line_4.Value, ""))
+
+ ))
+
+ + 
+ iif(Len(
+ iif(Fields!Address_Line_Type_5.Value = "A" Or Fields!Address_Line_Type_5.Value = "U", " " + Fields!Address_Line_4.Value, "")
+ )&gt; 0  AND Len(iif(Fields!Address_Line_Type_1.Value = "B", Fields!Address_Line_Name.Value, "") )&gt;0,
+
+  System.Environment.NewLine + RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1.Value = "B", Fields!Address_Line_Name.Value, "") 
+ + iif(Fields!Address_Line_Type_2.Value = "B", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "B", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "B", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "B", " " + Fields!Address_Line_4.Value, "")
+ ))
+ ,
+   RTRIM(LTRIM(
+ iif(Fields!Address_Line_Type_1.Value = "B", Fields!Address_Line_Name.Value, "") 
+ + iif(Fields!Address_Line_Type_2.Value = "B", " " + Fields!Address_Line_1.Value, "") 
+ + iif(Fields!Address_Line_Type_3.Value = "B", " " + Fields!Address_Line_2.Value, "") 
+ + iif(Fields!Address_Line_Type_4.Value = "B", " " + Fields!Address_Line_3.Value, "") 
+ + iif(Fields!Address_Line_Type_5.Value = "B", " " + Fields!Address_Line_4.Value, "")
+ )
+ ))</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox5</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember>
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                </TablixMember>
+                <TablixMember />
+                <TablixMember>
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                </TablixMember>
+                <TablixMember>
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                  </Visibility>
+                </TablixMember>
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <FixedData>true</FixedData>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="table1_Details_Group2">
+                    <DataElementName>Detail</DataElementName>
+                  </Group>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                  <DataElementName>Detail_Collection</DataElementName>
+                  <DataElementOutput>Output</DataElementOutput>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <FixedRowHeaders>true</FixedRowHeaders>
+            <DataSetName>DataSet1</DataSetName>
+            <PageName>managed accounts</PageName>
+            <Height>0.43in</Height>
+            <Width>35.625in</Width>
+            <Style />
+          </Tablix>
+        </ReportItems>
+        <Height>0.43in</Height>
+        <Style />
+      </Body>
+      <Width>35.625in</Width>
+      <Page>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
+        <TopMargin>1in</TopMargin>
+        <BottomMargin>1in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <Language>en-US</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>7af0b113-8830-4537-b4b3-3dd071d495ac</rd:ReportID>
+</Report>
