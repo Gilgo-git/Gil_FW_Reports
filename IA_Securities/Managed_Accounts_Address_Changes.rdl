@@ -72,11 +72,15 @@ WHERE --#b.A_C_ID IN ('37ML11A','37MFRGB','37F30DE','37F207W','37F3G8S','37F5QLS
    b.Address_Line_3 != a.Address_Line_3 OR
    b.Address_Line_4 != a.Address_Line_4 OR
    b.Address_Line_5 != a.Address_Line_5 )
+AND a.Address_ID &gt; 0
+AND a.ASC_3_Managed_Type IN ( 'M','N','Q','V')
 
 
 ORDER BY
    b.A_C_ID,
-   b.Major_Sort</CommandText>
+   b.Major_Sort
+
+</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
