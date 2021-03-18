@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="iAS_Portal">
@@ -173,7 +173,13 @@ group by
     <DataSet Name="BookKeeping">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>SELECT  
+        <QueryParameters>
+          <QueryParameter Name="@BUS_DT">
+            <Value>=Parameters!BUS_DT.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>
+SELECT  
 	a.A_C_ID,
 	
 c.Tran_Currency,
@@ -192,23 +198,60 @@ c.Tran_Gross_Amt
 FROM
    BACKOFFICE.IAVMVAL a (nolock)
       
-LEFT JOIN BACKOFFICE.IAVMBK c (nolock) ON c.A_C_ID = a.A_C_ID
-	 AND
- c.Tran_Process_Date &lt;= a.A_C_Summ_Balance_Bus_Date
- AND (a.A_C_Summ_Balance_Bus_Date = (SELECT MAX(A_C_Summ_Balance_Bus_Date) FROM BACKOFFICE.IAVMVAL (nolock)) OR a.A_C_Summ_Balance_Bus_Date IS NULL)   
+INNER JOIN BACKOFFICE.IAVMBK c (nolock) ON c.A_C_ID = a.A_C_ID
+	 AND c.Tran_Process_Date &lt;= a.A_C_Summ_Balance_Bus_Date
+	
 WHERE
 	a.Account_Rap_Code = 'J'
 
 	AND a.A_C_Summ_SD_Net_Amt != 0  
 	and LEN(a.A_C_ID)&gt; 2 
-ORDER BY
+	AND (a.A_C_Summ_Balance_Bus_Date = @BUS_DT )   
+--ORDER BY
+--	a.A_C_ID,
+
+--	c.Tran_Process_Date DESC,
+
+--	c.Tran_Settlement_Date DESC,
+
+--	c.Tran_Trade_Date DESC
+
+UNION ALL
+
+SELECT  
 	a.A_C_ID,
+	
+c.Tran_Currency,
+	
+c.Tran_Process_Date,
 
-	c.Tran_Process_Date DESC,
+c.Tran_Trade_Date,
 
-	c.Tran_Settlement_Date DESC,
+c.Tran_Settlement_Date,
+c.Tran_Qty,
+c.Tran_Entry_Description,
 
-	c.Tran_Trade_Date DESC</CommandText>
+c.Tran_User_Description,
+c.Tran_Gross_Amt 
+ 
+FROM
+   BACKOFFICE.IAVMVAL a (nolock)
+      
+INNER JOIN BACKOFFICE.IAVMBK c (nolock) ON c.A_C_ID = a.A_C_ID
+	 AND c.Tran_Process_Date &lt;= a.A_C_Summ_Balance_Bus_Date
+	  
+WHERE
+	a.Account_Rap_Code = 'J'
+
+	AND a.A_C_Summ_SD_Net_Amt != 0  
+	and LEN(a.A_C_ID)&gt; 2 
+	AND (a.A_C_Summ_Balance_Bus_Date IS NULL ) 
+
+ORDER BY
+	A_C_ID,
+	Tran_Process_Date DESC,
+	Tran_Settlement_Date DESC,
+	Tran_Trade_Date DESC </CommandText>
       </Query>
       <Fields>
         <Field Name="A_C_ID">
@@ -408,6 +451,18 @@ group by
         </Field>
         <Field Name="LAST_PROCESS_DATE">
           <DataField>LAST_PROCESS_DATE</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Business_DT">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>SELECT MAX(A_C_Summ_Balance_Bus_Date) AS BUS_DT FROM BACKOFFICE.IAVMVAL (nolock)</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="BUS_DT">
+          <DataField>BUS_DT</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
@@ -6220,6 +6275,32 @@ group by
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="BUS_DT">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>Business_DT</DataSetName>
+          <ValueField>BUS_DT</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>BUS_DT</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>BUS_DT</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
   <rd:ReportID>cd7187d7-5df6-44dc-bd7d-a4df127a1230</rd:ReportID>
 </Report>
