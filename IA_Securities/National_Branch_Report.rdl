@@ -89,8 +89,8 @@ GROUP BY 	a.[A_C_Representative]
 	,a.ASC_2_Product_Type
 	,a.ASC_3_Managed_Type
 	,a.Client_Residence
-	,CASE WHEN a.A_C_Short_Name LIKE '% RTM' OR a.A_C_Short_Name LIKE '%*RTM' OR a.A_C_Short_Name LIKE '% RTM %' OR a.A_C_Short_Name LIKE '%*RTM*%' OR a.A_C_Short_Name LIKE 'RTM*%' OR (SELECT COUNT(*) from IAVMDOC (nolock) WHERE (Doc_Type_2 like '6K' or Doc_Type_2 = '' or Doc_Type_2 is null) and client = a.A_C_Client) &gt;= 1 THEN 'YES' ELSE 'NO' END as Unknown_Address
-	,CASE WHEN (SELECT MAX(Doc_Date) FROM IAVMDOC (nolock) where Doc_Type IN ('01', '31', '9F', '22', '6E') AND Client = a.A_C_Client) &gt; DATEADD(year, 3, GETDATE()) THEN 'NO' ELSE 'YES' END AS Updated_Within_3_Years 
+	,CASE WHEN a.A_C_Short_Name LIKE '% RTM' OR a.A_C_Short_Name LIKE '%*RTM' OR a.A_C_Short_Name LIKE '% RTM %' OR a.A_C_Short_Name LIKE '%*RTM*%' OR a.A_C_Short_Name LIKE 'RTM*%' OR (SELECT COUNT(*) from [BACKOFFICE].[IAVMDOC] (nolock) WHERE (Doc_Type_2 like '6K' or Doc_Type_2 = '' or Doc_Type_2 is null) and client = a.A_C_Client) &gt;= 1 THEN 'YES' ELSE 'NO' END as Unknown_Address
+	,CASE WHEN (SELECT MAX(Doc_Date) FROM [BACKOFFICE].[IAVMDOC] (nolock) where Doc_Type IN ('01', '31', '9F', '22', '6E') AND Client = a.A_C_Client) &gt; DATEADD(year, 3, GETDATE()) THEN 'NO' ELSE 'YES' END AS Updated_Within_3_Years 
 	,SUM(pos.valueCAD) AS AUA
 
 FROM [BACKOFFICE].[IAVMACT] AS a (nolock)
