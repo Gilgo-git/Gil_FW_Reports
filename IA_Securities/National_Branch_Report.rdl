@@ -163,6 +163,20 @@ GROUP BY 	a.[A_C_Representative]
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="MK_Date">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>  SELECT 
+	MAX([Mkt_Price_Date]) AS MK_DATE
+  FROM [BACKOFFICE].[IAVMPSN] (nolock)</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="MK_DATE">
+          <DataField>MK_DATE</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -1783,9 +1797,10 @@ GROUP BY 	a.[A_C_Representative]
     <ReportParameter Name="Date">
       <DataType>DateTime</DataType>
       <DefaultValue>
-        <Values>
-          <Value>=DATEADD("d", -1, Today)</Value>
-        </Values>
+        <DataSetReference>
+          <DataSetName>MK_Date</DataSetName>
+          <ValueField>MK_DATE</ValueField>
+        </DataSetReference>
       </DefaultValue>
       <Prompt>Process Date</Prompt>
     </ReportParameter>
