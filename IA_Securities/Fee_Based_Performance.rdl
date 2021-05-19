@@ -540,6 +540,7 @@ MAX([Mkt_Price_Date]) AS MK_DATE
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -808,27 +809,36 @@ MAX([Mkt_Price_Date]) AS MK_DATE
               <TablixMembers>
                 <TablixMember>
                   <FixedData>true</FixedData>
-                  <KeepWithGroup>After</KeepWithGroup>
-                  <RepeatOnNewPage>true</RepeatOnNewPage>
                   <KeepTogether>true</KeepTogether>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="table1_Details_Group">
+                  <Group Name="Platform">
                     <GroupExpressions>
                       <GroupExpression>=Fields!Platform.Value</GroupExpression>
                     </GroupExpressions>
                     <PageBreak>
                       <BreakLocation>Between</BreakLocation>
                     </PageBreak>
-                    <PageName>=Fields!Platform.Value</PageName>
-                    <DataElementName>Detail</DataElementName>
                   </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!Platform.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
                   <TablixMembers>
-                    <TablixMember />
+                    <TablixMember>
+                      <Group Name="table1_Details_Group">
+                        <PageName>=Fields!Platform.Value</PageName>
+                        <DataElementName>Detail</DataElementName>
+                      </Group>
+                      <TablixMembers>
+                        <TablixMember />
+                      </TablixMembers>
+                      <DataElementName>Detail_Collection</DataElementName>
+                      <DataElementOutput>Output</DataElementOutput>
+                      <KeepTogether>true</KeepTogether>
+                    </TablixMember>
                   </TablixMembers>
-                  <DataElementName>Detail_Collection</DataElementName>
-                  <DataElementOutput>Output</DataElementOutput>
-                  <KeepTogether>true</KeepTogether>
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
@@ -842,7 +852,7 @@ MAX([Mkt_Price_Date]) AS MK_DATE
         <Height>0.59958in</Height>
         <Style />
       </Body>
-      <Width>14.10417in</Width>
+      <Width>15.10417in</Width>
       <Page>
         <LeftMargin>1in</LeftMargin>
         <RightMargin>1in</RightMargin>
