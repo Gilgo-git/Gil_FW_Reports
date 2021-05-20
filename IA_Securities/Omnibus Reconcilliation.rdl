@@ -18,7 +18,8 @@
             <Value>=Parameters!processDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT 
+        <CommandText>
+SELECT 
 	pos.repId AS A_C_Representative, 
  	'IIROC' AS BKR,
 	rep.repName, 
@@ -37,18 +38,18 @@
 		when  iavmact.ASC_3_Managed_Type = 'X' then 'Diversiflex Plus'
 		else  'Unknown'
 	end AS Description,
-	pos.cashbalancecad AS TD_Cash_Bal, 
-	pos.cashbalancecad AS SD_Cash_Bal,
-	pos.marketvaluecad AS Acct_value,
+	SUM(CASE WHEN pos.productCode = 'CASH' THEN valueCAD ELSE 0 END) AS TD_Cash_Bal, --pos.cashbalancecad
+	SUM(CASE WHEN pos.productCode = 'CASH' THEN valueCAD ELSE 0 END) AS SD_Cash_Bal, --pos.cashbalancecad
+	SUM(CASE WHEN pos.productCode &lt;&gt; 'CASH' THEN valueCAD ELSE 0 END) AS Acct_value, --pos.marketvaluecad
   
-	pos.marketvaluecad+pos.cashbalancecad AS Market_Value,
-	pos.cashbalancecad/pos.marketvaluecad AS Pct_Cash ,
+	SUM(pos.valueCAD) AS Market_Value, --pos.marketvaluecad+pos.cashbalancecad
+	SUM(CASE WHEN pos.productCode = 'CASH' THEN valueCAD ELSE 0 END)/NULLIF(SUM(CASE WHEN pos.productCode &lt;&gt; 'CASH' THEN valueCAD ELSE 0 END),0) AS Pct_Cash , --pos.cashbalancecad/pos.marketvaluecad
 
 	pos.processDate, 
-	pos.valuecad AS Equity_Value  
+	SUM(pos.valueCAD) AS Equity_Value  
 
 
-FROM IAVM.positionSummaryByAccount pos
+FROM IAVM.position pos
 
 INNER JOIN BACKOFFICE.IAVMACT iavmact
 	ON pos.accountId  = iavmact.A_C_ID
@@ -58,7 +59,27 @@ INNER JOIN IAVM.rep rep
 WHERE   pos.processDate  = @processDate 
 	and iavmact.ASC_3_Managed_Type in ('I','L','X')
 	and pos.repId &lt;&gt; ''
-	and pos.marketvaluecad &lt;&gt; 0
+	--and pos.marketvaluecad &lt;&gt; 0
+GROUP BY 
+	pos.repId, 
+	rep.repName, 
+	pos.accountId, 
+	iavmact.A_C_Name,
+	case 
+		when  iavmact.ASC_3_Managed_Type = 'I' then 'Diversiflex'
+		when  iavmact.ASC_3_Managed_Type = 'L' then	'Diversiflex Balanced'
+		when  iavmact.ASC_3_Managed_Type = 'M' then 'MAnaged'
+		when  iavmact.ASC_3_Managed_Type = 'N' then 'Vintage - Non-Descretionary'
+		when  iavmact.ASC_3_Managed_Type = 'Q' then	'Managed'
+		when  iavmact.ASC_3_Managed_Type = 'R' then 'Summit'
+		when  iavmact.ASC_3_Managed_Type = 'S' then 'Summit'
+		when  iavmact.ASC_3_Managed_Type = 'R' then 'Summit'
+		when  iavmact.ASC_3_Managed_Type = 'V' then 'Vintage'
+		when  iavmact.ASC_3_Managed_Type = 'X' then 'Diversiflex Plus'
+		else  'Unknown'
+	end
+	,pos.processDate
+HAVING SUM(pos.valueCAD) &lt;&gt; 0 
 ORDER BY rep.repName,
 	pos.accountId</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
