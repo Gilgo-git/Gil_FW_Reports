@@ -38,7 +38,7 @@ SELECT
 		when  iavmact.ASC_3_Managed_Type = 'X' then 'Diversiflex Plus'
 		else  'Unknown'
 	end AS Description,
-	SUM(CASE WHEN pos.productCode = 'CASH' THEN valueCAD ELSE 0 END) AS TD_Cash_Bal, --pos.cashbalancecad
+	SUM(CASE WHEN pos.productCode = 'CASH' THEN bidValueCAD ELSE 0 END) AS TD_Cash_Bal, --pos.cashbalancecad
 	SUM(CASE WHEN pos.productCode = 'CASH' THEN valueCAD ELSE 0 END) AS SD_Cash_Bal, --pos.cashbalancecad
 	SUM(CASE WHEN pos.productCode &lt;&gt; 'CASH' THEN valueCAD ELSE 0 END) AS Acct_value, --pos.marketvaluecad
   
@@ -209,10 +209,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>A C Rep</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -249,10 +248,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>BKR</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -289,10 +287,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>Rep Name</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -329,10 +326,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>A C ID</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -369,10 +365,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>A C Name</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -408,10 +403,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>Description</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -448,10 +442,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>SD Cash Bal</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -489,10 +482,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>TD Cash Bal</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -530,10 +522,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>Pos Bal</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -571,10 +562,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>Market Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -612,10 +602,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>Pct Cash</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -657,8 +646,8 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!A_C_Representative.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -693,8 +682,8 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!BKR.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -729,8 +718,8 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!repName.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -765,8 +754,8 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!A_C_ID.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -801,8 +790,8 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!A_C_Name.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -836,8 +825,8 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!Description.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -872,8 +861,8 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!SD_Cash_Bal.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -910,8 +899,8 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!TD_Cash_Bal.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -948,9 +937,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!Acct_value.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                     <Format>'$'0.00;('$'0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -988,9 +977,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!Market_Value.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                     <Format>'$'0.00;('$'0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1028,9 +1017,9 @@ ORDER BY rep.repName,
                                 <TextRun>
                                   <Value>=Fields!Pct_Cash.Value</Value>
                                   <Style>
-                                    <FontFamily>Arial</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                     <Format>0.00%</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
