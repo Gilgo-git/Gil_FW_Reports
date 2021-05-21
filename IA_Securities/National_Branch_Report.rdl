@@ -17,6 +17,9 @@
           <QueryParameter Name="@Date">
             <Value>=Parameters!Date.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@rep">
+            <Value>=Parameters!rep.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT 
 	a.[A_C_Representative]
@@ -36,6 +39,7 @@ where
 	a.A_C_Open_Date IS NOT NULL
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt;= @Date)
 	AND pos.processDate = @Date
+AND pos.repId IN (@rep)
 GROUP BY 	a.[A_C_Representative]
 	,rep.repName</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
@@ -174,6 +178,34 @@ GROUP BY 	a.[A_C_Representative]
         <Field Name="MK_DATE">
           <DataField>MK_DATE</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Reps">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Date">
+            <Value>=Parameters!Date.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT 
+	pos.repId 
+FROM [BACKOFFICE].[IAVMACT] AS a (nolock)
+	INNER JOIN IAVM.position as pos (nolock)
+		ON a.A_C_ID = pos.accountId
+	LEFT OUTER JOIN IAVM.rep (nolock)
+		ON pos.repId = rep.repId
+where 
+	a.A_C_Open_Date IS NOT NULL
+	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt;= @Date)
+	AND pos.processDate = @Date
+GROUP BY 	pos.repId </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="repId">
+          <DataField>repId</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -1804,6 +1836,18 @@ GROUP BY 	a.[A_C_Representative]
       </DefaultValue>
       <Prompt>Process Date</Prompt>
     </ReportParameter>
+    <ReportParameter Name="rep">
+      <DataType>String</DataType>
+      <Prompt>Rep Codes</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Reps</DataSetName>
+          <ValueField>repId</ValueField>
+          <LabelField>repId</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -1814,6 +1858,11 @@ GROUP BY 	a.[A_C_Representative]
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>Date</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>rep</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
