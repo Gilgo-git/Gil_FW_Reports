@@ -184,23 +184,10 @@ GROUP BY 	a.[A_C_Representative]
     <DataSet Name="Reps">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@Date">
-            <Value>=Parameters!Date.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
         <CommandText>SELECT 
-	pos.repId 
-FROM [BACKOFFICE].[IAVMACT] AS a (nolock)
-	INNER JOIN IAVM.position as pos (nolock)
-		ON a.A_C_ID = pos.accountId
-	LEFT OUTER JOIN IAVM.rep (nolock)
-		ON pos.repId = rep.repId
-where 
-	a.A_C_Open_Date IS NOT NULL
-	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt;= @Date)
-	AND pos.processDate = @Date
-GROUP BY 	pos.repId </CommandText>
+	repId 
+FROM [IAVM].rep
+GROUP BY 	repId </CommandText>
       </Query>
       <Fields>
         <Field Name="repId">
@@ -1838,6 +1825,12 @@ GROUP BY 	pos.repId </CommandText>
     </ReportParameter>
     <ReportParameter Name="rep">
       <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>Reps</DataSetName>
+          <ValueField>repId</ValueField>
+        </DataSetReference>
+      </DefaultValue>
       <Prompt>Rep Codes</Prompt>
       <ValidValues>
         <DataSetReference>
