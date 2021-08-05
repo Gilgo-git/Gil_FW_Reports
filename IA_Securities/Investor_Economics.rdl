@@ -24,17 +24,82 @@
             <Value>=Parameters!Qtr_End_Date.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>--drop table #ln10 , #lnsum,#lnsymbol,#etf,#hisa,#ln29hisa,
+        <CommandText>--drop table #ln10 , #lnsum,#lnsymbol,#etf,#hisa,#ln29hisa,#lnsumtrades,#etftrades,#ln29hisatrades
 -- #lnsumtrades,#etftrades,#ln29hisatrades
 --drop table #rptamt,#rpttrades,#com
 
 --Declare @processDate as datetime
---set @processDate='2020-03-02'
+--set @processDate='2021-07-01'
 
 --Declare  @Qtr_Start_Date as datetime, 
 --		 @Qtr_End_Date as datetime
 --set @Qtr_Start_Date='2021-04-01'
 --set @Qtr_End_Date='2021-06-30'
+
+IF OBJECT_ID('tempdb..#ln10') IS NOT NULL              
+  BEGIN       
+    drop table #ln10         
+  END 
+
+IF OBJECT_ID('tempdb..#lnsum') IS NOT NULL              
+  BEGIN       
+    drop table #lnsum         
+  END 
+
+IF OBJECT_ID('tempdb..#lnsymbol') IS NOT NULL              
+  BEGIN       
+    drop table #lnsymbol         
+  END 
+
+  IF OBJECT_ID('tempdb..#etf') IS NOT NULL              
+  BEGIN       
+    drop table #etf         
+  END 
+
+    IF OBJECT_ID('tempdb..#hisa') IS NOT NULL              
+  BEGIN       
+    drop table #hisa         
+  END 
+
+      IF OBJECT_ID('tempdb..#ln29hisa') IS NOT NULL              
+  BEGIN       
+    drop table #ln29hisa         
+  END 
+
+        IF OBJECT_ID('tempdb..#lnsumtrades') IS NOT NULL              
+  BEGIN       
+    drop table #lnsumtrades         
+  END 
+
+  
+        IF OBJECT_ID('tempdb..#etftrades') IS NOT NULL              
+  BEGIN       
+    drop table #etftrades         
+  END 
+
+        IF OBJECT_ID('tempdb..#ln29hisatrades') IS NOT NULL              
+  BEGIN       
+    drop table #ln29hisatrades         
+  END 
+
+          IF OBJECT_ID('tempdb..#rptamt') IS NOT NULL              
+  BEGIN       
+    drop table #rptamt         
+  END 
+
+          IF OBJECT_ID('tempdb..#rpttrades') IS NOT NULL              
+  BEGIN       
+    drop table #rpttrades         
+  END 
+
+          IF OBJECT_ID('tempdb..#com') IS NOT NULL              
+  BEGIN       
+    drop table #com         
+  END 
+
+
+
+
 
 SELECT '10' as line,
 SUM(p.valueCAD) AS AMT
@@ -159,7 +224,8 @@ SELECT distinct
 	  ) a
 
 
-
+CREATE NONCLUSTERED INDEX IX_Symbol_Investor_Economics   
+    ON #lnSymbol (TI_Symbol);   
 
 --Declare @processDate as datetime
 --set @processDate='2020-03-02'
@@ -203,7 +269,6 @@ WHERE
 
 
 
-
 ---HISA
 select distinct a.*
 into #hisa  from
@@ -217,7 +282,6 @@ union
 select distinct oth as symbol from [REPORTS].[INVESTOR_ECONOMICS_HISA_202106] 
 where oth is not null
 ) a
-
 
 --Declare @processDate as datetime
 --set @processDate='2020-03-02'
@@ -277,7 +341,7 @@ on p.accountId=cmsdt.FMSL_ACCOUNT_NUMBER
 WHERE 
 	processDate=@processDate
 	AND a.Client_Tax_Recip_Type in (1,2,3)
-	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
+	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; @processDate)
 	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_Date And CMSDT.PROCESS_DATE &lt; @Qtr_End_Date-----&lt;@processDate + 1
 AND CMSDT.BUY_SELL_INDICATOR In ('B','S')
 AND CMSDT.CANCEL_INDICATOR&lt;&gt;'Y'
