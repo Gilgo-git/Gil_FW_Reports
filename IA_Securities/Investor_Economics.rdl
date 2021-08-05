@@ -36,6 +36,14 @@
 --set @Qtr_Start_Date='2021-04-01'
 --set @Qtr_End_Date='2021-06-30'
 
+Declare @processDateSP as datetime
+set @processDateSP=@processDate
+
+Declare  @Qtr_Start_DateSP as datetime, 
+		 @Qtr_End_DateSP as datetime
+set @Qtr_Start_DateSP=@Qtr_Start_Date
+set @Qtr_End_DateSP=@Qtr_End_Date
+
 IF OBJECT_ID('tempdb..#ln10') IS NOT NULL              
   BEGIN       
     drop table #ln10         
@@ -107,7 +115,7 @@ into #ln10
 from IAVM.position p
 inner join BACKOFFICE.IAVMACT a
 on p.accountId=a.A_C_ID
-WHERE  p.processDate=@processDate 
+WHERE  p.processDate=@processDateSP 
 and p.productCode ='CASH' 
 and  a.Client_Tax_Recip_Type in (1,2,3)
 and (a.A_C_Closing_Date is null or p.processDate &gt; a.A_C_Closing_Date)
@@ -125,6 +133,8 @@ SELECT distinct
 		 ,'13' as line
 		--into #ln13
 	  FROM BACKOFFICE.IAVMSM m
+			INNER JOIN REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
+				ON m.TI_Alternate_TI_Class = rclass.Class
 	  where m.TI_Alternate_TI_Class='6000' or 
 	  (m.TI_Alternate_TI_Type='260' and m.TI_Alternate_TI_Class not in (
 	  select rclass.Class from REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
@@ -227,8 +237,8 @@ SELECT distinct
 CREATE NONCLUSTERED INDEX IX_Symbol_Investor_Economics   
     ON #lnSymbol (TI_Symbol);   
 
---Declare @processDate as datetime
---set @processDate='2020-03-02'
+--Declare @processDateSP as datetime
+--set @processDateSP='2020-03-02'
 SELECT  ln.line
 		,sum(p.valueCAD) as AMT
 		into #lnSum
@@ -240,7 +250,7 @@ INNER JOIN #lnSymbol ln
 ON ln.TI_Symbol = p.symbol
 
 WHERE 
-	processDate=@processDate
+	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in (1,2,3) 
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
 GROUP BY	
@@ -249,8 +259,8 @@ order BY
 ln.line
 
 ---ETF
---Declare @processDate as datetime
---set @processDate='2020-03-02'
+--Declare @processDateSP as datetime
+--set @processDateSP='2020-03-02'
 SELECT  '20' as line
 		,sum(p.valueCAD) as AMT
 into #etf
@@ -261,7 +271,7 @@ INNER JOIN [REPORTS].[INVESTOR_ECONOMICS_ETF_202106] etf
 on p.symbol=etf.symbol
 
 WHERE 
-	processDate=@processDate
+	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in (1,2,3) 
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
 
@@ -283,8 +293,8 @@ select distinct oth as symbol from [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
 where oth is not null
 ) a
 
---Declare @processDate as datetime
---set @processDate='2020-03-02'
+--Declare @processDateSP as datetime
+--set @processDateSP='2020-03-02'
 SELECT  '29' as line 
 		,sum(p.valueCAD) as AMT
 into #ln29hisa
@@ -295,7 +305,7 @@ INNER JOIN #hisa hisa
 on p.symbol=hisa.symbol
 
 WHERE 
-	processDate=@processDate
+	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in (1,2,3) 
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
 
@@ -322,13 +332,13 @@ where a.line is not null
 ----TRADES---------
 
 --drop table #lnSumTrades
---Declare @processDate as datetime
---set @processDate='2020-03-02'
---Declare @Qtr_Start_Date as datetime
---set @Qtr_Start_Date='2020-01-01'
+--Declare @processDateSP as datetime
+--set @processDateSP='2020-03-02'
+--Declare @Qtr_Start_DateSP as datetime
+--set @Qtr_Start_DateSP='2020-01-01'
 
 SELECT  ln.line
-		,count(@processDate) as trades
+		,count(@processDateSP) as trades
 	into #lnSumTrades
 FROM IAVM.position p
 LEFT JOIN BACKOFFICE.IAVMACT a 
@@ -339,10 +349,10 @@ inner join [BACKOFFICE].[CMSDT] CMSDT
 on p.accountId=cmsdt.FMSL_ACCOUNT_NUMBER
 
 WHERE 
-	processDate=@processDate
+	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in (1,2,3)
-	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; @processDate)
-	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_Date And CMSDT.PROCESS_DATE &lt; @Qtr_End_Date-----&lt;@processDate + 1
+	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; @processDateSP)
+	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_DateSP And CMSDT.PROCESS_DATE &lt; @Qtr_End_DateSP-----&lt;@processDateSP + 1
 AND CMSDT.BUY_SELL_INDICATOR In ('B','S')
 AND CMSDT.CANCEL_INDICATOR&lt;&gt;'Y'
 
@@ -353,13 +363,13 @@ order BY
 ln.line
 
 
---Declare @processDate as datetime
---set @processDate='2020-03-02'
---Declare @Qtr_Start_Date as datetime
---set @Qtr_Start_Date='2020-01-01'
+--Declare @processDateSP as datetime
+--set @processDateSP='2020-03-02'
+--Declare @Qtr_Start_DateSP as datetime
+--set @Qtr_Start_DateSP='2020-01-01'
 
 SELECT  '20' as line
-		,count(@processDate) as trades
+		,count(@processDateSP) as trades
 into #etfTrades
 FROM IAVM.position p
 LEFT JOIN BACKOFFICE.IAVMACT a 
@@ -370,10 +380,10 @@ inner join [BACKOFFICE].[CMSDT] CMSDT
 on p.accountId=cmsdt.FMSL_ACCOUNT_NUMBER
 
 WHERE 
-	processDate=@processDate
+	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in (1,2,3)
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
-	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_Date And CMSDT.PROCESS_DATE &lt; @Qtr_End_Date -----&lt;@processDate + 1
+	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_DateSP And CMSDT.PROCESS_DATE &lt; @Qtr_End_DateSP -----&lt;@processDateSP + 1
 AND CMSDT.BUY_SELL_INDICATOR In ('B','S')
 AND CMSDT.CANCEL_INDICATOR&lt;&gt;'Y'
 
@@ -398,13 +408,13 @@ AND CMSDT.CANCEL_INDICATOR&lt;&gt;'Y'
 --) a
 
 
---Declare @processDate as datetime
---set @processDate='2020-03-02'
---Declare @Qtr_Start_Date as datetime
---set @Qtr_Start_Date='2020-01-01'
+--Declare @processDateSP as datetime
+--set @processDateSP='2020-03-02'
+--Declare @Qtr_Start_DateSP as datetime
+--set @Qtr_Start_DateSP='2020-01-01'
 
 SELECT  '29' as line 
-	,count(@processDate) as trades
+	,count(@processDateSP) as trades
 into #ln29hisaTrades
 FROM IAVM.position p
 LEFT JOIN BACKOFFICE.IAVMACT a 
@@ -415,10 +425,10 @@ inner join [BACKOFFICE].[CMSDT] CMSDT
 on p.accountId=cmsdt.FMSL_ACCOUNT_NUMBER
 
 WHERE 
-	processDate=@processDate
+	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in (1,2,3)
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
-	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_Date And CMSDT.PROCESS_DATE &lt; '2021-03-30'-----&lt;@processDate + 1
+	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_DateSP And CMSDT.PROCESS_DATE &lt; '2021-03-30'-----&lt;@processDateSP + 1
 AND CMSDT.BUY_SELL_INDICATOR In ('B','S')
 AND CMSDT.CANCEL_INDICATOR&lt;&gt;'Y'
 
@@ -453,25 +463,25 @@ FROM BACKOFFICE.CMSDT
 where SECURITY_GROUP_CODE in ('GIC','FIX')
 and CANCEL_INDICATOR = 'N'
 and BUY_SELL_INDICATOR !=''
-and Trade_date between @Qtr_Start_Date and @Qtr_End_Date
+and Trade_date between @Qtr_Start_DateSP and @Qtr_End_DateSP
 union
 SELECT '17' as grpline,'18' as line, count(*) as no_com,sum(case when TRADE_GRP_COMM_ENTERED &gt; 0 then 1 else 0 end) as com 
 FROM BACKOFFICE.CMSDT
 where SECURITY_GROUP_CODE in ('EQT','OPT')
 and CANCEL_INDICATOR = 'N'
 and BUY_SELL_INDICATOR !=''
-and Trade_date between @Qtr_Start_Date and @Qtr_End_Date
+and Trade_date between @Qtr_Start_DateSP and @Qtr_End_DateSP
 union
 SELECT '25' as grpline,'26' as line,count(*) as no_com,sum(case when TRADE_GRP_COMM_ENTERED &gt; 0 then 1 else 0 end) as com 
 FROM BACKOFFICE.CMSDT
 where SECURITY_GROUP_CODE in ('MUT')
 and CANCEL_INDICATOR = 'N'
 and BUY_SELL_INDICATOR !=''
-and Trade_date between @Qtr_Start_Date and @Qtr_End_Date
+and Trade_date between @Qtr_Start_DateSP and @Qtr_End_DateSP
 union
 SELECT '26' as grpline,'27' as line,count(*) as no_com,0 as com  
 FROM BACKOFFICE.IAVMBK
-WHERE TRAN_PROCESS_DATE between @Qtr_Start_Date and @Qtr_End_Date
+WHERE TRAN_PROCESS_DATE between @Qtr_Start_DateSP and @Qtr_End_DateSP
 and Tran_Entry_Description In ('PAC','AWD','SWP')
 and TI_Type = 'MF'
 ) a
@@ -527,16 +537,18 @@ a.Line=c.line
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="processDate">
+          <QueryParameter Name="@processDate">
             <Value>=Parameters!processDate.Value</Value>
-            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
         <CommandText>
 --Declare @processDate as datetime
---set @processDate='2020-03-02'
+--set @processDate='2021-07-01'
 
- 
+Declare @processDateSP as datetime
+set @processDateSP=@processDate
+
+
 SELECT  reg.region_group 
 		,sum(p.valueCAD) as AMT
 		,count(distinct a.A_C_ID) as numOfAccounts	
@@ -548,7 +560,7 @@ INNER JOIN [REPORTS].[INVESTOR_ECONOMICS_REGION_GROUP] reg
 on reg.region=a.Client_Residence_Region
 
 WHERE 
-	processDate=@processDate
+	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in(1,2,3)
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
 GROUP BY	
@@ -576,13 +588,15 @@ ORDER BY
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="processDate">
+          <QueryParameter Name="@processDate">
             <Value>=Parameters!processDate.Value</Value>
-            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
         <CommandText>--Declare @processDate as datetime
---set @processDate='2020-03-02'
+--set @processDate='2021-07-01'
+
+Declare @processDateSP as datetime
+set @processDateSP=@processDate
 
 select Tax_Group,tax.Tax_Type,tax.Sort, sum(a.amt) as amt,sum(a.numOfAccounts) as numOfAccounts,'x' as x
 from REPORTS.INVESTOR_ECONOMICS_TAX_GROUP tax
@@ -599,7 +613,7 @@ LEFT JOIN BACKOFFICE.IAVMACT a
 ON a.A_C_ID=p.accountId
 
 WHERE 
-	processDate=@processDate
+	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in(1,2,3)
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
 
