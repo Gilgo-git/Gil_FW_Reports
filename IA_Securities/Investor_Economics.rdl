@@ -133,8 +133,6 @@ SELECT distinct
 		 ,'13' as line
 		--into #ln13
 	  FROM BACKOFFICE.IAVMSM m
-			INNER JOIN REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
-				ON m.TI_Alternate_TI_Class = rclass.Class
 	  where m.TI_Alternate_TI_Class='6000' or 
 	  (m.TI_Alternate_TI_Type='260' and m.TI_Alternate_TI_Class not in (
 	  select rclass.Class from REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
