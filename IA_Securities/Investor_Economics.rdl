@@ -24,17 +24,13 @@
             <Value>=Parameters!Qtr_End_Date.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>--drop table #ln10 , #lnsum,#lnsymbol,#etf,#hisa,#ln29hisa,#lnsumtrades,#etftrades,#ln29hisatrades
--- #lnsumtrades,#etftrades,#ln29hisatrades
---drop table #rptamt,#rpttrades,#com
-
---Declare @processDate as datetime
---set @processDate='2021-07-01'
+        <CommandText>--Declare @processDate as datetime
+--set @processDate='2021-09-30'
 
 --Declare  @Qtr_Start_Date as datetime, 
 --		 @Qtr_End_Date as datetime
---set @Qtr_Start_Date='2021-04-01'
---set @Qtr_End_Date='2021-06-30'
+--set @Qtr_Start_Date='2021-07-01'
+--set @Qtr_End_Date='2021-09-30'
 
 Declare @processDateSP as datetime
 set @processDateSP=@processDate
@@ -44,457 +40,938 @@ Declare  @Qtr_Start_DateSP as datetime,
 set @Qtr_Start_DateSP=@Qtr_Start_Date
 set @Qtr_End_DateSP=@Qtr_End_Date
 
-IF OBJECT_ID('tempdb..#ln10') IS NOT NULL              
+IF OBJECT_ID('tempdb..#IEGroup') IS NOT NULL              
   BEGIN       
-    drop table #ln10         
+    drop table #IEGroup         
   END 
 
-IF OBJECT_ID('tempdb..#lnsum') IS NOT NULL              
-  BEGIN       
-    drop table #lnsum         
-  END 
-
-IF OBJECT_ID('tempdb..#lnsymbol') IS NOT NULL              
-  BEGIN       
-    drop table #lnsymbol         
-  END 
-
-  IF OBJECT_ID('tempdb..#etf') IS NOT NULL              
-  BEGIN       
-    drop table #etf         
-  END 
-
-    IF OBJECT_ID('tempdb..#hisa') IS NOT NULL              
-  BEGIN       
-    drop table #hisa         
-  END 
-
-      IF OBJECT_ID('tempdb..#ln29hisa') IS NOT NULL              
-  BEGIN       
-    drop table #ln29hisa         
-  END 
-
-        IF OBJECT_ID('tempdb..#lnsumtrades') IS NOT NULL              
-  BEGIN       
-    drop table #lnsumtrades         
-  END 
-
-  
-        IF OBJECT_ID('tempdb..#etftrades') IS NOT NULL              
-  BEGIN       
-    drop table #etftrades         
-  END 
-
-        IF OBJECT_ID('tempdb..#ln29hisatrades') IS NOT NULL              
-  BEGIN       
-    drop table #ln29hisatrades         
-  END 
-
-          IF OBJECT_ID('tempdb..#rptamt') IS NOT NULL              
-  BEGIN       
-    drop table #rptamt         
-  END 
-
-          IF OBJECT_ID('tempdb..#rpttrades') IS NOT NULL              
-  BEGIN       
-    drop table #rpttrades         
-  END 
-
-          IF OBJECT_ID('tempdb..#com') IS NOT NULL              
-  BEGIN       
-    drop table #com         
-  END 
+IF OBJECT_ID('tempdb..#SymbolTemp') IS NOT NULL              
+BEGIN       
+drop table #SymbolTemp       
+END 
 
 
+IF OBJECT_ID('tempdb..#SymbolSection') IS NOT NULL              
+BEGIN       
+drop table #SymbolSection        
+END 
+
+IF OBJECT_ID('tempdb..#IE_AUA') IS NOT NULL              
+BEGIN       
+drop table #IE_AUA        
+END 
+
+
+IF OBJECT_ID('tempdb..#TRADE_DETAIL') IS NOT NULL              
+BEGIN       
+drop table #TRADE_DETAIL        
+END 
+
+
+	SELECT  	
+			A.RR_NUMBER AS REP_CD,
+			A.SECURITY_SYMBOL  as Symbol,
+            sum(CASE WHEN A.BUY_SELL_INDICATOR = 'B' THEN  1 ELSE  0 END) as Buys,
+			sum(CASE WHEN A.BUY_SELL_INDICATOR = 'S' THEN  1 ELSE  0 END) as Sells,
+			sum(A.TRADE_GROUP_GROSS_AMOUNT) as Transction_Trading_Gross_Amount,
+			sum(A.TRADE_GROUP_GROSS_AMOUNT+A.TRADE_GRP_COMM_ENTERED_CAD) as Transction_Trading_Net_Amount,
+
+            sum(CASE WHEN A.BUY_SELL_INDICATOR = 'B' THEN  1 ELSE  0 END) + sum(CASE WHEN A.BUY_SELL_INDICATOR = 'S' THEN  1 ELSE  0 END) as Total_Tran,
+			sum(CASE WHEN A.TRADE_GRP_COMM_ENTERED_CAD = 0 THEN  1 ELSE  0 END) AS NO_COMM_ENT,
+			sum(CASE WHEN A.TRADE_GRP_COMM_ENTERED_CAD &lt;&gt; 0 THEN  1 ELSE  0 END) AS COMM_ENT,
+			sum(A.TRADE_GRP_COMM_ENTERED_CAD) as CAD_Gross_Commission
+INTO #TRADE_DETAIL
+	FROM BACKOFFICE.CMSDT AS A
+			LEFT OUTER JOIN (
+								SELECT FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
+								FROM BACKOFFICE.CMSDT
+								WHERE 
+										TRADE_DATE &gt;= DATEADD(year, -1, @Qtr_End_DateSP)
+										AND CANCEL_INDICATOR = 'Y'
+										
+								GROUP BY  FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
+					) AS B 
+				ON  A.FMSL_ACCOUNT_NUMBER = B.FMSL_ACCOUNT_NUMBER 
+				AND A.SECURITY_SYMBOL = B.SECURITY_SYMBOL 
+				AND A.TRADE_DATE = B.TRADE_DATE
+                AND A.TICKET_NUMBER = B.TICKET_NUMBER
+		LEFT OUTER JOIN IAVM.rep
+			ON A.RR_NUMBER = rep.repId 
+	WHERE  A.BUY_SELL_INDICATOR  IN ('B','S')
+			AND B.SECURITY_SYMBOL IS NULL 	
+			AND A.PROCESS_DATE BETWEEN @Qtr_Start_DateSP and @Qtr_End_DateSP
+	GROUP BY A.SECURITY_SYMBOL
+			 ,A.RR_NUMBER
+
+  CREATE NONCLUSTERED INDEX IX_TRADE_DETAIL_symbol   
+    ON #TRADE_DETAIL (REP_CD, Symbol);   
 
 
 
-SELECT '10' as line,
-SUM(p.valueCAD) AS AMT
-into #ln10
+SELECT GrpLine, GrpName, Line, [Description]
+INTO #IEGroup
+FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP]
+GROUP BY GrpLine, GrpName, Line, [Description]
+
+--#IEGroup.GrpLine, #IEGroup.GrpName, #IEGroup.Line, #IEGroup.[Description]
+create table #IE_AUA
+(
+    line int, 
+AMT money null,
+Trades int null,
+no_comm int null,
+comm int null,
+
+)
+
+INSERT INTO #IE_AUA
+SELECT '10' as line, SUM(p.valueCAD) AS AMT, NULL AS Trades, NULL AS no_comm, NULL as comm
 from IAVM.position p
-inner join BACKOFFICE.IAVMACT a
-on p.accountId=a.A_C_ID
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
 WHERE  p.processDate=@processDateSP 
-and p.productCode ='CASH' 
-and  a.Client_Tax_Recip_Type in (1,2,3)
-and (a.A_C_Closing_Date is null or p.processDate &gt; a.A_C_Closing_Date)
+	and p.productCode ='CASH' 
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 GROUP BY p.processdate
 
 
-select a.line,a.TI_Symbol
-into #lnSymbol
-from
-(
-SELECT distinct
-		  m.TI_Alternate_TI_Class
-		 ,m.TI_Alternate_TI_Type
-		 ,m.TI_Symbol
-		 ,'13' as line
-		--into #ln13
-	  FROM BACKOFFICE.IAVMSM m
-	  where m.TI_Alternate_TI_Class='6000' or 
-	  (m.TI_Alternate_TI_Type='260' and m.TI_Alternate_TI_Class not in (
-	  select rclass.Class from REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
-	  where rclass.Line in('14','16')))
 
-union
+SELECT TI_Symbol 
+INTO #SymbolTemp
+FROM [iAS_Portal].[BACKOFFICE].[IAVMSM] 
+WHERE  TI_Alternate_TI_Class IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 11)
+AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+AND DATEDIFF(MONTH, @processDateSP, TI_Mat_Date) &lt;= 12
+GROUP BY TI_Symbol
 
-SELECT distinct
-		  m.TI_Alternate_TI_Class
-		 ,m.TI_Alternate_TI_Type
-		 ,m.TI_Symbol
-		 ,'14' as line
-		--into #ln14
-	  FROM BACKOFFICE.IAVMSM m
-	  where m.TI_Alternate_TI_Class in (
-	  select rclass.Class from REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
-	  where rclass.Line in('14'))
-	  or (m.TI_Alternate_TI_Type='220' and m.TI_Alternate_TI_Class='3010')
-
-union
-
-select distinct a.*
-from
-(
-SELECT distinct
-		  m.TI_Alternate_TI_Class
-		 ,m.TI_Alternate_TI_Type
-		 ,m.TI_Symbol
-		-- ,m.TI_CUSIP
-		 ,'18' as line
-		--into #ln18
-	  FROM BACKOFFICE.IAVMSM m
-	  where m.TI_Alternate_TI_Type in (
-	  select rclass.Type from REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
-	  where rclass.Line in('18'))   --220209
-) a
-left join [REPORTS].[INVESTOR_ECONOMICS_ETF_202106] etf --4038
-on a.TI_Symbol=etf.symbol-- and a.TI_CUSIP=etf.CUSIP
-where etf.symbol is null
-
-union
-SELECT distinct
-		  m.TI_Alternate_TI_Class
-		 ,m.TI_Alternate_TI_Type
-		 ,m.TI_Symbol
-		 ,'22' as line
-		--into #ln22
-	  FROM BACKOFFICE.IAVMSM m
-	  where m.TI_Alternate_TI_Type in (
-	  select rclass.Type from REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
-	  where rclass.Line in('22')) 
-	 
-union
-
---Line	Description	Class	Type	TypeAndClass	Comments
---27	Non-money market funds 	NULL	380	not in line 26	By Type = 380 class not in Money Market or seg funds and remove HISA
---7000 --26
---7850  -- 26
---400642
---396185
-SELECT distinct
-		  m.TI_Alternate_TI_Class
-		 ,m.TI_Alternate_TI_Type
-		 ,m.TI_Symbol
-		 ,'27' as line
-		--into #ln22
-	  FROM BACKOFFICE.IAVMSM m
-	  where m.TI_Alternate_TI_Type in (
-		  select rclass.Type from REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
-		  where rclass.Line in('27'))  
-	  and m.TI_Alternate_TI_class not in ('7000','7850')
-
-union
-
-SELECT distinct
-		  m.TI_Alternate_TI_Class
-		 ,m.TI_Alternate_TI_Type
-		 ,m.TI_Symbol
-		 ,'33' as line
-
-	  FROM BACKOFFICE.IAVMSM m
-	  where m.SPEC_INFORMATION Like '%PTF%'
-union
-
-SELECT distinct
-		  m.TI_Alternate_TI_Class,m.TI_Alternate_TI_Type
-		  ,m.TI_Symbol
-		  ,rclass.line --into #t4
-	  FROM BACKOFFICE.IAVMSM m
-	  INNER JOIN REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP rclass
-		ON rclass.class=m.TI_Alternate_TI_Class
-	  where rclass.line in('11','16','19','26','28','31','34')
-	  GROUP BY 
-		  m.TI_Alternate_TI_Class,m.TI_Alternate_TI_Type
-		  ,m.TI_Symbol
-		  ,rclass.line
-	  ) a
+  CREATE NONCLUSTERED INDEX IX_TempSymbolTemp_symbol   
+    ON #SymbolTemp (TI_Symbol);   
 
 
-CREATE NONCLUSTERED INDEX IX_Symbol_Investor_Economics   
-    ON #lnSymbol (TI_Symbol);   
+DELETE FROM #SymbolTemp WHERE TI_Symbol IN (
+										SELECT [Series_A] AS A
+										  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+										  WHERE [Series_A] IS NOT NULL
+										  GROUP BY [Series_A]
+  
+										  UNION ALL
 
---Declare @processDateSP as datetime
---set @processDateSP='2020-03-02'
-SELECT  ln.line
-		,sum(p.valueCAD) as AMT
-		into #lnSum
-FROM IAVM.position p
-LEFT JOIN BACKOFFICE.IAVMACT a 
-ON a.A_C_ID=p.accountId
-INNER JOIN #lnSymbol ln
+											SELECT [Series_F] AS A
+										  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+										  WHERE [Series_F] IS NOT NULL
+										  GROUP BY [Series_F]
+  
+										  UNION ALL
 
-ON ln.TI_Symbol = p.symbol
+											SELECT [OTH] AS A
+										  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+										  WHERE [OTH] IS NOT NULL
+										  GROUP BY [OTH]
+										)
 
+  	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Symbol] AS A
+												FROM [REPORTS].[INVESTOR_ECONOMICS_ETF_202106]
+												WHERE ISNULL(Symbol,'') &lt;&gt; ''
+												GROUP BY [Symbol])
+
+SELECT * 
+INTO #SymbolSection
+FROM #SymbolTemp 
+
+INSERT INTO #IE_AUA
+SELECT '11' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode &lt;&gt;'GIC' 
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+
+
+     
+TRUNCATE table #SymbolTemp         
+
+INSERT INTO #SymbolTemp
+SELECT TI_Symbol 
+FROM [iAS_Portal].[BACKOFFICE].[IAVMSM] 
+WHERE  (TI_Alternate_TI_Class IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 13)
+			OR   TI_Alternate_TI_Type IN (SELECT [Type] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 13))
+AND TI_Alternate_TI_Class NOT IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line IN (16,31))
+AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+GROUP BY TI_Symbol
+
+
+
+DELETE FROM #SymbolTemp WHERE TI_Symbol IN (
+										SELECT [Series_A] AS A
+										  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+										  WHERE [Series_A] IS NOT NULL
+										  GROUP BY [Series_A]
+  
+										  UNION ALL
+
+											SELECT [Series_F] AS A
+										  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+										  WHERE [Series_F] IS NOT NULL
+										  GROUP BY [Series_F]
+  
+										  UNION ALL
+
+											SELECT [OTH] AS A
+										  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+										  WHERE [OTH] IS NOT NULL
+										  GROUP BY [OTH]
+										)
+
+  	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Symbol] AS A
+												FROM [REPORTS].[INVESTOR_ECONOMICS_ETF_202106]
+												WHERE ISNULL(Symbol,'') &lt;&gt; ''
+												GROUP BY [Symbol])
+
+DELETE FROM #SymbolTemp WHERE TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+--Truncate Table #SymbolSection
+
+INSERT INTO #SymbolSection
+SELECT * 
+FROM #SymbolTemp 
+
+INSERT INTO #IE_AUA
+SELECT '13' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode &lt;&gt; 'GIC' 
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+INSERT INTO #IE_AUA
+SELECT '14' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode = 'GIC' 
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+INSERT INTO #SymbolSection
+SELECT p.symbol AS TI_Symbol
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode = 'GIC' 
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.symbol
+
+     
+TRUNCATE table #SymbolTemp         
+
+INSERT INTO #SymbolTemp
+SELECT TI_Symbol 
+FROM [iAS_Portal].[BACKOFFICE].[IAVMSM] 
+WHERE TI_Alternate_TI_Class IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 16)
+AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+GROUP BY TI_Symbol
+
+DELETE FROM #SymbolTemp WHERE TI_Symbol IN (
+										SELECT [Series_A] AS A
+										  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+										  WHERE [Series_A] IS NOT NULL
+										  GROUP BY [Series_A]
+  
+										  UNION ALL
+
+											SELECT [Series_F] AS A
+										  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+										  WHERE [Series_F] IS NOT NULL
+										  GROUP BY [Series_F]
+  
+										  UNION ALL
+
+											SELECT [OTH] AS A
+										  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+										  WHERE [OTH] IS NOT NULL
+										  GROUP BY [OTH]
+										)
+
+  	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Symbol] AS A
+												FROM [REPORTS].[INVESTOR_ECONOMICS_ETF_202106]
+												WHERE ISNULL(Symbol,'') &lt;&gt; ''
+												GROUP BY [Symbol])
+
+DELETE FROM #SymbolTemp WHERE TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '16' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode = 'FIX' 
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+
+--////EQUITIES 
+
+--TRUNCATE table #SymbolSection   
+     
+TRUNCATE table #SymbolTemp         
+
+INSERT INTO #SymbolTemp
+  SELECT TI_Symbol as symbol
+  FROM [iAS_Portal].[BACKOFFICE].[IAVMSM]
+  WHERE TI_Alternate_TI_Type IN (SELECT [Type] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 18)
+  AND TI_Alternate_TI_Class NOT IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line IN (19,31))
+  AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+  GROUP BY TI_Symbol
+
+
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Symbol] AS A
+												FROM [REPORTS].[INVESTOR_ECONOMICS_ETF_202106]
+												WHERE ISNULL(Symbol,'') &lt;&gt; ''
+												GROUP BY [Symbol])
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Series_A] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_A] IS NOT NULL
+				  GROUP BY [Series_A]
+  
+				  UNION ALL
+
+					SELECT [Series_F] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_F] IS NOT NULL
+				  GROUP BY [Series_F]
+  
+				  UNION ALL
+
+					SELECT [OTH] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [OTH] IS NOT NULL
+				  GROUP BY [OTH])
+
+
+
+DELETE from #SymbolTemp where TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '18' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode IN ('EQT','OPT')  
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+        
+TRUNCATE table #SymbolTemp   
+
+INSERT INTO #SymbolTemp
+SELECT TI_Symbol 
+FROM [iAS_Portal].[BACKOFFICE].[IAVMSM] 
 WHERE 
-	processDate=@processDateSP
-	AND a.Client_Tax_Recip_Type in (1,2,3) 
-	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
-GROUP BY	
-ln.line
-order BY	
-ln.line
-
----ETF
---Declare @processDateSP as datetime
---set @processDateSP='2020-03-02'
-SELECT  '20' as line
-		,sum(p.valueCAD) as AMT
-into #etf
-FROM IAVM.position p
-LEFT JOIN BACKOFFICE.IAVMACT a 
-ON a.A_C_ID=p.accountId
-INNER JOIN [REPORTS].[INVESTOR_ECONOMICS_ETF_202106] etf
-on p.symbol=etf.symbol
-
-WHERE 
-	processDate=@processDateSP
-	AND a.Client_Tax_Recip_Type in (1,2,3) 
-	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
+TI_Alternate_TI_Class IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 19)
+AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+GROUP BY TI_Symbol
 
 
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Symbol] AS A
+												FROM [REPORTS].[INVESTOR_ECONOMICS_ETF_202106]
+												WHERE ISNULL(Symbol,'') &lt;&gt; ''
+												GROUP BY [Symbol])
 
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Series_A] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_A] IS NOT NULL
+				  GROUP BY [Series_A]
+  
+				  UNION ALL
 
+					SELECT [Series_F] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_F] IS NOT NULL
+				  GROUP BY [Series_F]
+  
+				  UNION ALL
 
----HISA
-select distinct a.*
-into #hisa  from
-(
-select distinct series_A as symbol from [REPORTS].[INVESTOR_ECONOMICS_HISA_202106] 
-where series_a is not null
-union
-select distinct series_F as symbol from [REPORTS].[INVESTOR_ECONOMICS_HISA_202106] 
-where series_f is not null
-union
-select distinct oth as symbol from [REPORTS].[INVESTOR_ECONOMICS_HISA_202106] 
-where oth is not null
-) a
-
---Declare @processDateSP as datetime
---set @processDateSP='2020-03-02'
-SELECT  '29' as line 
-		,sum(p.valueCAD) as AMT
-into #ln29hisa
-FROM IAVM.position p
-LEFT JOIN BACKOFFICE.IAVMACT a 
-ON a.A_C_ID=p.accountId
-INNER JOIN #hisa hisa
-on p.symbol=hisa.symbol
-
-WHERE 
-	processDate=@processDateSP
-	AND a.Client_Tax_Recip_Type in (1,2,3) 
-	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
-
-select distinct a.grpline,a.grpName, a.line,a.Description,c.AMT--,a.Comments
-into #rptAmt
-from REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP a
-left join
-(
-select b.* from 
-(
-select * from #ln10
-union
-select * from #lnsum
-union
-select * from #etf
-union
-select * from #ln29hisa
-) b
-) c
-on a.line=c.line
-where a.line is not null
-
-----TRADES---------
-----TRADES---------
-
---drop table #lnSumTrades
---Declare @processDateSP as datetime
---set @processDateSP='2020-03-02'
---Declare @Qtr_Start_DateSP as datetime
---set @Qtr_Start_DateSP='2020-01-01'
-
-SELECT  ln.line
-		,count(@processDateSP) as trades
-	into #lnSumTrades
-FROM IAVM.position p
-LEFT JOIN BACKOFFICE.IAVMACT a 
-ON a.A_C_ID=p.accountId
-INNER JOIN #lnSymbol ln
-ON ln.TI_Symbol = p.symbol
-inner join [BACKOFFICE].[CMSDT] CMSDT
-on p.accountId=cmsdt.FMSL_ACCOUNT_NUMBER
-
-WHERE 
-	processDate=@processDateSP
-	AND a.Client_Tax_Recip_Type in (1,2,3)
-	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; @processDateSP)
-	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_DateSP And CMSDT.PROCESS_DATE &lt; @Qtr_End_DateSP-----&lt;@processDateSP + 1
-AND CMSDT.BUY_SELL_INDICATOR In ('B','S')
-AND CMSDT.CANCEL_INDICATOR&lt;&gt;'Y'
-
-
-GROUP BY	
-ln.line
-order BY	
-ln.line
-
-
---Declare @processDateSP as datetime
---set @processDateSP='2020-03-02'
---Declare @Qtr_Start_DateSP as datetime
---set @Qtr_Start_DateSP='2020-01-01'
-
-SELECT  '20' as line
-		,count(@processDateSP) as trades
-into #etfTrades
-FROM IAVM.position p
-LEFT JOIN BACKOFFICE.IAVMACT a 
-ON a.A_C_ID=p.accountId
-INNER JOIN [REPORTS].[INVESTOR_ECONOMICS_ETF_202106] etf
-on p.symbol=etf.symbol
-inner join [BACKOFFICE].[CMSDT] CMSDT
-on p.accountId=cmsdt.FMSL_ACCOUNT_NUMBER
-
-WHERE 
-	processDate=@processDateSP
-	AND a.Client_Tax_Recip_Type in (1,2,3)
-	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
-	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_DateSP And CMSDT.PROCESS_DATE &lt; @Qtr_End_DateSP -----&lt;@processDateSP + 1
-AND CMSDT.BUY_SELL_INDICATOR In ('B','S')
-AND CMSDT.CANCEL_INDICATOR&lt;&gt;'Y'
+					SELECT [OTH] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [OTH] IS NOT NULL
+				  GROUP BY [OTH])
 
 
 
+DELETE from #SymbolTemp where TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
 
 
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '19' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode IN ('EQT','OPT') 
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+    
+TRUNCATE table #SymbolTemp   
+
+INSERT INTO #SymbolTemp
+SELECT TI_Symbol 
+FROM [iAS_Portal].[BACKOFFICE].[IAVMSM] 
+WHERE
+TI_Symbol IN (
+
+    SELECT [Symbol] AS A
+    FROM [REPORTS].[INVESTOR_ECONOMICS_ETF_202106]
+	WHERE ISNULL(Symbol,'') &lt;&gt; ''
+	GROUP BY [Symbol]
+)
+AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+AND TI_Symbol NOT IN (SELECT TI_Symbol FROM #SymbolSection)
+GROUP BY TI_Symbol
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '20' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode IN ('EQT','OPT') 
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+   
+TRUNCATE table #SymbolTemp        
+
+	INSERT INTO #SymbolTemp
+  SELECT TI_Symbol as symbol
+  FROM [iAS_Portal].[BACKOFFICE].[IAVMSM]
+  WHERE TI_Alternate_TI_Type IN (SELECT [Type] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 22)
+  AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+  GROUP BY TI_Symbol
 
 
----HISA
---select distinct a.*
---into #hisa  from
---(
---select distinct series_A as symbol from [REPORTS].[INVESTOR_ECONOMICS_HISA_202106] 
---where series_a is not null
---union
---select distinct series_F as symbol from [REPORTS].[INVESTOR_ECONOMICS_HISA_202106] 
---where series_f is not null
---union
---select distinct oth as symbol from [REPORTS].[INVESTOR_ECONOMICS_HISA_202106] 
---where oth is not null
---) a
+  	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Symbol] AS A
+												FROM [REPORTS].[INVESTOR_ECONOMICS_ETF_202106]
+												WHERE ISNULL(Symbol,'') &lt;&gt; ''
+												GROUP BY [Symbol])
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Series_A] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_A] IS NOT NULL
+				  GROUP BY [Series_A]
+  
+				  UNION ALL
+
+					SELECT [Series_F] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_F] IS NOT NULL
+				  GROUP BY [Series_F]
+  
+				  UNION ALL
+
+					SELECT [OTH] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [OTH] IS NOT NULL
+				  GROUP BY [OTH])
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '22' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode IN ('EQT','OPT') 
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+--Mutual Funds - Stand-alone investment funds (not held as part of fund wrap)
 
 
---Declare @processDateSP as datetime
---set @processDateSP='2020-03-02'
---Declare @Qtr_Start_DateSP as datetime
---set @Qtr_Start_DateSP='2020-01-01'
+--TRUNCATE table #SymbolSection   
+     
+TRUNCATE table #SymbolTemp         
 
-SELECT  '29' as line 
-	,count(@processDateSP) as trades
-into #ln29hisaTrades
-FROM IAVM.position p
-LEFT JOIN BACKOFFICE.IAVMACT a 
-ON a.A_C_ID=p.accountId
-INNER JOIN #hisa hisa
-on p.symbol=hisa.symbol
-inner join [BACKOFFICE].[CMSDT] CMSDT
-on p.accountId=cmsdt.FMSL_ACCOUNT_NUMBER
-
-WHERE 
-	processDate=@processDateSP
-	AND a.Client_Tax_Recip_Type in (1,2,3)
-	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
-	and CMSDT.PROCESS_DATE &gt;=@Qtr_Start_DateSP And CMSDT.PROCESS_DATE &lt; '2021-03-30'-----&lt;@processDateSP + 1
-AND CMSDT.BUY_SELL_INDICATOR In ('B','S')
-AND CMSDT.CANCEL_INDICATOR&lt;&gt;'Y'
+INSERT INTO #SymbolTemp
+  SELECT TI_Symbol 
+  FROM [iAS_Portal].[BACKOFFICE].[IAVMSM]
+  WHERE TI_Alternate_TI_Class IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 26)
+		AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+		AND IAVMSM.SPEC_INFORMATION NOT Like '%PTF%'
+  GROUP BY TI_Symbol
 
 
 
 
-select distinct a.grpline,a.grpName, a.line,a.Description,c.trades--,a.Comments
-into #rptTrades
-from REPORTS.INVESTOR_ECONOMICS_CLASS_GROUP a
-left join
-(
-select b.* from 
-(
 
-select * from #lnsumTrades
-union
-select * from #etftrades
-union
-select * from #ln29hisatrades
-) b
-) c
-on a.line=c.line
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Series_A] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_A] IS NOT NULL
+				  GROUP BY [Series_A]
+  
+				  UNION ALL
 
---drop table #com
+					SELECT [Series_F] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_F] IS NOT NULL
+				  GROUP BY [Series_F]
+  
+				  UNION ALL
 
-select * 
-into #com
-from
-(
-SELECT '12' as grpline,'13' as line, count(*) as no_com,sum(case when TRADE_GRP_COMM_ENTERED &gt; 0 then 1 else 0 end) as com  
-FROM BACKOFFICE.CMSDT
-where SECURITY_GROUP_CODE in ('GIC','FIX')
-and CANCEL_INDICATOR = 'N'
-and BUY_SELL_INDICATOR !=''
-and Trade_date between @Qtr_Start_DateSP and @Qtr_End_DateSP
-union
-SELECT '17' as grpline,'18' as line, count(*) as no_com,sum(case when TRADE_GRP_COMM_ENTERED &gt; 0 then 1 else 0 end) as com 
-FROM BACKOFFICE.CMSDT
-where SECURITY_GROUP_CODE in ('EQT','OPT')
-and CANCEL_INDICATOR = 'N'
-and BUY_SELL_INDICATOR !=''
-and Trade_date between @Qtr_Start_DateSP and @Qtr_End_DateSP
-union
-SELECT '25' as grpline,'26' as line,count(*) as no_com,sum(case when TRADE_GRP_COMM_ENTERED &gt; 0 then 1 else 0 end) as com 
-FROM BACKOFFICE.CMSDT
-where SECURITY_GROUP_CODE in ('MUT')
-and CANCEL_INDICATOR = 'N'
-and BUY_SELL_INDICATOR !=''
-and Trade_date between @Qtr_Start_DateSP and @Qtr_End_DateSP
-union
-SELECT '26' as grpline,'27' as line,count(*) as no_com,0 as com  
-FROM BACKOFFICE.IAVMBK
-WHERE TRAN_PROCESS_DATE between @Qtr_Start_DateSP and @Qtr_End_DateSP
-and Tran_Entry_Description In ('PAC','AWD','SWP')
-and TI_Type = 'MF'
-) a
+					SELECT [OTH] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [OTH] IS NOT NULL
+				  GROUP BY [OTH])
+
+DELETE from #SymbolTemp where TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '26' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode IN ('MUT')  
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+ --
+TRUNCATE table #SymbolTemp         
+
+INSERT INTO #SymbolTemp
+  SELECT TI_Symbol 
+  FROM [iAS_Portal].[BACKOFFICE].[IAVMSM]
+  WHERE TI_Alternate_TI_Type IN (SELECT [Type] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 27)
+    AND TI_Alternate_TI_Class NOT IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 28)
+		AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+		AND IAVMSM.SPEC_INFORMATION NOT Like '%PTF%'
+  GROUP BY TI_Symbol
 
 
-select distinct a.*,case when a.grpline in(12,17,25) then b.trades else 0 end as trades, c.no_com,c.com--, 'x' as x
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Series_A] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_A] IS NOT NULL
+				  GROUP BY [Series_A]
+  
+				  UNION ALL
 
- from #rptAmt a
-inner join #rptTrades b
-on a.GrpLine=b.GrpLine 
-and  a.Line=b.Line 
-left join #com c
-on 
-a.Line=c.line
---where b.trades is not null</CommandText>
+					SELECT [Series_F] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_F] IS NOT NULL
+				  GROUP BY [Series_F]
+  
+				  UNION ALL
+
+					SELECT [OTH] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [OTH] IS NOT NULL
+				  GROUP BY [OTH])
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '27' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode IN ('MUT')  
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+ --
+TRUNCATE table #SymbolTemp         
+
+INSERT INTO #SymbolTemp
+  SELECT TI_Symbol 
+  FROM [iAS_Portal].[BACKOFFICE].[IAVMSM]
+  WHERE TI_Alternate_TI_Class  IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 28)
+		AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+		AND IAVMSM.SPEC_INFORMATION NOT Like '%PTF%'
+  GROUP BY TI_Symbol
+
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT [Series_A] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_A] IS NOT NULL
+				  GROUP BY [Series_A]
+  
+				  UNION ALL
+
+					SELECT [Series_F] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_F] IS NOT NULL
+				  GROUP BY [Series_F]
+  
+				  UNION ALL
+
+					SELECT [OTH] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [OTH] IS NOT NULL
+				  GROUP BY [OTH])
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '28' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode IN ('MUT')  
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+ --
+TRUNCATE table #SymbolTemp         
+
+INSERT INTO #SymbolTemp
+  SELECT TI_Symbol 
+  FROM [iAS_Portal].[BACKOFFICE].[IAVMSM]
+  WHERE TI_Symbol IN (SELECT [Series_A] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_A] IS NOT NULL
+				  GROUP BY [Series_A]
+  
+				  UNION ALL
+
+					SELECT [Series_F] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [Series_F] IS NOT NULL
+				  GROUP BY [Series_F]
+  
+				  UNION ALL
+
+					SELECT [OTH] AS A
+				  FROM [REPORTS].[INVESTOR_ECONOMICS_HISA_202106]
+				  WHERE [OTH] IS NOT NULL
+				  GROUP BY [OTH])
+		AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+  GROUP BY TI_Symbol
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '29' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	and p.productCode IN ('MUT')  
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+
+--Stuctured Notes
+TRUNCATE table #SymbolTemp         
+
+INSERT INTO #SymbolTemp
+  SELECT TI_Symbol 
+  FROM [iAS_Portal].[BACKOFFICE].[IAVMSM]
+  WHERE TI_Alternate_TI_Class IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 31)
+		AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+		AND IAVMSM.SPEC_INFORMATION NOT Like '%PTF%'
+		AND TI_Symbol NOT IN (SELECT TI_Symbol FROM #SymbolSection)
+  GROUP BY TI_Symbol
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '31' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	--and p.productCode IN ('MUT')  
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+
+--FUND WRAP
+TRUNCATE table #SymbolTemp         
+
+INSERT INTO #SymbolTemp
+  SELECT TI_Symbol 
+  FROM [iAS_Portal].[BACKOFFICE].[IAVMSM]
+  WHERE IAVMSM.SPEC_INFORMATION Like '%PTF%'
+		AND NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+  GROUP BY TI_Symbol
+
+	DELETE from #SymbolTemp where TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+
+INSERT into #SymbolSection
+SELECT TI_Symbol FROM #SymbolTemp
+
+INSERT INTO #IE_AUA
+SELECT '33' as line, SUM(p.valueCAD) AS AMT, SUM(Total_Tran) AS Trades, SUM(NO_COMM_ENT) AS no_comm, SUM(COMM_ENT) as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	INNER JOIN #SymbolTemp
+		ON p.symbol = #SymbolTemp.TI_Symbol
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP 
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	--and p.productCode IN ('MUT')  
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+GROUP BY p.processdate
+
+--OTHER
+--TRUNCATE table #SymbolTemp         
+
+--INSERT INTO #SymbolTemp
+--  SELECT TI_Symbol 
+--  FROM [iAS_Portal].[BACKOFFICE].[IAVMSM]
+--  WHERE NULLIF(LTRIM(RTRIM(TI_Symbol)),'') IS NOT NULL
+--  AND TI_Alternate_TI_Class IN (SELECT [Class] FROM [REPORTS].[INVESTOR_ECONOMICS_CLASS_GROUP] WHERE Line = 34)
+--  GROUP BY TI_Symbol
+
+--DELETE FROM #SymbolTemp WHERE TI_Symbol IN (SELECT TI_Symbol FROM #SymbolSection)
+
+--INSERT into #SymbolSection
+--SELECT TI_Symbol FROM #SymbolTemp
+
+
+--SELECT '34' as line, SUM(p.valueCAD) AS AMT
+--from IAVM.position p
+--	inner join BACKOFFICE.IAVMACT a
+--		on p.accountId=a.A_C_ID
+--	INNER JOIN IAVM.rep
+--		ON p.repId = rep.repId
+--	INNER JOIN #SymbolTemp
+--		ON p.symbol = #SymbolTemp.TI_Symbol
+--WHERE  p.processDate=@processDateSP 
+--	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+--	--and p.productCode IN ('MUT')  
+--		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+--	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+--GROUP BY p.processdate
+
+
+--SELECT '34' as line, SUM(p.valueCAD) AS AMT
+--from IAVM.position p
+--	inner join BACKOFFICE.IAVMACT a
+--		on p.accountId=a.A_C_ID
+--	INNER JOIN IAVM.rep
+--		ON p.repId = rep.repId
+--WHERE  p.processDate=@processDateSP 
+--	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+--	--and p.productCode NOT IN ('CASH')  
+--		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+--	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+--	AND symbol not IN (SELECT TI_Symbol FROM #SymbolSection)
+--	AND NULLIF(symbol,'') IS NOT NULL
+--GROUP BY p.processdate
+
+DECLARE @AUA_Total as money, @comm as int, @non_comm as int, @trades as int
+SELECT @AUA_Total=SUM(AMT) 
+,@trades=SUM(Trades)
+,@non_comm=SUM(no_comm)
+,@comm=SUM(comm)
+FROM #IE_AUA
+
+INSERT INTO #IE_AUA
+SELECT '34' as line, SUM(p.valueCAD)-@AUA_Total AS AMT, SUM(Total_Tran)-@trades AS Trades, SUM(NO_COMM_ENT)-@non_comm AS no_comm, SUM(COMM_ENT)-@comm as comm
+from IAVM.position p
+	inner join BACKOFFICE.IAVMACT a
+		on p.accountId=a.A_C_ID
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
+	LEFT OUTER JOIN #TRADE_DETAIL  
+		ON p.repId = #TRADE_DETAIL.REP_CD
+		AND p.symbol = #TRADE_DETAIL.Symbol
+WHERE  p.processDate=@processDateSP
+	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
+	--and p.productCode IN ('MUT')  
+		AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
+
+
+
+--SELECT * FROM #IE_AUA
+SELECT #IEGroup.GrpLine AS grpline, #IEGroup.GrpName AS grpName, #IEGroup.Line as line, #IEGroup.[Description] 
+,#IE_AUA.AMT, #IE_AUA.Trades as trades, #IE_AUA.no_comm, #IE_AUA.comm
+FROM #IEGroup
+		LEFT OUTER JOIN #IE_AUA
+			ON #IEGroup.Line = #IE_AUA.line
+
+
+</CommandText>
       </Query>
       <Fields>
         <Field Name="grpline">
@@ -521,12 +998,12 @@ a.Line=c.line
           <DataField>trades</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
-        <Field Name="no_com">
-          <DataField>no_com</DataField>
+        <Field Name="no_comm">
+          <DataField>no_comm</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
-        <Field Name="com">
-          <DataField>com</DataField>
+        <Field Name="comm">
+          <DataField>comm</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
@@ -556,11 +1033,14 @@ LEFT JOIN BACKOFFICE.IAVMACT a
 ON a.A_C_ID=p.accountId
 INNER JOIN [REPORTS].[INVESTOR_ECONOMICS_REGION_GROUP] reg
 on reg.region=a.Client_Residence_Region
-
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
 WHERE 
 	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in(1,2,3)
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
+			AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
 GROUP BY	
 	reg.Region_Group, reg.sort
 
@@ -609,12 +1089,14 @@ SELECT  a.ASC_1_RESP_Plan_Types
 FROM IAVM.position p
 LEFT JOIN BACKOFFICE.IAVMACT a 
 ON a.A_C_ID=p.accountId
-
+	INNER JOIN IAVM.rep
+		ON p.repId = rep.repId
 WHERE 
 	processDate=@processDateSP
 	AND a.Client_Tax_Recip_Type in(1,2,3)
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
-
+			AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
 
 GROUP BY	
 	a.ASC_1_RESP_Plan_Types
@@ -1129,7 +1611,7 @@ or Fields!grpline.Value=25
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=max(Fields!no_com.Value)</Value>
+                                  <Value>=max(Fields!no_comm.Value)</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontWeight>Bold</FontWeight>
@@ -1178,7 +1660,7 @@ or Fields!grpline.Value=25
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=max(Fields!com.Value)</Value>
+                                  <Value>=max(Fields!comm.Value)</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontWeight>Bold</FontWeight>
@@ -1391,7 +1873,7 @@ or Fields!grpline.Value=25
                               <TextRuns>
                                 <TextRun>
                                   <Value>=IIf((Fields!line.Value = "26" or Fields!line.Value = "27" ),
-Fields!no_com.Value,"")</Value>
+Fields!no_comm.Value,"")</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
@@ -1435,7 +1917,7 @@ Fields!no_com.Value,"")</Value>
                               <TextRuns>
                                 <TextRun>
                                   <Value>=IIf((Fields!line.Value = "26" or Fields!line.Value = "27" ),
-Fields!com.Value,"")</Value>
+Fields!comm.Value,"")</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
@@ -2710,6 +3192,7 @@ Fields!com.Value,"")</Value>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
