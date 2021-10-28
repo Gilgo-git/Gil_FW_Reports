@@ -1018,7 +1018,7 @@ FROM #IEGroup
         </QueryParameters>
         <CommandText>
 --Declare @processDate as datetime
---set @processDate='2021-07-01'
+--set @processDate='2021-09-30'
 
 Declare @processDateSP as datetime
 set @processDateSP=@processDate
@@ -1031,15 +1031,38 @@ SELECT  reg.region_group
 FROM IAVM.position p
 LEFT JOIN BACKOFFICE.IAVMACT a 
 ON a.A_C_ID=p.accountId
-INNER JOIN [REPORTS].[INVESTOR_ECONOMICS_REGION_GROUP] reg
-on reg.region=a.Client_Residence_Region
 	INNER JOIN IAVM.rep
 		ON p.repId = rep.repId
+LEFT OUTER JOIN [REPORTS].[INVESTOR_ECONOMICS_REGION_GROUP] reg
+on reg.region= CASE WHEN 
+			CASE WHEN rep.branchCode like '%_%' THEN left(rep.branchCode, charindex('_', rep.branchCode) - 1) ELSE 'QUEBEC' END = 'NSCOTIA'
+	   THEN 'NS'
+	   WHEN 
+			CASE WHEN rep.branchCode like '%_%' THEN left(rep.branchCode, charindex('_', rep.branchCode) - 1) ELSE 'QUEBEC' END = 'ALBERTA'
+	   THEN 'AB'
+	   WHEN 
+			CASE WHEN rep.branchCode like '%_%' THEN left(rep.branchCode, charindex('_', rep.branchCode) - 1) ELSE 'QUEBEC' END = 'MANITOBA'
+	   THEN 'MB'
+	   WHEN 
+			CASE WHEN rep.branchCode like '%_%' THEN left(rep.branchCode, charindex('_', rep.branchCode) - 1) ELSE 'QUEBEC' END = 'ONTARIO'
+	   THEN 'ON'
+  	   WHEN 
+			CASE WHEN rep.branchCode like '%_%' THEN left(rep.branchCode, charindex('_', rep.branchCode) - 1) ELSE 'QUEBEC' END = 'BCOLUMBIA'
+	   THEN 'BC'
+	   WHEN 
+			CASE WHEN rep.branchCode like '%_%' THEN left(rep.branchCode, charindex('_', rep.branchCode) - 1) ELSE 'QUEBEC' END = 'SASKATCHEWAN'
+	   THEN 'SK'
+	   WHEN 
+			CASE WHEN rep.branchCode like '%_%' THEN left(rep.branchCode, charindex('_', rep.branchCode) - 1) ELSE 'QUEBEC' END = 'QUEBEC'
+	   THEN 'QC'
+	   ELSE 'ON' END
+ 
+
 WHERE 
 	processDate=@processDateSP
-	AND a.Client_Tax_Recip_Type in(1,2,3)
+	--AND a.Client_Tax_Recip_Type in(1,2,3)
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
-			AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE 'IAVM%'
 	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
 GROUP BY	
 	reg.Region_Group, reg.sort
@@ -1071,15 +1094,16 @@ ORDER BY
           </QueryParameter>
         </QueryParameters>
         <CommandText>--Declare @processDate as datetime
---set @processDate='2021-07-01'
+--set @processDate='2021-09-30'
 
 Declare @processDateSP as datetime
 set @processDateSP=@processDate
 
+
 select Tax_Group,tax.Tax_Type,tax.Sort, sum(a.amt) as amt,sum(a.numOfAccounts) as numOfAccounts,'x' as x
 from REPORTS.INVESTOR_ECONOMICS_TAX_GROUP tax
 
-left join
+LEFT join
 (
 
 SELECT  a.ASC_1_RESP_Plan_Types
@@ -1093,9 +1117,9 @@ ON a.A_C_ID=p.accountId
 		ON p.repId = rep.repId
 WHERE 
 	processDate=@processDateSP
-	AND a.Client_Tax_Recip_Type in(1,2,3)
+	--AND a.Client_Tax_Recip_Type in(1,2,3)
 	AND (a.A_C_Closing_Date IS NULL OR a.A_C_Closing_Date &gt; processDate)
-			AND UPPER(rep.repName) NOT LIKE 'IAVM%'
+	AND UPPER(rep.repName) NOT LIKE 'IAVM%'
 	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
 
 GROUP BY	
@@ -3192,7 +3216,6 @@ Fields!comm.Value,"")</Value>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
