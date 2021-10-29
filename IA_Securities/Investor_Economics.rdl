@@ -69,7 +69,8 @@ END
 
 
 	SELECT  	
-			A.RR_NUMBER AS REP_CD,
+			--A.RR_NUMBER AS REP_CD,
+			A.FMSL_ACCOUNT_NUMBER AS ACT_ID,
 			A.SECURITY_SYMBOL  as Symbol,
             sum(CASE WHEN A.BUY_SELL_INDICATOR = 'B' THEN  1 ELSE  0 END) as Buys,
 			sum(CASE WHEN A.BUY_SELL_INDICATOR = 'S' THEN  1 ELSE  0 END) as Sells,
@@ -101,10 +102,11 @@ INTO #TRADE_DETAIL
 			AND B.SECURITY_SYMBOL IS NULL 	
 			AND A.PROCESS_DATE BETWEEN @Qtr_Start_DateSP and @Qtr_End_DateSP
 	GROUP BY A.SECURITY_SYMBOL
-			 ,A.RR_NUMBER
+			,A.FMSL_ACCOUNT_NUMBER
+			 --,A.RR_NUMBER
 
   CREATE NONCLUSTERED INDEX IX_TRADE_DETAIL_symbol   
-    ON #TRADE_DETAIL (REP_CD, Symbol);   
+    ON #TRADE_DETAIL (ACT_ID, Symbol);   
 
 
 
@@ -192,8 +194,8 @@ from IAVM.position p
 	INNER JOIN IAVM.rep
 		ON p.repId = rep.repId
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode &lt;&gt;'GIC' 
@@ -261,8 +263,8 @@ from IAVM.position p
 	INNER JOIN IAVM.rep
 		ON p.repId = rep.repId
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode &lt;&gt; 'GIC' 
@@ -278,8 +280,8 @@ from IAVM.position p
 	INNER JOIN IAVM.rep
 		ON p.repId = rep.repId
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode = 'GIC' 
@@ -352,8 +354,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode = 'FIX' 
@@ -419,8 +421,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode IN ('EQT','OPT')  
@@ -482,8 +484,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode IN ('EQT','OPT') 
@@ -522,8 +524,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode IN ('EQT','OPT') 
@@ -581,8 +583,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode IN ('EQT','OPT') 
@@ -643,8 +645,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode IN ('MUT')  
@@ -700,8 +702,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode IN ('MUT')  
@@ -756,8 +758,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode IN ('MUT')  
@@ -808,8 +810,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	and p.productCode IN ('MUT')  
@@ -846,8 +848,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	--and p.productCode IN ('MUT')  
@@ -882,8 +884,8 @@ from IAVM.position p
 	INNER JOIN #SymbolTemp
 		ON p.symbol = #SymbolTemp.TI_Symbol
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP 
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	--and p.productCode IN ('MUT')  
@@ -953,8 +955,8 @@ from IAVM.position p
 	INNER JOIN IAVM.rep
 		ON p.repId = rep.repId
 	LEFT OUTER JOIN #TRADE_DETAIL  
-		ON p.repId = #TRADE_DETAIL.REP_CD
-		AND p.symbol = #TRADE_DETAIL.Symbol
+		ON p.symbol = #TRADE_DETAIL.Symbol
+		AND p.accountId = #TRADE_DETAIL.ACT_ID
 WHERE  p.processDate=@processDateSP
 	and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 	--and p.productCode IN ('MUT')  
@@ -969,7 +971,6 @@ SELECT #IEGroup.GrpLine AS grpline, #IEGroup.GrpName AS grpName, #IEGroup.Line a
 FROM #IEGroup
 		LEFT OUTER JOIN #IE_AUA
 			ON #IEGroup.Line = #IE_AUA.line
-
 
 </CommandText>
       </Query>
