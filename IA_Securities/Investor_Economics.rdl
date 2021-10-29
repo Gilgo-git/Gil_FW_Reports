@@ -154,13 +154,15 @@ Declare @processDateSP as datetime
 set @processDateSP=@processDate
 
 
+
+
 select Tax_Group,tax.Tax_Type,tax.Sort, sum(a.amt) as amt,sum(a.numOfAccounts) as numOfAccounts,'x' as x
 from REPORTS.INVESTOR_ECONOMICS_TAX_GROUP tax
 
 LEFT join
 (
 
-SELECT  a.ASC_1_RESP_Plan_Types
+SELECT  RIGHT(a.A_C_ID, 1) AS ASC_1_RESP_Plan_Types
 		,sum(p.valueCAD) as AMT
 		,count(distinct a.A_C_ID) as numOfAccounts
 
@@ -177,7 +179,7 @@ WHERE
 	AND UPPER(rep.repName) NOT LIKE '%HOUSE%'
 
 GROUP BY	
-	a.ASC_1_RESP_Plan_Types
+	RIGHT(a.A_C_ID, 1)
 ) a
 on tax.RAP_Code=a.ASC_1_RESP_Plan_Types
 where tax.Tax_Group is not null
