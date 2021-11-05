@@ -19105,7 +19105,7 @@ WHERE
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=CStr(Globals!ReportName)+" as of "+CStr(FORMAT(Now(),"yyyy-MM-dd"))</Value>
+                      <Value>=CStr(Globals!ReportName)+" From "+CStr(FORMAT(Parameters!StartDate.Value,"yyyy-MM-dd"))+ " To "+CStr(FORMAT(Parameters!EndDate.Value,"yyyy-MM-dd"))</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>15pt</FontSize>
