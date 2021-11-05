@@ -116,64 +116,67 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
     <DataSet Name="CertsReps">
       <Query>
         <DataSourceName>CERTS</DataSourceName>
-        <CommandText>SELECT	  
-		 			
-		   rep.repCode       [repCode],
-		   rep.repName    [repName],
-		
-	 CASE 
-				WHEN E.[LANGUAGE_ID] = 'E'		THEN 'English'
-				WHEN E.[LANGUAGE_ID] = 'F'		THEN 'French'
-				WHEN E.[LANGUAGE_ID] = 'E/F'	THEN 'English and French'
-				ELSE 'English'
-		  END AS [Language]		
-	, E.ACTIVE_YN [IsActive]
-
-	, RTRIM (EE.PHONE_NUMBER_TX)    [Email]
-	
-	INTO #Emp
-
-FROM EMPLOYEE E
-INNER JOIN 	 EmpRepCode rep ON  rep.eid = E.EMPLOYEE_ID
--- -------------email
-LEFT JOIN EmpPrimary                PEM
-on  PEM.eid = E.EMPLOYEE_ID
-and PEM.typ = 'E'                         -- email
-and PEM.src = 'E'                         -- employee
-LEFT JOIN EMPLOYEE_PHONE     EE on EE.RT_USER_PHONE_ID = PEM.ref
-
-
-
-
-WHERE 
-E.ACTIVE_YN = 'Y'
---and  rep.repCode  IN ('SGHK','SS8Y')
-
-
-
-	SELECT repCode  ,[repName],Language,
-  STUFF((SELECT DISTINCT ','  + Email 
-         FROM  #Emp t2
-         WHERE t1.repCode = t2.repCode
-            FOR XML PATH(''), TYPE
-            ).value('.', 'NVARCHAR(MAX)') 
-        ,1,1,'') Email
-FROM  #Emp t1
-Group BY repCode,[repName],Language  ;
-
-DROP TABLE #Emp</CommandText>
+        <CommandText>EXEC rep.[IAS.getRepInfo]</CommandText>
       </Query>
       <Fields>
-        <Field Name="repCode">
-          <DataField>repCode</DataField>
+        <Field Name="RepCode">
+          <DataField>RepCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="repName">
-          <DataField>repName</DataField>
+        <Field Name="RepName">
+          <DataField>RepName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Email">
-          <DataField>Email</DataField>
+        <Field Name="RepStartDate">
+          <DataField>RepStartDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RepEndDate">
+          <DataField>RepEndDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RepEmail">
+          <DataField>RepEmail</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="isActive">
+          <DataField>isActive</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CBM">
+          <DataField>CBM</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RVP">
+          <DataField>RVP</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchNRD">
+          <DataField>BranchNRD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchName">
+          <DataField>BranchName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchAddress1">
+          <DataField>BranchAddress1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchAddress2">
+          <DataField>BranchAddress2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchCity">
+          <DataField>BranchCity</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchProvince">
+          <DataField>BranchProvince</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchPostalCode">
+          <DataField>BranchPostalCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Language">
@@ -1290,7 +1293,7 @@ DROP TABLE #Emp</CommandText>
                                   <Paragraph>
                                     <TextRuns>
                                       <TextRun>
-                                        <Value>=RTrim(LTrim(Lookup(Fields!repId.Value, Fields!repCode.Value, Fields!repName.Value, "CertsReps")))</Value>
+                                        <Value>=RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps")))</Value>
                                         <Style>
                                           <FontFamily>Calibri Light</FontFamily>
                                           <FontSize>9pt</FontSize>
@@ -1326,7 +1329,7 @@ DROP TABLE #Emp</CommandText>
                                       <Paragraph>
                                         <TextRuns>
                                           <TextRun>
-                                            <Value>=RTrim(LTrim(Lookup(Fields!repId.Value, Fields!repCode.Value, Fields!Language.Value, "CertsReps")))</Value>
+                                            <Value>=RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!Language.Value, "CertsReps")))</Value>
                                             <Style>
                                               <FontFamily>Calibri Light</FontFamily>
                                               <FontSize>9pt</FontSize>
@@ -1348,6 +1351,7 @@ DROP TABLE #Emp</CommandText>
                                       <PaddingBottom>2pt</PaddingBottom>
                                     </Style>
                                   </Textbox>
+                                  <rd:Selected>true</rd:Selected>
                                 </CellContents>
                               </TablixHeader>
                               <TablixMembers>
@@ -1362,7 +1366,7 @@ DROP TABLE #Emp</CommandText>
                                           <Paragraph>
                                             <TextRuns>
                                               <TextRun>
-                                                <Value>=RTrim(LTrim(Lookup(Fields!repId.Value, Fields!repCode.Value, Fields!Email.Value, "CertsReps")))</Value>
+                                                <Value>=RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepEmail.Value, "CertsReps")))</Value>
                                                 <Style>
                                                   <FontFamily>Calibri Light</FontFamily>
                                                   <FontSize>9pt</FontSize>
