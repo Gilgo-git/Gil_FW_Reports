@@ -1215,8 +1215,8 @@ act.A_C_ID
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>--DECLARE @StartDate AS DATE = '2021-11-04'
---DECLARE @EndDate AS DATE = '2021-11-05'
+        <CommandText>--DECLARE @StartDate AS DATE = '2021-09-13'
+--DECLARE @EndDate AS DATE = '2021-09-13'
 
 SELECT DISTINCT 
 act.A_C_Representative 'Representative Code',
@@ -1228,11 +1228,11 @@ act.Client_Name as 'Client Name',
 act.Client_First_Name as 'Client First Name',
 act.Client_Name_Initial as 'Client Initial',
 act.Client_Last_Name as 'Client Last Name',
-CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END as Low,
-CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END as Medium,
-CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END as High,
-CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END as Speculative,
-CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 'Risk Tolerance Total',
+CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE NULL END as Low,
+CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE NULL END as Medium,
+CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE NULL END as High,
+CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE NULL END as Speculative,
+CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 'Risk Tolerance Total',
 --if (substring(act.Risk_Tolerance, 1, 12) like '%L%', cast(substring(act.Risk_Tolerance, LOCATE('L', act.Risk_Tolerance)+1, 2) as DECIMAL), '') as Low,
 --if (substring(act.Risk_Tolerance, 1, 12) like '%M%', cast(substring(act.Risk_Tolerance, LOCATE('M', act.Risk_Tolerance)+1, 2) as DECIMAL), '') as Medium,
 --if (substring(act.Risk_Tolerance, 1, 12) like '%H%', cast(substring(act.Risk_Tolerance, LOCATE('H', act.Risk_Tolerance)+1, 2) as DECIMAL), '') as High,
@@ -1240,20 +1240,20 @@ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(ac
 --if (substring(act.Risk_Tolerance, 1, 12) like '%L%', cast(substring(act.Risk_Tolerance, LOCATE('L', act.Risk_Tolerance)+1, 2) as DECIMAL), '') + if (substring(act.Risk_Tolerance, 1, 12) like '%M%', cast(substring(act.Risk_Tolerance, LOCATE('M', act.Risk_Tolerance)+1, 2) as DECIMAL), '') + if (substring(act.Risk_Tolerance, 1, 12) like '%H%', cast(substring(act.Risk_Tolerance, LOCATE('H', act.Risk_Tolerance)+1, 2) as DECIMAL), '') + if (substring(act.Risk_Tolerance, 1, 12) like '%S%', cast(substring(act.Risk_Tolerance, LOCATE('S', act.Risk_Tolerance)+1, 2) as DECIMAL), '') 'Risk Tolerance Total',
 act.Risk_Tolerance 'Risk Tolerance',
 CASE WHEN 
-		CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '99' 
+		CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '99' 
 		
-		and CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '100' THEN  'Warning: Incorrect Total Detected' ELSE '' END as Risk_Validation,
-CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END as Cash_Equivalent,
-CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END as Income,
-CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END as Growth,
-CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END as Speculation,
-CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 'Objective Total',
+		and CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '100' THEN  'Warning: Incorrect Total Detected' ELSE '' END as Risk_Validation,
+CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE NULL END as Cash_Equivalent,
+CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE NULL END as Income,
+CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE NULL END as Growth,
+CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE NULL END as Speculation,
+CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 'Objective Total',
 
 --if (if (substring(act.Risk_Tolerance, 1, 12) like '%L%', cast(substring(act.Risk_Tolerance, LOCATE('L', act.Risk_Tolerance)+1, 2) as DECIMAL), '') + if (substring(act.Risk_Tolerance, 1, 12) like '%M%', cast(substring(act.Risk_Tolerance, LOCATE('M', act.Risk_Tolerance)+1, 2) as DECIMAL), '') + if (substring(act.Risk_Tolerance, 1, 12) like '%H%', cast(substring(act.Risk_Tolerance, LOCATE('H', act.Risk_Tolerance)+1, 2) as DECIMAL), '') + if (substring(act.Risk_Tolerance, 1, 12) like '%S%', cast(substring(act.Risk_Tolerance, LOCATE('S', act.Risk_Tolerance)+1, 2) as DECIMAL), '') &lt;&gt; '99' and if (substring(act.Risk_Tolerance, 1, 12) like '%L%', cast(substring(act.Risk_Tolerance, LOCATE('L', act.Risk_Tolerance)+1, 2) as DECIMAL), '') + if (substring(act.Risk_Tolerance, 1, 12) like '%M%', cast(substring(act.Risk_Tolerance, LOCATE('M', act.Risk_Tolerance)+1, 2) as DECIMAL), '') + if (substring(act.Risk_Tolerance, 1, 12) like '%H%', cast(substring(act.Risk_Tolerance, LOCATE('H', act.Risk_Tolerance)+1, 2) as DECIMAL), '') + if (substring(act.Risk_Tolerance, 1, 12) like '%S%', cast(substring(act.Risk_Tolerance, LOCATE('S', act.Risk_Tolerance)+1, 2) as DECIMAL), '') &lt;&gt; '100', 'Warning: Incorrect Total Detected', '') as Risk_Validation,
 --if (substring(act.Ivt_Obj_Cde, 1, 15) like '%M%', cast(substring(act.Ivt_Obj_Cde, LOCATE('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') as Cash_Equivalent,
@@ -1263,15 +1263,15 @@ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.I
 --if (substring(act.Ivt_Obj_Cde, 1, 15) like '%M%', cast(substring(act.Ivt_Obj_Cde, LOCATE('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') + if (substring(act.Ivt_Obj_Cde, 1, 15) like '%B%', cast(substring(act.Ivt_Obj_Cde, LOCATE('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') + if (substring(act.Ivt_Obj_Cde, 1, 15) like '%G%', cast(substring(act.Ivt_Obj_Cde, LOCATE('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') + if (substring(act.Ivt_Obj_Cde, 1, 15) like '%S%', cast(substring(act.Ivt_Obj_Cde, LOCATE('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') 'Objective Total',
 act.Ivt_Obj_Cde 'Investment Objective',
 CASE WHEN 
-	CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '99' 
+	CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '99' 
 	
-	and CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '100' THEN  'Warning: Invalid Value Detected' ELSE '' END as Objective_Validation,
+	and CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '100' THEN  'Warning: Invalid Value Detected' ELSE '' END as Objective_Validation,
 
 --if (if (substring(act.Ivt_Obj_Cde, 1, 15) like '%M%', cast(substring(act.Ivt_Obj_Cde, LOCATE('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') + if (substring(act.Ivt_Obj_Cde, 1, 15) like '%B%', cast(substring(act.Ivt_Obj_Cde, LOCATE('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') + if (substring(act.Ivt_Obj_Cde, 1, 15) like '%G%', cast(substring(act.Ivt_Obj_Cde, LOCATE('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') + if (substring(act.Ivt_Obj_Cde, 1, 15) like '%S%', cast(substring(act.Ivt_Obj_Cde, LOCATE('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') &lt;&gt; '99' and if (substring(act.Ivt_Obj_Cde, 1, 15) like '%M%', cast(substring(act.Ivt_Obj_Cde, LOCATE('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') + if (substring(act.Ivt_Obj_Cde, 1, 15) like '%B%', cast(substring(act.Ivt_Obj_Cde, LOCATE('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') + if (substring(act.Ivt_Obj_Cde, 1, 15) like '%G%', cast(substring(act.Ivt_Obj_Cde, LOCATE('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') + if (substring(act.Ivt_Obj_Cde, 1, 15) like '%S%', cast(substring(act.Ivt_Obj_Cde, LOCATE('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL), '') &lt;&gt; '100', 'Warning: Invalid Value Detected', '') as Objective_Validation,
 act.A_C_LAST_UPDATE_DATE as 'Last Update Date',
@@ -1286,11 +1286,32 @@ Inner Join IAVM.rep rep on act.A_C_Representative = rep.repId
 Join BACKOFFICE.IAVMDOC doc on act.Client = doc.Client
 
 Where act.A_C_Closing_Date IS NULL and
-(CASE WHEN CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' then  cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '99' and CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '100' THEN 'Warning: Incorrect Total Detected' ELSE '' END &lt;&gt; '' 
+(CASE WHEN
+	CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' 
+		THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' 
+		THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' 
+		then  cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' 
+		THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '99' 
+		
+	and CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' 
+			THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' 
+			THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' 
+			THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' 
+			THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '100' 
+			
+	THEN 'Warning: Incorrect Total Detected' ELSE '' END &lt;&gt; '' 
 or CASE WHEN 
-	CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE  '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN  cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '99' and CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE  '' END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '100' THEN 'Warning: Invalid Value Detected' ELSE '' END &lt;&gt; '') and
+	CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE  0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN  cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '99' and CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE  0 END + CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '100' THEN 'Warning: Invalid Value Detected' ELSE '' END &lt;&gt; '') and rep.activeInd &lt;&gt; 1 and
+
 rep.activeInd &lt;&gt; 1 and
 act.Client_Tax_Recip_Type &lt;&gt; '0' and
 LEN(act.A_C_ID) &gt; '2' and
@@ -1307,27 +1328,26 @@ CONVERT(Date, act.A_C_LAST_UPDATE_DATE) BETWEEN @StartDate AND @EndDate
 --Risk_Validation DESC,
 --Objective_Validation DESC
 ORDER BY CASE WHEN 
-		CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '99' 
+		CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '99' 
 		
-		and CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END 
-		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '100' THEN  'Warning: Incorrect Total Detected' ELSE '' END DESC 
+		and CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%L%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('L', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%M%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('M', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%H%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('H', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END 
+		+ CASE WHEN substring(act.Risk_Tolerance, 1, 12) like '%S%' THEN cast(substring(act.Risk_Tolerance, CHARINDEX('S', act.Risk_Tolerance)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '100' THEN  'Warning: Incorrect Total Detected' ELSE '' END DESC 
 
 ,CASE WHEN 
-	CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '99' 
+	CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '99' 
 	
-	and CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END 
-	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE '' END &lt;&gt; '100' THEN  'Warning: Invalid Value Detected' ELSE '' END DESC
-</CommandText>
+	and CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%M%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('M', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%B%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('B', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%G%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('G', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END 
+	+ CASE WHEN substring(act.Ivt_Obj_Cde, 1, 15) like '%S%' THEN cast(substring(act.Ivt_Obj_Cde, CHARINDEX('S', act.Ivt_Obj_Cde)+1, 2) as DECIMAL) ELSE 0 END &lt;&gt; '100' THEN  'Warning: Invalid Value Detected' ELSE '' END DESC</CommandText>
       </Query>
       <Fields>
         <Field Name="Representative_Code">
