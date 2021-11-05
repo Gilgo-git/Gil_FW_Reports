@@ -47,7 +47,8 @@ rep.branchCode,
 CASE WHEN (rep.branchCode =' ' Or rep.branchCode IS NULL) THEN  ' ' 
 	     ELSE
 	    LEFT(rep.branchCode,(CHARINDEX('_', rep.branchCode)-1)) 
-		END AS Branch
+		END AS Branch,
+rep.repName
 from IAVM.position p
 inner join BACKOFFICE.IAVMACT a
 on p.accountId=a.A_C_ID
@@ -95,6 +96,10 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
         </Field>
         <Field Name="Branch">
           <DataField>Branch</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="repName">
+          <DataField>repName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -313,24 +318,26 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox95">
+                        <Textbox Name="processDate3">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
+                                  <Value>=Fields!processDate.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Format>dd-MMM-yyyy</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox95</rd:DefaultName>
+                          <rd:DefaultName>processDate</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -342,28 +349,30 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox98">
+                        <Textbox Name="Branch3">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
+                                  <Value>=Fields!Branch.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox98</rd:DefaultName>
+                          <rd:DefaultName>Branch</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -375,6 +384,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -390,6 +400,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -408,6 +419,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
@@ -1059,6 +1071,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                     <Style>
                                       <FontFamily>Calibri Light</FontFamily>
                                       <FontSize>9pt</FontSize>
+                                      <FontWeight>Bold</FontWeight>
                                     </Style>
                                   </TextRun>
                                 </TextRuns>
@@ -1077,6 +1090,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                               <PaddingBottom>2pt</PaddingBottom>
                             </Style>
                           </Textbox>
+                          <rd:Selected>true</rd:Selected>
                         </CellContents>
                       </TablixHeader>
                       <TablixMembers>
@@ -1084,24 +1098,25 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                           <TablixHeader>
                             <Size>8.77944cm</Size>
                             <CellContents>
-                              <Textbox Name="Textbox111">
+                              <Textbox Name="Textbox112">
                                 <CanGrow>true</CanGrow>
                                 <KeepTogether>true</KeepTogether>
                                 <Paragraphs>
                                   <Paragraph>
                                     <TextRuns>
                                       <TextRun>
-                                        <Value />
+                                        <Value>=IIF(RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps"))) = " ", Fields!repName.Value, RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps"))))</Value>
                                         <Style>
                                           <FontFamily>Calibri Light</FontFamily>
                                           <FontSize>9pt</FontSize>
+                                          <FontWeight>Bold</FontWeight>
                                         </Style>
                                       </TextRun>
                                     </TextRuns>
                                     <Style />
                                   </Paragraph>
                                 </Paragraphs>
-                                <rd:DefaultName>Textbox111</rd:DefaultName>
+                                <rd:DefaultName>Textbox105</rd:DefaultName>
                                 <Style>
                                   <Border>
                                     <Color>LightGrey</Color>
@@ -1113,6 +1128,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                   <PaddingBottom>2pt</PaddingBottom>
                                 </Style>
                               </Textbox>
+                              <rd:Selected>true</rd:Selected>
                             </CellContents>
                           </TablixHeader>
                           <TablixMembers>
@@ -1120,24 +1136,25 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                               <TablixHeader>
                                 <Size>2.35889cm</Size>
                                 <CellContents>
-                                  <Textbox Name="Textbox118">
+                                  <Textbox Name="Textbox111">
                                     <CanGrow>true</CanGrow>
                                     <KeepTogether>true</KeepTogether>
                                     <Paragraphs>
                                       <Paragraph>
                                         <TextRuns>
                                           <TextRun>
-                                            <Value />
+                                            <Value>=RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!Language.Value, "CertsReps")))</Value>
                                             <Style>
                                               <FontFamily>Calibri Light</FontFamily>
                                               <FontSize>9pt</FontSize>
+                                              <FontWeight>Bold</FontWeight>
                                             </Style>
                                           </TextRun>
                                         </TextRuns>
                                         <Style />
                                       </Paragraph>
                                     </Paragraphs>
-                                    <rd:DefaultName>Textbox118</rd:DefaultName>
+                                    <rd:DefaultName>Textbox105</rd:DefaultName>
                                     <Style>
                                       <Border>
                                         <Color>LightGrey</Color>
@@ -1149,6 +1166,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                       <PaddingBottom>2pt</PaddingBottom>
                                     </Style>
                                   </Textbox>
+                                  <rd:Selected>true</rd:Selected>
                                 </CellContents>
                               </TablixHeader>
                               <TablixMembers>
@@ -1156,24 +1174,25 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                   <TablixHeader>
                                     <Size>9.72847cm</Size>
                                     <CellContents>
-                                      <Textbox Name="Textbox125">
+                                      <Textbox Name="Textbox113">
                                         <CanGrow>true</CanGrow>
                                         <KeepTogether>true</KeepTogether>
                                         <Paragraphs>
                                           <Paragraph>
                                             <TextRuns>
                                               <TextRun>
-                                                <Value />
+                                                <Value>=RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepEmail.Value, "CertsReps")))</Value>
                                                 <Style>
                                                   <FontFamily>Calibri Light</FontFamily>
                                                   <FontSize>9pt</FontSize>
+                                                  <FontWeight>Bold</FontWeight>
                                                 </Style>
                                               </TextRun>
                                             </TextRuns>
                                             <Style />
                                           </Paragraph>
                                         </Paragraphs>
-                                        <rd:DefaultName>Textbox125</rd:DefaultName>
+                                        <rd:DefaultName>Textbox105</rd:DefaultName>
                                         <Style>
                                           <Border>
                                             <Color>LightGrey</Color>
@@ -1185,6 +1204,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                           <PaddingBottom>2pt</PaddingBottom>
                                         </Style>
                                       </Textbox>
+                                      <rd:Selected>true</rd:Selected>
                                     </CellContents>
                                   </TablixHeader>
                                   <TablixMembers>
@@ -1203,6 +1223,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                                     <Style>
                                                       <FontFamily>Calibri Light</FontFamily>
                                                       <FontSize>9pt</FontSize>
+                                                      <FontWeight>Bold</FontWeight>
                                                     </Style>
                                                   </TextRun>
                                                 </TextRuns>
@@ -1221,6 +1242,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                               <PaddingBottom>2pt</PaddingBottom>
                                             </Style>
                                           </Textbox>
+                                          <rd:Selected>true</rd:Selected>
                                         </CellContents>
                                       </TablixHeader>
                                     </TablixMember>
@@ -1231,9 +1253,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                           </TablixMembers>
                         </TablixMember>
                       </TablixMembers>
-                      <Visibility>
-                        <Hidden>true</Hidden>
-                      </Visibility>
                       <KeepWithGroup>After</KeepWithGroup>
                     </TablixMember>
                     <TablixMember>
@@ -1293,7 +1312,13 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                   <Paragraph>
                                     <TextRuns>
                                       <TextRun>
-                                        <Value>=RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps")))</Value>
+                                        <Value>=
+IIF(
+(
+RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps")))
+)=" ",Fields!repName.Value,
+RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps")))
+)</Value>
                                         <Style>
                                           <FontFamily>Calibri Light</FontFamily>
                                           <FontSize>9pt</FontSize>
@@ -1351,7 +1376,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                       <PaddingBottom>2pt</PaddingBottom>
                                     </Style>
                                   </Textbox>
-                                  <rd:Selected>true</rd:Selected>
                                 </CellContents>
                               </TablixHeader>
                               <TablixMembers>
@@ -1428,6 +1452,10 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                       </TablixHeader>
                                       <TablixMembers>
                                         <TablixMember>
+                                          <Visibility>
+                                            <Hidden>true</Hidden>
+                                            <ToggleItem>repId3</ToggleItem>
+                                          </Visibility>
                                           <KeepWithGroup>After</KeepWithGroup>
                                         </TablixMember>
                                         <TablixMember>
@@ -1633,6 +1661,9 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                           </TablixMembers>
                         </TablixMember>
                       </TablixMembers>
+                      <Visibility>
+                        <Hidden>true</Hidden>
+                      </Visibility>
                       <KeepWithGroup>Before</KeepWithGroup>
                     </TablixMember>
                   </TablixMembers>
