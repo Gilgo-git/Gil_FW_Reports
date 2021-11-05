@@ -349,7 +349,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -384,7 +383,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -419,7 +417,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                   </TablixCells>
@@ -1090,7 +1087,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                               <PaddingBottom>2pt</PaddingBottom>
                             </Style>
                           </Textbox>
-                          <rd:Selected>true</rd:Selected>
                         </CellContents>
                       </TablixHeader>
                       <TablixMembers>
@@ -1105,7 +1101,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                   <Paragraph>
                                     <TextRuns>
                                       <TextRun>
-                                        <Value>=IIF(RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps"))) = " ", Fields!repName.Value, RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps"))))</Value>
+                                        <Value>=IIF(RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps"))) = "", Fields!repName.Value, RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps"))))</Value>
                                         <Style>
                                           <FontFamily>Calibri Light</FontFamily>
                                           <FontSize>9pt</FontSize>
@@ -1128,7 +1124,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                   <PaddingBottom>2pt</PaddingBottom>
                                 </Style>
                               </Textbox>
-                              <rd:Selected>true</rd:Selected>
                             </CellContents>
                           </TablixHeader>
                           <TablixMembers>
@@ -1166,7 +1161,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                       <PaddingBottom>2pt</PaddingBottom>
                                     </Style>
                                   </Textbox>
-                                  <rd:Selected>true</rd:Selected>
                                 </CellContents>
                               </TablixHeader>
                               <TablixMembers>
@@ -1204,7 +1198,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                           <PaddingBottom>2pt</PaddingBottom>
                                         </Style>
                                       </Textbox>
-                                      <rd:Selected>true</rd:Selected>
                                     </CellContents>
                                   </TablixHeader>
                                   <TablixMembers>
@@ -1242,7 +1235,6 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
                                               <PaddingBottom>2pt</PaddingBottom>
                                             </Style>
                                           </Textbox>
-                                          <rd:Selected>true</rd:Selected>
                                         </CellContents>
                                       </TablixHeader>
                                     </TablixMember>
@@ -1316,7 +1308,7 @@ and (a.A_C_Closing_Date is null or p.processDate &lt; a.A_C_Closing_Date)
 IIF(
 (
 RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps")))
-)=" ",Fields!repName.Value,
+)="",Fields!repName.Value,
 RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Value, "CertsReps")))
 )</Value>
                                         <Style>
@@ -1340,6 +1332,7 @@ RTrim(LTrim(Lookup(Fields!repId.Value, Fields!RepCode.Value, Fields!RepName.Valu
                                   <PaddingBottom>2pt</PaddingBottom>
                                 </Style>
                               </Textbox>
+                              <rd:Selected>true</rd:Selected>
                             </CellContents>
                           </TablixHeader>
                           <TablixMembers>
