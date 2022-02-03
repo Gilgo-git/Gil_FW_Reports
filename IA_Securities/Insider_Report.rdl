@@ -18,10 +18,11 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>SELECT distinct 
+        <CommandText>
+SELECT distinct 
 act.client,
 act.A_C_ID,
-br.firmCode,
+--br.firmCode,
 rep.repID,
 rep.repName,
 rep.branchCode,
@@ -36,8 +37,8 @@ into #t1
 FROM BACKOFFICE.IAVMACT act
 INNER JOIN IAVM.rep rep  
 on rep.repId=act.A_C_Representative
-LEFT JOIN IAVM.branch br 
-ON br.branchCode = rep.branchCode
+--LEFT JOIN IAVM.branch br 
+--ON br.branchCode = rep.branchCode
 LEFT JOIN BACKOFFICE.IAVMPSN p 
 on p.A_C_ID = act.A_C_ID
 LEFT JOIN BACKOFFICE.IAVMNOT n
@@ -47,7 +48,10 @@ WHERE
  	(client_officer_directr_sw='Y'
  or 	act.client_company_ctrl_sw='Y') 
 
-select distinct client,	A_C_ID,	firmCode,	repID,	repName,	branchCode,	A_C_Name,
+select distinct client,	A_C_ID,	case when branchCode like '%HOLLIS%' then 'HOLLIS'
+	 when  branchCode like '%CORP%' then 'CORP'
+	 else 'INDEP'end  as firmCode,
+	 repID,	repName,	branchCode,	A_C_Name,
 
 	STUFF((SELECT DISTINCT ',' + E2.Issuer
 	FROM #t1 E2
