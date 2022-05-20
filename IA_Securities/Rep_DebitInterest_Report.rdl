@@ -20,9 +20,6 @@
           <QueryParameter Name="@rep">
             <Value>=SPLIT(JOIN(Parameters!rep.Value,","),",")</Value>
           </QueryParameter>
-          <QueryParameter Name="@acctID">
-            <Value>=Parameters!acctID.Value</Value>
-          </QueryParameter>
         </QueryParameters>
         <CommandText>select 
 b.Tran_Process_Date,
@@ -44,7 +41,7 @@ where
 b.Tran_Process_Date between CAST(DATEADD(month, -1, @processDate) AS Date) and @processDate and
 b.Tran_Gross_Amt &gt; 0 and
 --b.A_C_Representative in ('SGGH', 'SSGH', 'SNLG', 'SN1E', 'JGBA', 'SN7S', 'SSH5', 'SNWY', 'SSHV');
- (b.A_C_Representative IN (@rep) or b.A_C_ID in (@acctID))</CommandText>
+ b.A_C_Representative IN (@rep) </CommandText>
       </Query>
       <Fields>
         <Field Name="Tran_Process_Date">
@@ -900,12 +897,6 @@ GROUP BY 	repId </CommandText>
       <Prompt>Rep</Prompt>
       <MultiValue>true</MultiValue>
     </ReportParameter>
-    <ReportParameter Name="acctID">
-      <DataType>String</DataType>
-      <AllowBlank>true</AllowBlank>
-      <Prompt>Acct ID</Prompt>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -921,11 +912,6 @@ GROUP BY 	repId </CommandText>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>rep</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>1</RowIndex>
-          <ParameterName>acctID</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
