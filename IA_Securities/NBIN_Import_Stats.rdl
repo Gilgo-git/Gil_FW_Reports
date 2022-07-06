@@ -17,6 +17,7 @@
 FROM [iAS_Portal].[BACKOFFICE].[NBIN_IMPORT] (nolock) 
  WHERE [type] = 'Table Import'  and [value] = 'Done' 
  AND Load_Date &gt;= DATEADD(year, -1, getdate())
+ AND [type] = 'NBIN Import'
  GROUP BY [table]</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
