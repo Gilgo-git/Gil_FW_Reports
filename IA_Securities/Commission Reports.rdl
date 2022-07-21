@@ -3,7 +3,7 @@
   <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="DataSource1">
+    <DataSource Name="iAS_Portal">
       <DataSourceReference>iAS_Portal</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
       <rd:DataSourceID>76109063-5c3e-4763-8a09-1a511a9e47fb</rd:DataSourceID>
@@ -12,7 +12,7 @@
   <DataSets>
     <DataSet Name="DataSet1">
       <Query>
-        <DataSourceName>DataSource1</DataSourceName>
+        <DataSourceName>iAS_Portal</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@freq">
             <Value>=Parameters!freq.Value</Value>
@@ -60,6 +60,18 @@
         <Field Name="earnNet">
           <DataField>earnNet</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DataSet2">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>Select getdate() as processDate  </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="processDate">
+          <DataField>processDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -835,7 +847,13 @@
     </ReportParameter>
     <ReportParameter Name="processDate">
       <DataType>DateTime</DataType>
-      <Prompt>Process Date</Prompt>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DataSet2</DataSetName>
+          <ValueField>processDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Process Date (Enter Date for last Month\Quarter Report)</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
