@@ -45,17 +45,14 @@ FROM BACKOFFICE.IAVMADR adr
 		left JOIN BACKOFFICE.IAVMDOC doc on adr.A_C_Client = doc.Client
 		left join IAVM.rep IAVM_Rep  on IAVM_Rep.repId = adr.A_C_Representative
 where 
-	(
-	(adr.address_line_1 like '%UNKNOWN%' or
-	adr.address_line_6 like '%UNKNOWN%' or
-	adr.address_line_7 like '%UNKNOWN%' or 
-	adr.A_C_Short_Name like '%RST%' or
-	adr.A_C_Short_Name like '%RTM%') and
-	(doc.Doc_Type_2 like '6K' or doc.Doc_Type_2 = '' or doc.Doc_Type_2 is null
-	or doc.Doc_Type_2 in('01','22','31'))
-	)
-	and	 adr.A_C_Representative IN (@rep)
- </CommandText>
+		(adr.address_line_1 like '%UNKNOWN%' or
+			adr.address_line_6 like '%UNKNOWN%' or
+		adr.address_line_7 like '%UNKNOWN%' or 
+		adr.A_C_Short_Name like '%RST%' or
+			adr.A_C_Short_Name like '%RTM%') and
+		(doc.Doc_Type_2 like '6K' or doc.Doc_Type_2 = '' or doc.Doc_Type_2 is null)
+
+	and	 adr.A_C_Representative IN (@rep)</CommandText>
       </Query>
       <Fields>
         <Field Name="A_C_Representative">
