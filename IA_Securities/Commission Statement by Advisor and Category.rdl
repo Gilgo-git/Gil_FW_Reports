@@ -125,17 +125,9 @@
                               <TextRuns>
                                 <TextRun>
                                   <Value>="Commission Statement by Advisor and Category (" &amp; Parameters!freq.Value &amp;") " &amp; 
-IIf(Parameters!freq.Value="M",dateadd("m",0,dateserial(year( Parameters!processDate.Value),month(Parameters!processDate.Value),0)), 
- dateadd("q",-1,
- DATEADD(
-   DateInterval.Day
-   , -1
-   , DATEADD(
-      DateInterval.Quarter
-      , DATEPART(DateInterval.Quarter,  Parameters!processDate.Value )
-      , DATESERIAL(YEAR(Parameters!processDate.Value), 1, 1)   
-   )
-)))</Value>
+IIf(Parameters!freq.Value="Monthly",dateadd("m",1,dateserial(year( Parameters!processDate.Value),month(Parameters!processDate.Value),0)), 
+ dateadd("q",0,DATEADD(DateInterval.Day, -1, DATEADD(DateInterval.Quarter, DATEPART(DateInterval.Quarter,Parameters!processDate.Value )
+  , DATESERIAL(YEAR(Parameters!processDate.Value), 1, 1)   ))))</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontWeight>Bold</FontWeight>
@@ -914,7 +906,7 @@ IIf(Parameters!freq.Value="M",dateadd("m",0,dateserial(year( Parameters!processD
           <ValueField>processDate</ValueField>
         </DataSetReference>
       </DefaultValue>
-      <Prompt>Process Date (Enter Date for last Month\Quarter Report)</Prompt>
+      <Prompt>Process Date </Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
