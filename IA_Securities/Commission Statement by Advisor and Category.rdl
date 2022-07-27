@@ -6,907 +6,72 @@
     <DataSource Name="iAS_Portal">
       <DataSourceReference>iAS_Portal</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>f13ffe72-b0b9-4409-9780-4a727ae6c36b</rd:DataSourceID>
-    </DataSource>
-    <DataSource Name="CERTS">
-      <DataSourceReference>CERTS</DataSourceReference>
-      <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>8f144adf-13ed-45e3-a097-c769daea253a</rd:DataSourceID>
+      <rd:DataSourceID>76109063-5c3e-4763-8a09-1a511a9e47fb</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>SELECT 
-A_C_ID AS ClientAccountNo,
-A_C_Name AS ClientName,
-A_C_Representative AS Repcode,
---b.repName AS RepName,
-(Tran_Summ_Trade_Qty) AS  Trade_Qty,
-(Tran_Summ_Sett_Qty) AS  Sett_Qty,
-TI_Symbol AS Symbol ,
-English_Description AS SecurityDescription,
-TI_Underlying_Sec_No AS Underlying_Sec_No,
-(Tran_Summ_Curr_Mkt_price) AS MarketPrice,
-(Tran_Summ_Curr_Mkt_Value) AS MarketValue,
-Issuer,
-
-TI_Alternate_ID AS SecurityNumber,
-TI_CUSIP AS CUSIP,
-Price_Currency AS  PRCCURRENCY,
-Tran_Summ_Business_Date AS processDate
---,b.CBM AS Branch_Manager,
---b.RVP
-
-FROM BACKOFFICE.IAVMPSN (nolock)
---LEFT JOIN IAVM.dbo.repCerts b (nolock) ON b.Rep_Code = A_C_Representative
---LEFT JOIN IAVM.dbo.rep b ON b.repId = A_C_Representative
-
-WHERE 
- LEN(A_C_ID) &gt; 2 AND
-A_C_Representative NOT IN ('SEAA') AND 
-(
-TI_Alternate_ID IN (
-'55562R'
-,'555135'
-,'05567K'
-,'22181H'
-,'22181T'
-,'22181K'
-,'55563L'
-,'55563K'
-,'22137C'
-,'555149'
-,'555107'
-,'555277'
-,'22181A'
-,'221898'
-,'055616'
-,'55563R'
-,'071970'
-,'07199J'
-,'07198T'
-,'07198U'
-,'071974'
-,'071981'
-,'071976'
-,'071977'
-,'07199B'
-,'071989'
-,'071987'
-,'07199C'
-,'07198G'
-,'07199D'
-,'325378'
-,'07198Z'
-,'07198M'
-,'07198P'
-,'22181N'
-,'22176R'
-,'22181P'
-,'55564H'
-,'55540M'
-,'55564U'
-,'61172D'
-,'555445'
-,'55564D'
-,'221835'
-,'555303'
-,'555302'
-,'221788'
-,'221760'
-,'20587E'
-,'55564J'
-,'555020'
-,'55568Y'
-,'20584C'
-,'555332'
-,'20585N'
-,'551425'
-,'55564G'
-,'61172B'
-,'01375C'
-,'555298'
-,'22184F'
-,'10369H'
-,'07199L'
-,'07198W'
-,'07199L'
-,'05566F'
-,'05566E'
-,'071981'
-,'071981'
-,'07199K'
-,'071987'
-,'071987'
-,'071987'
-,'07199A'
-,'07199A'
-,'071970'
-,'07198W'
-,'07198W'
-,'071989'
-,'071989'
-,'071988'
-,'071989'
-,'07198J'
-,'07198U'
-,'07198T'
-,'07199L'
-,'07198P'
-,'07199L'
-,'20582H'
-,'10370A'
-,'10370B'
-,'22184C'
-,'22176T'
-,'22137E'
-,'22182H'
-,'22181M'
-,'24067A'
-,'240627'
-,'595225'
-,'512923'
-,'512925'
-,'579066'
-,'512409'
-,'512927'
-,'512924'
-,'512932'
-,'512430'
-,'512467'
-,'68833V'
-,'688308'
-,'68833C'
-,'68833Y'
-,'688364'
-,'68833M'
-,'68837J'
-,'688340'
-,'68834L'
-,'68834V'
-,'68835A'
-,'68833U'
-,'73988X'
-,'240639'
-,'05567E'
-,'05561R'
-,'05562P'
-,'20585M'
-,'205855'
-,'205857'
-,'205854'
-,'551324'
-,'551406'
-,'551315'
-,'551314'
-,'22179N'
-,'22182A'
-,'221751'
-,'221500'
-,'221864'
-,'221779'
-,'22176P'
-,'222022'
-,'22176J'
-,'221504'
-,'221827'
-,'221790'
-,'22181J'
-,'22181L'
-,'221759'
-,'221817'
-,'221899'
-,'221902'
-,'22176S'
-,'221901'
-,'221903'
-,'221825'
-,'221832'
-,'221884'
-,'221883'
-,'221879'
-,'221819'
-,'221847'
-,'221846'
-,'221845'
-,'221844'
-,'221878'
-,'221877'
-,'221885'
-,'24036L'
-,'24067D'
-,'551328'
-,'551110'
-,'551112'
-,'55563H'
-,'55515K'
-,'68835E'
-,'68835F'
-,'69935J'
-,'69935T'
-,'70709C'
-,'16215B'
-,'70710F'
-,'16215A'
-,'707091'
-,'707092'
-,'70710A'
-,'707083'
-,'70710D'
-,'73993U'
-,'071979'
-,'55515Q'
-,'555418'
-,'555312'
-,'55563Q'
-,'55563T'
-,'555313'
-,'55563N'
-,'555103'
-,'555168'
-,'55532A'
-,'55556F'
-,'55562H'
-,'555019'
-,'554908'
-,'55568Z'
-,'551421'
-,'554887'
-,'554888'
-,'686649'
-,'555276'
-,'555333'
-,'555014'
-,'555344'
-,'686721'
-,'554890'
-,'551339'
-,'554891'
-,'686648'
-,'55142V'
-,'555006'
-,'555011'
-,'555022'
-,'55569A'
-,'686647'
-,'554882'
-,'686646'
-,'554894'
-,'554877'
-,'554895'
-,'555159'
-,'554896'
-,'55528A'
-,'555083'
-,'555095'
-,'555310'
-,'555124'
-,'55569B'
-,'55564V'
-,'55532H'
-,'686720'
-,'686711'
-,'555653'
-,'55564Q'
-,'555554'
-,'551423'
-,'55564S'
-,'55540K'
-,'55562D'
-,'686768'
-,'55564N'
-,'55564P'
-,'55564M'
-,'55564L'
-,'555680'
-,'55512A'
-,'55485M'
-,'55564R'
-,'55564W'
-,'55540N'
-,'55564T'
-,'55540J'
-,'55564B'
-,'555557'
-,'22178Q'
-,'22178P'
-,'22178M'
-,'22178L'
-,'22178K'
-,'22178J'
-,'22179X'
-,'22179C'
-,'22175N'
-,'22182Y'
-,'221800'
-,'22148J'
-,'22179L'
-,'22180F'
-,'22184G'
-,'22182W'
-,'22182v'
-,'22182U'
-,'221578'
-,'221570'
-,'221568'
-,'222023'
-,'22184M'
-,'22137F'
-,'22175F'
-,'22184L'
-,'221873'
-,'22175M'
-,'22177Q'
-,'205846'
-,'071987'
-,'205815'
-,'24153D'
-,'212898'
-,'68837D'
-,'30675D'
-,'68835T'
-,'68835R'
-,'66833E'
-,'68835Q'
-,'68835S'
-,'34311E'
-,'05567D'
-,'68837F'
-,'01376A'
-,'20582M'
-,'05565A'
-,'68834S'
-,'34311F'
-,'058998'
-,'05561G'
-,'68834U'
-,'16193L'
-,'16193G'
-,'05892B'
-,'058914'
-,'68834T'
-,'16193E'
-,'16193F'
-,'16193H'
-,'16193C'
-,'16193D'
-,'16193K'
-,'16193M'
-,'16193J'
-,'00748G'
-,'00611E'
-,'05561F'
-,'05561H'
-,'05567F'
-,'05566D'
-,'05567G'
-,'212930'
-,'213192'
-,'24151K'
-,'058999'
-,'35204P'
-,'22180G'
-,'05561N'
-,'22180J'
-,'22180H'
-,'22180R'
-,'22180Q'
-,'05565E'
-,'24154S'
-,'64221E'
-,'24154B'
-,'55516G'
-,'55516E'
-,'22184H'
-,'07199K'
-,'22180U'
-,'07199Q'
-,'05565H'
-,'05565C'
-,'55532G'
-,'55532D'
-,'55485N'
-,'25645A'
-
-)
-
-OR 
-TI_Underlying_Sec_No IN (
-'55562R'
-,'555135'
-,'05567K'
-,'22181H'
-,'22181T'
-,'22181K'
-,'55563L'
-,'55563K'
-,'22137C'
-,'555149'
-,'555107'
-,'555277'
-,'22181A'
-,'221898'
-,'055616'
-,'55563R'
-,'071970'
-,'07199J'
-,'07198T'
-,'07198U'
-,'071974'
-,'071981'
-,'071976'
-,'071977'
-,'07199B'
-,'071989'
-,'071987'
-,'07199C'
-,'07198G'
-,'07199D'
-,'325378'
-,'07198Z'
-,'07198M'
-,'07198P'
-,'22181N'
-,'22176R'
-,'22181P'
-,'55564H'
-,'55540M'
-,'55564U'
-,'61172D'
-,'555445'
-,'55564D'
-,'221835'
-,'555303'
-,'555302'
-,'221788'
-,'221760'
-,'20587E'
-,'55564J'
-,'555020'
-,'55568Y'
-,'20584C'
-,'555332'
-,'20585N'
-,'551425'
-,'55564G'
-,'61172B'
-,'01375C'
-,'555298'
-,'22184F'
-,'10369H'
-,'07199L'
-,'07198W'
-,'07199L'
-,'05566F'
-,'05566E'
-,'071981'
-,'071981'
-,'07199K'
-,'071987'
-,'071987'
-,'071987'
-,'07199A'
-,'07199A'
-,'071970'
-,'07198W'
-,'07198W'
-,'071989'
-,'071989'
-,'071988'
-,'071989'
-,'07198J'
-,'07198U'
-,'07198T'
-,'07199L'
-,'07198P'
-,'07199L'
-,'20582H'
-,'10370A'
-,'10370B'
-,'22184C'
-,'22176T'
-,'22137E'
-,'22182H'
-,'22181M'
-,'24067A'
-,'240627'
-,'595225'
-,'512923'
-,'512925'
-,'579066'
-,'512409'
-,'512927'
-,'512924'
-,'512932'
-,'512430'
-,'512467'
-,'68833V'
-,'688308'
-,'68833C'
-,'68833Y'
-,'688364'
-,'68833M'
-,'68837J'
-,'688340'
-,'68834L'
-,'68834V'
-,'68835A'
-,'68833U'
-,'73988X'
-,'240639'
-,'05567E'
-,'05561R'
-,'05562P'
-,'20585M'
-,'205855'
-,'205857'
-,'205854'
-,'551324'
-,'551406'
-,'551315'
-,'551314'
-,'22179N'
-,'22182A'
-,'221751'
-,'221500'
-,'221864'
-,'221779'
-,'22176P'
-,'222022'
-,'22176J'
-,'221504'
-,'221827'
-,'221790'
-,'22181J'
-,'22181L'
-,'221759'
-,'221817'
-,'221899'
-,'221902'
-,'22176S'
-,'221901'
-,'221903'
-,'221825'
-,'221832'
-,'221884'
-,'221883'
-,'221879'
-,'221819'
-,'221847'
-,'221846'
-,'221845'
-,'221844'
-,'221878'
-,'221877'
-,'221885'
-,'24036L'
-,'24067D'
-,'551328'
-,'551110'
-,'551112'
-,'55563H'
-,'55515K'
-,'68835E'
-,'68835F'
-,'69935J'
-,'69935T'
-,'70709C'
-,'16215B'
-,'70710F'
-,'16215A'
-,'707091'
-,'707092'
-,'70710A'
-,'707083'
-,'70710D'
-,'73993U'
-,'071979'
-,'55515Q'
-,'555418'
-,'555312'
-,'55563Q'
-,'55563T'
-,'555313'
-,'55563N'
-,'555103'
-,'555168'
-,'55532A'
-,'55556F'
-,'55562H'
-,'555019'
-,'554908'
-,'55568Z'
-,'551421'
-,'554887'
-,'554888'
-,'686649'
-,'555276'
-,'555333'
-,'555014'
-,'555344'
-,'686721'
-,'554890'
-,'551339'
-,'554891'
-,'686648'
-,'55142V'
-,'555006'
-,'555011'
-,'555022'
-,'55569A'
-,'686647'
-,'554882'
-,'686646'
-,'554894'
-,'554877'
-,'554895'
-,'555159'
-,'554896'
-,'55528A'
-,'555083'
-,'555095'
-,'555310'
-,'555124'
-,'55569B'
-,'55564V'
-,'55532H'
-,'686720'
-,'686711'
-,'555653'
-,'55564Q'
-,'555554'
-,'551423'
-,'55564S'
-,'55540K'
-,'55562D'
-,'686768'
-,'55564N'
-,'55564P'
-,'55564M'
-,'55564L'
-,'555680'
-,'55512A'
-,'55485M'
-,'55564R'
-,'55564W'
-,'55540N'
-,'55564T'
-,'55540J'
-,'55564B'
-,'555557'
-,'22178Q'
-,'22178P'
-,'22178M'
-,'22178L'
-,'22178K'
-,'22178J'
-,'22179X'
-,'22179C'
-,'22175N'
-,'22182Y'
-,'221800'
-,'22148J'
-,'22179L'
-,'22180F'
-,'22184G'
-,'22182W'
-,'22182v'
-,'22182U'
-,'221578'
-,'221570'
-,'221568'
-,'222023'
-,'22184M'
-,'22137F'
-,'22175F'
-,'22184L'
-,'221873'
-,'22175M'
-,'22177Q'
-,'205846'
-,'071987'
-,'205815'
-,'24153D'
-,'212898'
-,'68837D'
-,'30675D'
-,'68835T'
-,'68835R'
-,'66833E'
-,'68835Q'
-,'68835S'
-,'34311E'
-,'05567D'
-,'68837F'
-,'01376A'
-,'20582M'
-,'05565A'
-,'68834S'
-,'34311F'
-,'058998'
-,'05561G'
-,'68834U'
-,'16193L'
-,'16193G'
-,'05892B'
-,'058914'
-,'68834T'
-,'16193E'
-,'16193F'
-,'16193H'
-,'16193C'
-,'16193D'
-,'16193K'
-,'16193M'
-,'16193J'
-,'00748G'
-,'00611E'
-,'05561F'
-,'05561H'
-,'05567F'
-,'05566D'
-,'05567G'
-,'212930'
-,'213192'
-,'24151K'
-,'058999'
-,'35204P'
-,'22180G'
-,'05561N'
-,'22180J'
-,'22180H'
-,'22180R'
-,'22180Q'
-,'05565E'
-,'24154S'
-,'64221E'
-,'24154B'
-,'55516G'
-,'55516E'
-,'22184H'
-,'07199K'
-,'22180U'
-,'07199Q'
-,'05565H'
-,'05565C'
-,'55532G'
-,'55532D'
-,'55485N'
-,'25645A'
-
-)
-)</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@freq">
+            <Value>=Parameters!freq.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@processDate">
+            <Value>=Parameters!processDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>REPORTS.usp_SP_Commission_Stmt_by_Advisor</CommandText>
       </Query>
       <Fields>
-        <Field Name="ClientAccountNo">
-          <DataField>ClientAccountNo</DataField>
+        <Field Name="AdvisorName">
+          <DataField>AdvisorName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="ClientName">
-          <DataField>ClientName</DataField>
+        <Field Name="repId">
+          <DataField>repId</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Repcode">
-          <DataField>Repcode</DataField>
+        <Field Name="branchCode">
+          <DataField>branchCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Symbol">
-          <DataField>Symbol</DataField>
+        <Field Name="Category">
+          <DataField>Category</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="SecurityDescription">
-          <DataField>SecurityDescription</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Underlying_Sec_No">
-          <DataField>Underlying_Sec_No</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Trade_Qty">
-          <DataField>Trade_Qty</DataField>
+        <Field Name="totalGeneratedCommission">
+          <DataField>totalGeneratedCommission</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Sett_Qty">
-          <DataField>Sett_Qty</DataField>
+        <Field Name="totalCommission">
+          <DataField>totalCommission</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="MarketPrice">
-          <DataField>MarketPrice</DataField>
+        <Field Name="totalNetCommission">
+          <DataField>totalNetCommission</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="MarketValue">
-          <DataField>MarketValue</DataField>
+        <Field Name="totalTransFee">
+          <DataField>totalTransFee</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Issuer">
-          <DataField>Issuer</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="SecurityNumber">
-          <DataField>SecurityNumber</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="CUSIP">
-          <DataField>CUSIP</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="PRCCURRENCY">
-          <DataField>PRCCURRENCY</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="processDate">
-          <DataField>processDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
+        <Field Name="earnNet">
+          <DataField>earnNet</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="RepInfo">
+    <DataSet Name="DataSet2">
       <Query>
-        <DataSourceName>CERTS</DataSourceName>
-        <CommandText>EXEC rep.[IAS.getRepInfo]</CommandText>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>Select getdate() as processDate  </CommandText>
       </Query>
       <Fields>
-        <Field Name="RepCode">
-          <DataField>RepCode</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="RepName">
-          <DataField>RepName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="RepStartDate">
-          <DataField>RepStartDate</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="RepEndDate">
-          <DataField>RepEndDate</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="RepEmail">
-          <DataField>RepEmail</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="isActive">
-          <DataField>isActive</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="CBM">
-          <DataField>CBM</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="RVP">
-          <DataField>RVP</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="BranchNRD">
-          <DataField>BranchNRD</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="BranchName">
-          <DataField>BranchName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="BranchAddress1">
-          <DataField>BranchAddress1</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="BranchAddress2">
-          <DataField>BranchAddress2</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="BranchCity">
-          <DataField>BranchCity</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="BranchProvince">
-          <DataField>BranchProvince</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="BranchPostalCode">
-          <DataField>BranchPostalCode</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="processDate">
+          <DataField>processDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -919,49 +84,84 @@ TI_Underlying_Sec_No IN (
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>3.15264cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>7.5cm</Width>
+                  <Width>8.19264cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.5cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>7.82695cm</Width>
+                  <Width>4.61667cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>10.52569cm</Width>
+                  <Width>3.92875cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>3.64653cm</Width>
+                  <Width>2.64521cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.99389cm</Width>
+                  <Width>2.4559cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>3.75236cm</Width>
+                  <Width>2.36771cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>3.80528cm</Width>
+                  <Width>2.20896cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>3.41722cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>9.97889cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>3.24083cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>5.95722cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>6.04542cm</Width>
+                  <Width>2.2266cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
+                <TablixRow>
+                  <Height>0.6cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>="Commission Statement by Advisor and Category (" &amp; Parameters!freq.Value &amp;") " &amp; 
+IIf(Parameters!freq.Value="Monthly",dateadd("m",1,dateserial(year( Parameters!processDate.Value),month(Parameters!processDate.Value),0)), 
+ dateadd("q",0,DATEADD(DateInterval.Day, -1, DATEADD(DateInterval.Quarter, DATEPART(DateInterval.Quarter,Parameters!processDate.Value )
+  , DATESERIAL(YEAR(Parameters!processDate.Value), 1, 1)   ))))</Value>
+                                  <Style>
+                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>9</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                  </TablixCells>
+                </TablixRow>
                 <TablixRow>
                   <Height>0.6cm</Height>
                   <TablixCells>
@@ -974,7 +174,7 @@ TI_Underlying_Sec_No IN (
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Client Account No</Value>
+                                  <Value>Advisor Name</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontWeight>Bold</FontWeight>
@@ -1000,14 +200,14 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox13">
+                        <Textbox Name="Textbox7">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Client Name</Value>
+                                  <Value>Rep Id</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontWeight>Bold</FontWeight>
@@ -1015,6 +215,121 @@ TI_Underlying_Sec_No IN (
                                 </TextRun>
                               </TextRuns>
                               <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox7</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox9">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Branch Code</Value>
+                                  <Style>
+                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox9</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox11">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Category</Value>
+                                  <Style>
+                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox11</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox13">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Total </Value>
+                                  <Style>
+                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Generated Commission</Value>
+                                  <Style>
+                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox13</rd:DefaultName>
@@ -1040,7 +355,21 @@ TI_Underlying_Sec_No IN (
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Rep Code</Value>
+                                  <Value>Total </Value>
+                                  <Style>
+                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Commission</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontWeight>Bold</FontWeight>
@@ -1073,14 +402,30 @@ TI_Underlying_Sec_No IN (
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Rep Name</Value>
+                                  <Value>Total </Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Net Commission</Value>
+                                  <Style>
+                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox17</rd:DefaultName>
@@ -1099,123 +444,40 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox9">
+                        <Textbox Name="Textbox19">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Branch Manager</Value>
+                                  <Value>Total </Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox9</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox22">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value EvaluationMode="Constant">Settlement Date Qty</Value>
+                                  <Value>Trans Fee</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox21</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox21">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value EvaluationMode="Constant">Trade Date Qty</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox21</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox24">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value EvaluationMode="Constant">Traded Amount</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox21</rd:DefaultName>
+                          <rd:DefaultName>Textbox19</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1238,182 +500,19 @@ TI_Underlying_Sec_No IN (
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Symbol</Value>
+                                  <Value>Earn Net</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox3</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox23">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Security Number</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox23</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox29">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Security Description</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox29</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox25">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Underlying Sec No</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox25</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox27">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>="Market Price As On " + Format(First(Fields!processDate.Value),"MMM dd yyyy")</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox27</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox5">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>="Market Value As On " + Format(First(Fields!processDate.Value),"MMM dd yyyy")</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox5</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1434,14 +533,14 @@ TI_Underlying_Sec_No IN (
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ClientAccountNo">
+                        <Textbox Name="AdvisorName">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ClientAccountNo.Value</Value>
+                                  <Value>=Fields!AdvisorName.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                   </Style>
@@ -1450,7 +549,7 @@ TI_Underlying_Sec_No IN (
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>ClientAccountNo</rd:DefaultName>
+                          <rd:DefaultName>AdvisorName</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1466,14 +565,14 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ClientName">
+                        <Textbox Name="repId">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ClientName.Value</Value>
+                                  <Value>=Fields!repId.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                   </Style>
@@ -1482,7 +581,7 @@ TI_Underlying_Sec_No IN (
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>ClientName</rd:DefaultName>
+                          <rd:DefaultName>repId</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1498,14 +597,14 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Repcode">
+                        <Textbox Name="branchCode">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Repcode.Value</Value>
+                                  <Value>=Fields!branchCode.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                   </Style>
@@ -1514,7 +613,7 @@ TI_Underlying_Sec_No IN (
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Repcode</rd:DefaultName>
+                          <rd:DefaultName>branchCode</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1530,14 +629,14 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="RepName">
+                        <Textbox Name="Category">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Lookup(Fields!Repcode.Value, Fields!RepCode.Value, Fields!RepName.Value, "RepInfo")</Value>
+                                  <Value>=Fields!Category.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                   </Style>
@@ -1546,7 +645,7 @@ TI_Underlying_Sec_No IN (
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>RepName</rd:DefaultName>
+                          <rd:DefaultName>Category</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1562,14 +661,14 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Branch_Manager">
+                        <Textbox Name="totalGeneratedCommission">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Lookup(Fields!Repcode.Value, Fields!RepCode.Value, Fields!CBM.Value, "RepInfo")</Value>
+                                  <Value>=Fields!totalGeneratedCommission.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                   </Style>
@@ -1578,7 +677,7 @@ TI_Underlying_Sec_No IN (
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Branch_Manager</rd:DefaultName>
+                          <rd:DefaultName>totalGeneratedCommission</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1594,24 +693,23 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Trade_Qty">
+                        <Textbox Name="totalCommission">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Trade_Qty.Value</Value>
+                                  <Value>=Fields!totalCommission.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
-                                    <Format>0.00;(0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Trade_Qty</rd:DefaultName>
+                          <rd:DefaultName>totalCommission</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1627,24 +725,23 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Sett_Qty">
+                        <Textbox Name="totalNetCommission">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Sett_Qty.Value</Value>
+                                  <Value>=Fields!totalNetCommission.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
-                                    <Format>0.00;(0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Sett_Qty</rd:DefaultName>
+                          <rd:DefaultName>totalNetCommission</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1660,24 +757,23 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Trade_Qty2">
+                        <Textbox Name="totalTransFee">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Trade_Qty.Value - Fields!Sett_Qty.Value</Value>
+                                  <Value>=Fields!totalTransFee.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
-                                    <Format>0.00;(0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Trade_Qty</rd:DefaultName>
+                          <rd:DefaultName>totalTransFee</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1693,14 +789,14 @@ TI_Underlying_Sec_No IN (
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Symbol">
+                        <Textbox Name="earnNet">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Symbol.Value</Value>
+                                  <Value>=Fields!earnNet.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri Light</FontFamily>
                                   </Style>
@@ -1709,169 +805,7 @@ TI_Underlying_Sec_No IN (
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Symbol</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="SecurityNumber">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!SecurityNumber.Value</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>SecurityNumber</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="SecurityDescription">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!SecurityDescription.Value</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>SecurityDescription</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Underlying_Sec_No">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Underlying_Sec_No.Value</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Underlying_Sec_No</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="MarketPrice">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!MarketPrice.Value</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Format>0.00;(0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>MarketPrice</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="MarketValue">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!MarketValue.Value</Value>
-                                  <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Format>0.00;(0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>MarketValue</rd:DefaultName>
+                          <rd:DefaultName>earnNet</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1900,15 +834,13 @@ TI_Underlying_Sec_No IN (
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
               <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
                 <TablixMember>
                   <KeepWithGroup>After</KeepWithGroup>
                 </TablixMember>
@@ -1918,13 +850,8 @@ TI_Underlying_Sec_No IN (
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DataSet1</DataSetName>
-            <SortExpressions>
-              <SortExpression>
-                <Value>=Lookup(Fields!Repcode.Value, Fields!RepCode.Value, Fields!CBM.Value, "RepInfo")</Value>
-              </SortExpression>
-            </SortExpressions>
-            <Height>1.2cm</Height>
-            <Width>74.34292cm</Width>
+            <Height>1.8cm</Height>
+            <Width>31.14244cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1932,10 +859,10 @@ TI_Underlying_Sec_No IN (
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>0.47244in</Height>
+        <Height>0.70866in</Height>
         <Style />
       </Body>
-      <Width>29.26887in</Width>
+      <Width>12.26081in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>
@@ -1948,12 +875,58 @@ TI_Underlying_Sec_No IN (
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="freq">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Monthly</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Freq</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>Monthly</Value>
+            <Label>Monthly</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Quarterly</Value>
+            <Label>Quarterly</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+      <UsedInQuery>True</UsedInQuery>
+    </ReportParameter>
+    <ReportParameter Name="processDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DataSet2</DataSetName>
+          <ValueField>processDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Process Date </Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>freq</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>processDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <rd:ReportUnitType>Cm</rd:ReportUnitType>
-  <rd:ReportID>df68294c-8bc4-48cb-8bdf-6981e73f33e3</rd:ReportID>
+  <rd:ReportID>a88a53a1-8e24-4415-9483-9dcf529f4518</rd:ReportID>
 </Report>
