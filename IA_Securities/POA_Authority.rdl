@@ -71,6 +71,10 @@
           <DataField>ACCOUNT_STATUS</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="branchCode">
+          <DataField>branchCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="RepInfo">
@@ -220,10 +224,10 @@
                   <Width>2.77083in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>5.15625in</Width>
+                  <Width>2.07292in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>3.47917in</Width>
+                  <Width>2.625in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.875in</Width>
@@ -232,19 +236,19 @@
                   <Width>2in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.5in</Width>
+                  <Width>1.13542in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.79167in</Width>
+                  <Width>1.47917in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.97917in</Width>
+                  <Width>0.95834in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>0.85417in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.9375in</Width>
@@ -1230,14 +1234,14 @@
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox19">
+                        <Textbox Name="branchCode">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Lookup(Fields!RR_Code.Value, Fields!RepCode.Value, Fields!BranchName.Value, "RepInfo")</Value>
+                                  <Value>=Fields!branchCode.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>9pt</FontSize>
@@ -1248,7 +1252,7 @@
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox19</rd:DefaultName>
+                          <rd:DefaultName>branchCode</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
@@ -1353,7 +1357,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>ClientID</rd:DefaultName>
@@ -1689,7 +1695,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Doc_Date</rd:DefaultName>
@@ -1909,7 +1917,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>ACCOUNT_STATUS</rd:DefaultName>
@@ -1992,7 +2002,7 @@
             <DataSetName>DataSet1</DataSetName>
             <Top>0.305in</Top>
             <Height>0.43in</Height>
-            <Width>29.53126in</Width>
+            <Width>23.75001in</Width>
             <ZIndex>1</ZIndex>
             <Style />
           </Tablix>

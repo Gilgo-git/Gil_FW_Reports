@@ -8,6 +8,11 @@
       <rd:SecurityType>None</rd:SecurityType>
       <rd:DataSourceID>38d81f32-059e-43a7-a903-7e7bf2ff661e</rd:DataSourceID>
     </DataSource>
+    <DataSource Name="CERTS">
+      <DataSourceReference>CERTS</DataSourceReference>
+      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:DataSourceID>1807be60-57a1-4e09-bcf1-3d7a9b911e57</rd:DataSourceID>
+    </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="CommissionStmtbyAdvisorandCategory_Qtr">
@@ -113,78 +118,24 @@
     <DataSet Name="AUAbyProductbyAdvisor_Quarter">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText> declare @processDate as date
- set @processDate='2022-06-01'
--- select  DATEADD(QUARTER, DATEDIFF(QUARTER, 0, @processDate)-1, 0),
---  DATEADD(QUARTER, DATEDIFF(QUARTER, -1, @processDate)-1, -1)
-select 
-p.processDate, --"Process Date",
-share.toRepId as Rep_Id,  --# reps sharing the positions
-'SecUser_Adv.displayName' as  "Advisor Name",
-IAVM_Rep.repName, --"Rep Code Name",
-
---if(p.productCode in ('RW','OPT','COM'), 'EQT', if(p.productCode in ('GIC','SBD'), 'FIX', p.productCode)) as productCode,
---if(p.productCode in ('RW','OPT','COM'), 'EQT', if(p.productCode in ('GIC','SBD'), 'FIX', p.productCode)) as productGroupCode,
-case when p.productCode in ('RW','OPT','COM') then 'EQT'
-     when p.productCode in ('GIC','SBD') then  'FIX'
-	 else p.productCode end  as productCode,
-case when p.productCode in ('RW','OPT','COM') then 'EQT'
-     when p.productCode in ('GIC','SBD') then  'FIX'
-	 else p.productCode end  as  productGroupCode,
-
-
- 0 as AUA_After_Split
-
---sum(case when commInfo.shareGrossCommInd = 1 then share.commissionPct/100 * p.valueCAD
---	else share.netCommissionPct/100 * p.valueCAD end) as AUA_After_Split
-
-from iAS_Portal.IAVM.positionSummary p
-
-/* COMMISSION.share - find out commission to/from RepId relationship */
-LEFT OUTER join iAS_Portal.REPORTS.COMMISSION_share share
-	ON  shareType = 'default'  
-	AND share.fromRepId = p.repId    
-
-/* COMMISSION.repCommissionInfo - find out if split is Gross or Net? */
-LEFT OUTER join iAS_Portal.REPORTS.COMMISSION_repCommissionInfo commInfo
-	ON commInfo.repId = p.repId           -- # Rep.repId - consistent gross net share
-
-LEFT OUTER JOIN iAS_Portal.IAVM.userInfo UserInfo_Adv  -- # advisor ID
-  ON UserInfo_Adv.repId = share.toRepId
-
---LEFT OUTER JOIN TX.secUser SecUser_Adv     will use CERTS
---ON SecUser_Adv.id = UserInfo_Adv.id 
-
-left join iAS_Portal.IAVM.rep IAVM_Rep     
-  on IAVM_Rep.repId = share.toRepId   
-
-where p.repId != 'SEZ9'
-   -- # find last business date of the quarter
-and p.processDate = (SELECT  MAX(exchangeDate) FROM IAVM.exchangeRate
-                      WHERE  exchangeDate &lt;= DATEADD(QUARTER, DATEDIFF(QUARTER, -1, @processDate)-1, -1) 
-                     )
---group by p.processDate, share.toRepId, --SecUser_Adv.displayName, 
---IAVM_Rep.repName-- , productGroupCode ???
-----HAVING sum(IF (commInfo.shareGrossCommInd = 1, share.commissionPct/100 * p.valueCAD, share.netCommissionPct/100 * p.valueCAD) 
-----           ) &lt;&gt; 0
---HAVING sum(case when commInfo.shareGrossCommInd = 1 then share.commissionPct/100 * p.valueCAD
---else  share.netCommissionPct/100 * p.valueCAD end  
---          ) &lt;&gt; 0
-
---order by p.processDate,p.repId,productGroupCode = 'EQT' desc, productGroupCode = 'MUT' desc, productGroupCode = 'FIX' desc, productGroupCode = 'CASH' desc, share.toRepId;
---order by p.processDate,p.repId,productGroupCode  desc, share.toRepId</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@freq">
+            <Value>=Parameters!freq.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@processDate">
+            <Value>=Parameters!processDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>REPORTS.usp_SP_AUA_byProduct_byAdvisor</CommandText>
       </Query>
       <Fields>
         <Field Name="processDate">
           <DataField>processDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="Rep_Id">
-          <DataField>Rep_Id</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Advisor_Name">
-          <DataField>Advisor Name</DataField>
+        <Field Name="toRepId">
+          <DataField>toRepId</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="repName">
@@ -199,80 +150,54 @@ and p.processDate = (SELECT  MAX(exchangeDate) FROM IAVM.exchangeRate
           <DataField>productGroupCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="sortGroupCode">
+          <DataField>sortGroupCode</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="AUA_After_Split">
           <DataField>AUA_After_Split</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
     <DataSet Name="AUAbyCommissionTypebyAdvisor_Quarter">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>select top 100
- p.processDate,
- share.toRepId "Rep ID",                   
- 'SecUser_Adv.displayName' "Advisor Name",
- IAVM_Rep.repName "Rep Code Name",
- --if(rep_com_type.managedInd, "MANAGED", if(rep_com_type.fixedFeeInd, "FEEBASED", "COMMISSION")) as commissionType,
- '' as commissionType,
- 
- --sum( IF (commInfo.shareGrossCommInd = 1, share.commissionPct/100 * p.valueCAD, share.netCommissionPct/100 * p.valueCAD)
- --   ) as "AUA (After Split)"
- 0 as "AUA (After Split)"
-from IAVM.positionSummary p
-left OUTER join IAVM.rep rep_com_type          
-  on rep_com_type.repId = p.repId   
-
-LEFT OUTER join REPORTS.COMMISSION_repCommissionInfo commInfo  
-  ON commInfo.repId = p.repId                       
-
-LEFT OUTER join REPORTS.COMMISSION_share share     
-  ON  shareType = 'default'  
-  AND share.fromRepId = p.repId            
-
-LEFT OUTER JOIN IAVM.userInfo UserInfo_Adv 
-  ON UserInfo_Adv.repId = share.toRepId
-     
-  --ON SecUser_Adv.id = UserInfo_Adv.id 
-
-left join IAVM.rep IAVM_Rep     
-  on IAVM_Rep.repId = share.toRepId   
-
---where
--- p.repId not in ('SEAA', 'SEZ9') and   # find last business date of the quarter
--- p.processDate = (SELECT  MAX(exchangeDate) FROM IAVM.exchangeRate
---                   WHERE  exchangeDate &lt;= MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL QUARTER(CURDATE()) -1 QUARTER - INTERVAL 1 DAY  
---                 )
---group by p.processDate, share.toRepId, commissionType ,SecUser_Adv.displayName,IAVM_Rep.repName
---HAVING sum( IF (commInfo.shareGrossCommInd = 1, share.commissionPct/100 * p.valueCAD, share.netCommissionPct/100 * p.valueCAD) )  &lt;&gt; 0
---order by p.processDate, commissionType = 'MANAGED' desc, commissionType = 'FEEBASED' desc, commissionType = 'COMMISSION' desc,
---         SecUser_Adv.displayName
-;</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@freq">
+            <Value>=Parameters!freq.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@processDate">
+            <Value>=Parameters!processDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>REPORTS.usp_SP_AUA_byCommission_byAdvisor</CommandText>
       </Query>
       <Fields>
         <Field Name="processDate">
           <DataField>processDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="Rep_ID">
-          <DataField>Rep ID</DataField>
+        <Field Name="toRepId">
+          <DataField>toRepId</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Advisor_Name">
-          <DataField>Advisor Name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Rep_Code_Name">
-          <DataField>Rep Code Name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="commissionType_sort">
+          <DataField>commissionType_sort</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="commissionType">
           <DataField>commissionType</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="AUA__After_Split_">
-          <DataField>AUA (After Split)</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+        <Field Name="repName">
+          <DataField>repName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="AUA_After_Split">
+          <DataField>AUA_After_Split</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -289,6 +214,106 @@ left join IAVM.rep IAVM_Rep
         <Field Name="LastMonthEnd">
           <DataField>LastMonthEnd</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="RepInfo">
+      <Query>
+        <DataSourceName>CERTS</DataSourceName>
+        <CommandText> EXEC rep.[IAS.getRepInfo]</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="RepCode">
+          <DataField>RepCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RepName">
+          <DataField>RepName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RepStartDate">
+          <DataField>RepStartDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RepEndDate">
+          <DataField>RepEndDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RepEmail">
+          <DataField>RepEmail</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="isActive">
+          <DataField>isActive</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CBM">
+          <DataField>CBM</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RVP">
+          <DataField>RVP</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchNRD">
+          <DataField>BranchNRD</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchName">
+          <DataField>BranchName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchAddress1">
+          <DataField>BranchAddress1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchAddress2">
+          <DataField>BranchAddress2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchCity">
+          <DataField>BranchCity</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchProvince">
+          <DataField>BranchProvince</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchPostalCode">
+          <DataField>BranchPostalCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Language">
+          <DataField>Language</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="FirstName">
+          <DataField>FirstName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="LastName">
+          <DataField>LastName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="IsEmployee">
+          <DataField>IsEmployee</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="PrimaryRole">
+          <DataField>PrimaryRole</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="title">
+          <DataField>title</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="IsPrimaryRoleAdvisor">
+          <DataField>IsPrimaryRoleAdvisor</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DirectLine">
+          <DataField>DirectLine</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -1669,6 +1694,9 @@ left join IAVM.rep IAVM_Rep
             <Height>0.43in</Height>
             <Width>10.79861in</Width>
             <ZIndex>1</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style />
           </Tablix>
           <Tablix Name="AUAbyProductbyAdvisor_QTR">
@@ -1681,19 +1709,19 @@ left join IAVM.rep IAVM_Rep
                   <Width>1.25694in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>4.28472in</Width>
+                  <Width>3.36805in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.52083in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.57639in</Width>
+                  <Width>1.17014in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.70139in</Width>
+                  <Width>1.33681in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.73611in</Width>
+                  <Width>1.33333in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -1718,7 +1746,9 @@ left join IAVM.rep IAVM_Rep
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox60</rd:DefaultName>
@@ -1785,7 +1815,7 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Advisor Name</Value>
+                                  <Value>Advisor Name (CERTS)</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
@@ -1862,7 +1892,21 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Product Code</Value>
+                                  <Value>Product </Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Code</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
@@ -1900,7 +1944,21 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Product Group Code</Value>
+                                  <Value>Product Group </Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Code</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
@@ -1938,7 +1996,7 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>AUA After Split </Value>
+                                  <Value>AUA </Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
@@ -1947,7 +2005,25 @@ left join IAVM.rep IAVM_Rep
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>After Split </Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox70</rd:DefaultName>
@@ -1989,7 +2065,9 @@ left join IAVM.rep IAVM_Rep
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>processDate</rd:DefaultName>
@@ -2010,14 +2088,14 @@ left join IAVM.rep IAVM_Rep
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Rep_Id">
+                        <Textbox Name="toRepId">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Rep_Id.Value</Value>
+                                  <Value>=Fields!toRepId.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
@@ -2027,7 +2105,7 @@ left join IAVM.rep IAVM_Rep
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Rep_Id</rd:DefaultName>
+                          <rd:DefaultName>toRepId</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -2052,7 +2130,7 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Advisor_Name.Value</Value>
+                                  <Value>=Lookup(Fields!toRepId.Value, Fields!RepCode.Value, Fields!RepName.Value, "RepInfo")</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
@@ -2196,7 +2274,7 @@ left join IAVM.rep IAVM_Rep
                                   <Value>=Fields!AUA_After_Split.Value</Value>
                                   <Style>
                                     <FontFamily />
-                                    <Format>0.00;(0.00)</Format>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -2263,8 +2341,11 @@ left join IAVM.rep IAVM_Rep
             <Top>2.66206cm</Top>
             <Left>0.00003cm</Left>
             <Height>0.43in</Height>
-            <Width>14.33332in</Width>
+            <Width>12.24304in</Width>
             <ZIndex>2</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style />
           </Tablix>
           <Tablix Name="AUAbyCommissionTypebyAdvisor_QTR">
@@ -2277,7 +2358,7 @@ left join IAVM.rep IAVM_Rep
                   <Width>1.25694in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>4.28472in</Width>
+                  <Width>3.36804in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.52083in</Width>
@@ -2378,7 +2459,7 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Advisor Name</Value>
+                                  <Value>Advisor Name (CERTS)</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
@@ -2455,7 +2536,21 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>commission Type</Value>
+                                  <Value>Commission </Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Type</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
@@ -2493,7 +2588,21 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>AUA After Split </Value>
+                                  <Value>AUA </Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>After Split </Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
@@ -2572,7 +2681,7 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Rep_ID.Value</Value>
+                                  <Value>=Fields!toRepId.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
@@ -2607,7 +2716,7 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Advisor_Name.Value</Value>
+                                  <Value>=Fields!repName.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
@@ -2643,7 +2752,7 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Rep_Code_Name.Value</Value>
+                                  <Value>=Fields!repName.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
@@ -2713,7 +2822,7 @@ left join IAVM.rep IAVM_Rep
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!AUA__After_Split_.Value</Value>
+                                  <Value>=Fields!AUA_After_Split.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <Format>0.00;(0.00)</Format>
@@ -2779,7 +2888,7 @@ left join IAVM.rep IAVM_Rep
             <Top>4.12679cm</Top>
             <Left>0.00006cm</Left>
             <Height>0.43in</Height>
-            <Width>12.53471in</Width>
+            <Width>11.61803in</Width>
             <ZIndex>3</ZIndex>
             <Style />
           </Tablix>
@@ -2818,7 +2927,6 @@ left join IAVM.rep IAVM_Rep
           </ParameterValue>
         </ParameterValues>
       </ValidValues>
-      <MultiValue>true</MultiValue>
     </ReportParameter>
     <ReportParameter Name="processDate">
       <DataType>DateTime</DataType>
