@@ -13,6 +13,12 @@
     <DataSet Name="PortfolioNotes">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="Date">
+            <Value>=Parameters!Date.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
+          </QueryParameter>
+        </QueryParameters>
         <CommandType>StoredProcedure</CommandType>
         <CommandText>REPORTS.usp_SP_Get_PortfolioNotesReport</CommandText>
       </Query>
@@ -112,6 +118,20 @@
         <Field Name="valueCAD">
           <DataField>valueCAD</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Default_Date">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>SELECT MAX(processDate) AS [MonthEnd]
+FROM [IAVM].[position] (nolock)
+WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="MonthEnd">
+          <DataField>MonthEnd</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -2106,10 +2126,29 @@
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="Date">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>Default_Date</DataSetName>
+          <ValueField>MonthEnd</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Process Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Date</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>
