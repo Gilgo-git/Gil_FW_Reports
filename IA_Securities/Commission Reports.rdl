@@ -355,6 +355,56 @@
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox4">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>="Commission Satement by Advisor &amp; Category Report (" &amp; Parameters!freq.Value &amp; " End) " &amp; IIf(Parameters!freq.Value = "Monthly", dateadd("m", 1, dateserial(year(Parameters!processDate.Value), month(Parameters!processDate.Value), 0)), dateadd("q", 0, DATEADD(Microsoft.VisualBasic.DateInterval.Day, - 1, DATEADD(Microsoft.VisualBasic.DateInterval.Quarter, DATEPART(Microsoft.VisualBasic.DateInterval.Quarter, Parameters!processDate.Value), DATESERIAL(YEAR(Parameters!processDate.Value), 1, 1)))))</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>9</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
                   <Height>0.22in</Height>
                   <TablixCells>
                     <TablixCell>
@@ -371,7 +421,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -386,7 +435,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -410,7 +458,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -425,7 +472,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -449,7 +495,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -464,7 +509,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -488,7 +532,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -503,7 +546,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -527,7 +569,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -545,7 +586,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -569,7 +609,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -587,7 +626,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -611,7 +649,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -629,7 +666,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -653,7 +689,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -671,7 +706,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -695,7 +729,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -713,7 +746,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -1074,6 +1106,10 @@
                 <TablixMember>
                   <KeepWithGroup>After</KeepWithGroup>
                   <RepeatOnNewPage>true</RepeatOnNewPage>
+                </TablixMember>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
                   <KeepTogether>true</KeepTogether>
                 </TablixMember>
                 <TablixMember>
@@ -1095,11 +1131,8 @@
             </PageBreak>
             <PageName>CommissionStmtbyAdvisorandCategory_Quarterly</PageName>
             <Left>0.00003cm</Left>
-            <Height>0.43in</Height>
+            <Height>0.68in</Height>
             <Width>17.02776in</Width>
-            <Visibility>
-              <Hidden>true</Hidden>
-            </Visibility>
             <Style />
           </Tablix>
           <Tablix Name="Gross_Commission_Ranking_Report_Quarter_QTR">
@@ -1109,7 +1142,7 @@
                   <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>1.26042in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.45139in</Width>
@@ -1129,6 +1162,54 @@
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox3">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>="Gross Commission Ranking Report (" &amp; Parameters!freq.Value &amp; " End) " &amp; IIf(Parameters!freq.Value = "Monthly", dateadd("m", 1, dateserial(year(Parameters!processDate.Value), month(Parameters!processDate.Value), 0)), dateadd("q", 0, DATEADD(Microsoft.VisualBasic.DateInterval.Day, - 1, DATEADD(Microsoft.VisualBasic.DateInterval.Quarter, DATEPART(Microsoft.VisualBasic.DateInterval.Quarter, Parameters!processDate.Value), DATESERIAL(YEAR(Parameters!processDate.Value), 1, 1)))))</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>7</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
                   <Height>0.22in</Height>
                   <TablixCells>
                     <TablixCell>
@@ -1145,11 +1226,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox28</rd:DefaultName>
@@ -1160,7 +1242,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1183,11 +1264,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox30</rd:DefaultName>
@@ -1198,7 +1280,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1221,7 +1302,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1236,7 +1316,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1259,7 +1338,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1274,7 +1352,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1297,7 +1374,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1312,7 +1388,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1335,11 +1410,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox38</rd:DefaultName>
@@ -1350,7 +1426,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1373,11 +1448,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox40</rd:DefaultName>
@@ -1388,7 +1464,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1418,7 +1493,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>rankInd</rd:DefaultName>
@@ -1453,7 +1530,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>regionCode</rd:DefaultName>
@@ -1589,12 +1668,14 @@
                                   <Value>=Fields!commission.Value</Value>
                                   <Style>
                                     <FontFamily />
-                                    <Format>0.00;(0.00)</Format>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>commission</rd:DefaultName>
@@ -1625,12 +1706,14 @@
                                   <Value>=Fields!transFee.Value</Value>
                                   <Style>
                                     <FontFamily />
-                                    <Format>0.00;(0.00)</Format>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>transFee</rd:DefaultName>
@@ -1669,6 +1752,10 @@
                 <TablixMember>
                   <KeepWithGroup>After</KeepWithGroup>
                   <RepeatOnNewPage>true</RepeatOnNewPage>
+                </TablixMember>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
                   <KeepTogether>true</KeepTogether>
                 </TablixMember>
                 <TablixMember>
@@ -1689,14 +1776,11 @@
               <BreakLocation>End</BreakLocation>
             </PageBreak>
             <PageName>Gross_Commission_Ranking_Report_Quarter_QTR</PageName>
-            <Top>1.23331cm</Top>
+            <Top>1.675cm</Top>
             <Left>0.00003cm</Left>
-            <Height>0.43in</Height>
-            <Width>10.79861in</Width>
+            <Height>0.68in</Height>
+            <Width>11.05903in</Width>
             <ZIndex>1</ZIndex>
-            <Visibility>
-              <Hidden>true</Hidden>
-            </Visibility>
             <Style />
           </Tablix>
           <Tablix Name="AUAbyProductbyAdvisor_QTR">
@@ -1726,6 +1810,54 @@
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>="AUA by Commission Type by Advisor Report(" &amp; Parameters!freq.Value &amp; " End) " &amp; IIf(Parameters!freq.Value = "Monthly", dateadd("m", 1, dateserial(year(Parameters!processDate.Value), month(Parameters!processDate.Value), 0)), dateadd("q", 0, DATEADD(Microsoft.VisualBasic.DateInterval.Day, - 1, DATEADD(Microsoft.VisualBasic.DateInterval.Quarter, DATEPART(Microsoft.VisualBasic.DateInterval.Quarter, Parameters!processDate.Value), DATESERIAL(YEAR(Parameters!processDate.Value), 1, 1)))))</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>7</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
                   <Height>0.22in</Height>
                   <TablixCells>
                     <TablixCell>
@@ -1742,7 +1874,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1759,7 +1890,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1782,7 +1912,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1797,7 +1926,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1820,7 +1948,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1835,7 +1962,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -1859,7 +1985,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1874,7 +1999,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1897,11 +2021,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                             <Paragraph>
                               <TextRuns>
@@ -1911,11 +2036,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox66</rd:DefaultName>
@@ -1926,7 +2052,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1949,7 +2074,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1963,7 +2087,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1978,7 +2101,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2001,12 +2123,11 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Center</TextAlign>
+                                <TextAlign>Right</TextAlign>
                               </Style>
                             </Paragraph>
                             <Paragraph>
@@ -2017,12 +2138,11 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Center</TextAlign>
+                                <TextAlign>Right</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -2034,7 +2154,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2208,7 +2327,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>productCode</rd:DefaultName>
@@ -2279,7 +2400,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>AUA_After_Split</rd:DefaultName>
@@ -2318,6 +2441,10 @@
                 <TablixMember>
                   <KeepWithGroup>After</KeepWithGroup>
                   <RepeatOnNewPage>true</RepeatOnNewPage>
+                </TablixMember>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
                   <KeepTogether>true</KeepTogether>
                 </TablixMember>
                 <TablixMember>
@@ -2338,14 +2465,11 @@
               <BreakLocation>End</BreakLocation>
             </PageBreak>
             <PageName>AUAbyProductbyAdvisor_QTR</PageName>
-            <Top>2.66206cm</Top>
+            <Top>3.4022cm</Top>
             <Left>0.00003cm</Left>
-            <Height>0.43in</Height>
+            <Height>0.68in</Height>
             <Width>12.24304in</Width>
             <ZIndex>2</ZIndex>
-            <Visibility>
-              <Hidden>true</Hidden>
-            </Visibility>
             <Style />
           </Tablix>
           <Tablix Name="AUAbyCommissionTypebyAdvisor_QTR">
@@ -2372,6 +2496,56 @@
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>="AUA by Commission Type by Advisor Report (" &amp; Parameters!freq.Value &amp; " End) " &amp; 
+IIf(Parameters!freq.Value="Monthly",dateadd("m",1,dateserial(year( Parameters!processDate.Value),month(Parameters!processDate.Value),0)), 
+ dateadd("q",0,DATEADD(DateInterval.Day, -1, DATEADD(DateInterval.Quarter, DATEPART(DateInterval.Quarter,Parameters!processDate.Value )
+  , DATESERIAL(YEAR(Parameters!processDate.Value), 1, 1)   ))))</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>6</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
                   <Height>0.22in</Height>
                   <TablixCells>
                     <TablixCell>
@@ -2388,7 +2562,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2403,7 +2576,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2426,7 +2598,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2441,7 +2612,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2464,7 +2634,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2479,7 +2648,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -2503,7 +2671,6 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2518,7 +2685,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2541,11 +2707,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                             <Paragraph>
                               <TextRuns>
@@ -2555,11 +2722,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox86</rd:DefaultName>
@@ -2570,7 +2738,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2593,11 +2760,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                             <Paragraph>
                               <TextRuns>
@@ -2607,11 +2775,12 @@
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox70</rd:DefaultName>
@@ -2622,7 +2791,6 @@
                             <BottomBorder>
                               <Style>Solid</Style>
                             </BottomBorder>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2653,7 +2821,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Process_Date</rd:DefaultName>
@@ -2709,14 +2879,14 @@
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="AdvisorName3">
+                        <Textbox Name="AdvisorName4">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!repName.Value</Value>
+                                  <Value>=Lookup(Fields!toRepId.Value, Fields!RepCode.Value, Fields!RepName.Value, "RepInfo")</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
@@ -2794,7 +2964,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>commissionType</rd:DefaultName>
@@ -2825,7 +2997,7 @@
                                   <Value>=Fields!AUA_After_Split.Value</Value>
                                   <Style>
                                     <FontFamily />
-                                    <Format>0.00;(0.00)</Format>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -2868,6 +3040,10 @@
                 <TablixMember>
                   <KeepWithGroup>After</KeepWithGroup>
                   <RepeatOnNewPage>true</RepeatOnNewPage>
+                </TablixMember>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
                   <KeepTogether>true</KeepTogether>
                 </TablixMember>
                 <TablixMember>
@@ -2885,18 +3061,29 @@
             </TablixRowHierarchy>
             <DataSetName>AUAbyCommissionTypebyAdvisor_Quarter</DataSetName>
             <PageName>AUAbyCommissionTypebyAdvisor_QTR</PageName>
-            <Top>4.12679cm</Top>
+            <SortExpressions>
+              <SortExpression>
+                <Value>=Fields!processDate.Value</Value>
+              </SortExpression>
+              <SortExpression>
+                <Value>=Fields!commissionType_sort.Value</Value>
+              </SortExpression>
+              <SortExpression>
+                <Value>=Fields!repName.Value</Value>
+              </SortExpression>
+            </SortExpressions>
+            <Top>5.1294cm</Top>
             <Left>0.00006cm</Left>
-            <Height>0.43in</Height>
+            <Height>0.68in</Height>
             <Width>11.61803in</Width>
             <ZIndex>3</ZIndex>
             <Style />
           </Tablix>
         </ReportItems>
-        <Height>2.05472in</Height>
+        <Height>2.71334in</Height>
         <Style />
       </Body>
-      <Width>21.25696in</Width>
+      <Width>17.02777in</Width>
       <Page>
         <LeftMargin>1in</LeftMargin>
         <RightMargin>1in</RightMargin>
