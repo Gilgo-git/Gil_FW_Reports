@@ -1219,7 +1219,6 @@ WHERE (act.A_C_Closing_Date IS NULL OR act.A_C_Closing_Date = '')
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1371,66 +1370,53 @@ WHERE (act.A_C_Closing_Date IS NULL OR act.A_C_Closing_Date = '')
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>iAS_Portal_DS</DataSetName>
-            <Top>0.06944in</Top>
+            <Top>0.06029in</Top>
             <Height>0.43in</Height>
             <Width>16.75208in</Width>
             <ToolTip>Trading Authority Report for open accounts.</ToolTip>
             <Style />
           </Tablix>
+          <Textbox Name="Textbox19">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=String.Concat(Rtrim(Replace(CStr(Globals!ReportName), "Report", String.Empty)), " [", CStr(FORMAT(Globals!ExecutionTime,"M/d/yyyy")), "]")</Value>
+                    <Style>
+                      <FontFamily>Segoe UI Semibold</FontFamily>
+                      <FontSize>18pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox19</rd:DefaultName>
+            <Height>0.39085in</Height>
+            <Width>16.75208in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>="#428CC3"</BackgroundColor>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
         </ReportItems>
-        <Height>0.65625in</Height>
+        <Height>1.11599in</Height>
         <Style />
       </Body>
-      <Width>18.84375in</Width>
+      <Width>19.00208in</Width>
       <Page>
-        <PageHeader>
-          <Height>0.78417in</Height>
-          <PrintOnFirstPage>true</PrintOnFirstPage>
-          <PrintOnLastPage>true</PrintOnLastPage>
-          <ReportItems>
-            <Textbox Name="Textbox19">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>=String.Concat(Rtrim(Replace(CStr(Globals!ReportName), "Report", String.Empty)), " [", CStr(FORMAT(Globals!ExecutionTime,"M/d/yyyy")), "]")</Value>
-                      <Style>
-                        <FontFamily>Segoe UI Semibold</FontFamily>
-                        <FontSize>18pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <TextAlign>Center</TextAlign>
-                  </Style>
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox19</rd:DefaultName>
-              <Top>0.09722in</Top>
-              <Height>0.61751in</Height>
-              <Width>16.71875in</Width>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <BackgroundColor>="#428CC3"</BackgroundColor>
-                <VerticalAlign>Middle</VerticalAlign>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-          </ReportItems>
-          <Style>
-            <Border>
-              <Style>None</Style>
-            </Border>
-          </Style>
-        </PageHeader>
         <PageFooter>
           <Height>0.82292in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
@@ -1465,7 +1451,7 @@ WHERE (act.A_C_Closing_Date IS NULL OR act.A_C_Closing_Date = '')
               </Paragraphs>
               <rd:DefaultName>Textbox21</rd:DefaultName>
               <Top>0.13889in</Top>
-              <Left>14.6875in</Left>
+              <Left>14.72083in</Left>
               <Height>0.25in</Height>
               <Width>2.03125in</Width>
               <ZIndex>1</ZIndex>
@@ -1500,7 +1486,7 @@ WHERE (act.A_C_Closing_Date IS NULL OR act.A_C_Closing_Date = '')
               <rd:DefaultName>Textbox22</rd:DefaultName>
               <Top>0.125in</Top>
               <Height>0.25in</Height>
-              <Width>3.83958in</Width>
+              <Width>1.95625in</Width>
               <ZIndex>2</ZIndex>
               <Style>
                 <Border>
