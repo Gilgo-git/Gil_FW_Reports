@@ -272,7 +272,6 @@
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1090,7 +1089,7 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=CStr(Globals!ReportName)+" as of "+CStr(FORMAT(Now(),"yyyy-MM-dd"))</Value>
+                      <Value>=CStr(Globals!ReportName)+" as of "+CStr(FORMAT(Parameters!TRADE_DATE.Value,"yyyy-MM-dd"))</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>15pt</FontSize>
@@ -1271,6 +1270,11 @@
   <ReportParameters>
     <ReportParameter Name="TRADE_DATE">
       <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today()</Value>
+        </Values>
+      </DefaultValue>
       <Prompt>TRADE DATE</Prompt>
     </ReportParameter>
   </ReportParameters>
