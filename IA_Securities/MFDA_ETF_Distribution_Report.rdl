@@ -13,8 +13,13 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>declare @parmDate as datetime
-set @parmDate='2022-08-11'
+        <QueryParameters>
+          <QueryParameter Name="@parmDate">
+            <Value>=Parameters!parmDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>-- declare @parmDate as datetime
+-- set @parmDate='2022-08-11'
 
 SELECT  TI_Symbol Symbol,
 		TI_Alternate_ID SecurityNumber,
@@ -52,7 +57,7 @@ AND  TI_Income_Record_Date &gt;=  CASE WHEN Income_Frequency = 12 THEN cast(cast
 									ELSE cast(cast(DATEADD(y,-1,@parmDate) as date) as datetime) 				
 								END
 AND  TI_Income_Record_Date &lt;=@parmDate
-
+AND @parmDate &lt; getdate()
 -- order by Symbol,securityNumber,recordDate desc</CommandText>
       </Query>
       <Fields>
