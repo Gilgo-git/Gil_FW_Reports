@@ -3,20 +3,16 @@
   <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="IasPortal">
-      <ConnectionProperties>
-        <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=sy-ias_portal.accp.sgbd.ia.iafg.net,45322;Initial Catalog=iAS_Portal</ConnectString>
-        <IntegratedSecurity>true</IntegratedSecurity>
-      </ConnectionProperties>
-      <rd:SecurityType>Integrated</rd:SecurityType>
-      <rd:DataSourceID>ae051b8c-ed19-478a-9ea4-5fb9ab7fffd3</rd:DataSourceID>
+    <DataSource Name="iAS_Portal">
+      <DataSourceReference>iAS_Portal</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>06be27d7-b2b3-4a35-a919-2f90e1efdeaf</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DataSet1">
       <Query>
-        <DataSourceName>IasPortal</DataSourceName>
+        <DataSourceName>iAS_Portal</DataSourceName>
         <CommandText>declare @parmDate as datetime
 set @parmDate='2022-08-11'
 
@@ -1177,6 +1173,7 @@ AND  TI_Income_Record_Date &lt;=@parmDate
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox1</rd:DefaultName>
+            <Top>0.03528cm</Top>
             <Height>0.6cm</Height>
             <Width>41.23596cm</Width>
             <ZIndex>1</ZIndex>
