@@ -52,9 +52,10 @@ where  A.BUY_SELL_INDICATOR  in ('B','S')
 	and B.SECURITY_SYMBOL is null
 	and A.SECURITY_SYMBOL in ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')		
 	and A.PROCESS_DATE  = (case datepart(weekday, getdate()) when 0 then cast(dateadd(day, -3,getdate()) as date) else cast(dateadd(day, -1, getdate()) as date) end)
-group by A.RR_NUMBER
-		,rep.repName
-		,case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end</CommandText>
+group by 
+	A.RR_NUMBER
+	,rep.repName
+	,case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end</CommandText>
       </Query>
       <Fields>
         <Field Name="ETF_Ticker">

@@ -56,16 +56,16 @@ where (act.A_C_Closing_Date is null or act.A_C_Closing_Date = '')
 	and (act.A_C_LAST_UPDATE_DATE = 
 				(
 					case datepart(weekday, getdate()) 
-						when 0 then cast(dateadd(day, -3, getdate()) as date)
-						when 6 then cast(dateadd(day, -2, getdate()) as date)
+						when 2 then cast(dateadd(day, -3, getdate()) as date)
+						when 1 then cast(dateadd(day, -2, getdate()) as date)
 						else cast(dateadd(day, -1, getdate()) as date)
 					end
 				) 
 			or act.A_C_Open_Date = 
 				(
 					case datepart(weekday, getdate()) 
-						when 0 then cast(dateadd(day, -3,getdate()) as date)
-						when 6 then cast(dateadd(day, -2, getdate()) as date)
+						when 2 then cast(dateadd(day, -3,getdate()) as date)
+						when 1 then cast(dateadd(day, -2, getdate()) as date)
 						else cast(dateadd(day, -1, getdate()) as date)
 					end
 				)
@@ -238,16 +238,16 @@ where (act.A_C_Closing_Date is null or act.A_C_Closing_Date = '')
 	and (act.A_C_LAST_UPDATE_DATE = 
 			(
 				case datepart(weekday, getdate()) 
-					when 0 then cast(dateadd(day, -3, getdate()) as date)
-					when 6 then cast(dateadd(day, -2, getdate()) as date)
+					when 2 then cast(dateadd(day, -3, getdate()) as date)
+					when 1 then cast(dateadd(day, -2, getdate()) as date)
 					else cast(dateadd(day, -1, getdate()) as date)
 				end
 			) 
 		or act.A_C_Open_Date = 
 			(
 				case datepart(weekday, getdate()) 
-					when 0 then cast(dateadd(day, -3,getdate()) as date)
-					when 6 then cast(dateadd(day, -2, getdate()) as date)
+					when 2 then cast(dateadd(day, -3,getdate()) as date)
+					when 1 then cast(dateadd(day, -2, getdate()) as date)
 					else cast(dateadd(day, -1, getdate()) as date)
 				end
 			)
