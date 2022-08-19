@@ -474,6 +474,18 @@ UNION ALL
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="MaxProcessDate">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>SELECT CAST(MAX(processDate) as Date)  processDate FROM IAVM.position</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="processDate">
+          <DataField>processDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -4501,6 +4513,12 @@ UNION ALL
   <ReportParameters>
     <ReportParameter Name="processDate">
       <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>MaxProcessDate</DataSetName>
+          <ValueField>processDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
       <Prompt>process Date</Prompt>
     </ReportParameter>
   </ReportParameters>
