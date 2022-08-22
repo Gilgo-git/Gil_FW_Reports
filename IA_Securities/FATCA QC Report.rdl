@@ -13,6 +13,11 @@
     <DataSet Name="iAS_Portal_DS1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select distinct
 		act.A_C_Representative [Representative Code],
 		rep.repName [Representative Name],
@@ -53,23 +58,25 @@ from BACKOFFICE.IAVMACT act
 where (act.A_C_Closing_Date is null or act.A_C_Closing_Date = '')
 	and act.Client_Tax_Recip_Type IN ('3','4')
 	and doc.Doc_Type in ('7A','7B','77','69','71','76','7X','7Z','8V','9K','12','9E','9L','9M','21','8K','8G','8J','7E','63','78')
-	and (act.A_C_LAST_UPDATE_DATE = 
-				(
-					case datepart(weekday, getdate()) 
-						when 2 then cast(dateadd(day, -3, getdate()) as date)
-						when 1 then cast(dateadd(day, -2, getdate()) as date)
-						else cast(dateadd(day, -1, getdate()) as date)
-					end
-				) 
-			or act.A_C_Open_Date = 
-				(
-					case datepart(weekday, getdate()) 
-						when 2 then cast(dateadd(day, -3,getdate()) as date)
-						when 1 then cast(dateadd(day, -2, getdate()) as date)
-						else cast(dateadd(day, -1, getdate()) as date)
-					end
-				)
+	and
+	(
+		act.A_C_LAST_UPDATE_DATE = 
+			(
+				case datepart(weekday, @RptDate) 
+					when 2 then cast(dateadd(day, -3, @RptDate) as date)
+					when 1 then cast(dateadd(day, -2, @RptDate) as date)
+					else cast(dateadd(day, -1, @RptDate) as date)
+				end
+			) 
+		or act.A_C_Open_Date = 
+			(
+				case datepart(weekday, @RptDate) 
+					when 2 then cast(dateadd(day, -3, @RptDate) as date)
+					when 1 then cast(dateadd(day, -2, @RptDate) as date)
+					else cast(dateadd(day, -1, @RptDate) as date)
+				end
 			)
+	)
                             
 order by act.Client</CommandText>
       </Query>
@@ -195,6 +202,12 @@ order by act.Client</CommandText>
     <DataSet Name="iAS_Portal_DS2">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select distinct
 		act.A_C_Representative [Representative Code],
 		rep.repName [Representative Name],
@@ -237,18 +250,18 @@ where (act.A_C_Closing_Date is null or act.A_C_Closing_Date = '')
 	and doc.Doc_Type in ('7A','7B','77','69','71','76','7X','7Z','8V','9K','12','9E','9L','9M','21','8K','8G','8J','7E','63','78')
 	and (act.A_C_LAST_UPDATE_DATE = 
 			(
-				case datepart(weekday, getdate()) 
-					when 2 then cast(dateadd(day, -3, getdate()) as date)
-					when 1 then cast(dateadd(day, -2, getdate()) as date)
-					else cast(dateadd(day, -1, getdate()) as date)
+				case datepart(weekday, @RptDate) 
+					when 2 then cast(dateadd(day, -3, @RptDate) as date)
+					when 1 then cast(dateadd(day, -2, @RptDate) as date)
+					else cast(dateadd(day, -1, @RptDate) as date)
 				end
 			) 
 		or act.A_C_Open_Date = 
 			(
-				case datepart(weekday, getdate()) 
-					when 2 then cast(dateadd(day, -3,getdate()) as date)
-					when 1 then cast(dateadd(day, -2, getdate()) as date)
-					else cast(dateadd(day, -1, getdate()) as date)
+				case datepart(weekday, @RptDate) 
+					when 2 then cast(dateadd(day, -3, @RptDate) as date)
+					when 1 then cast(dateadd(day, -2, @RptDate) as date)
+					else cast(dateadd(day, -1, @RptDate) as date)
 				end
 			)
 		)</CommandText>
@@ -5119,7 +5132,7 @@ where (act.A_C_Closing_Date is null or act.A_C_Closing_Date = '')
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=CStr(Globals!ReportName)+" as of "+CStr(FORMAT(Now(),"yyyy-MM-dd"))</Value>
+                      <Value>=CStr(Globals!ReportName)+" as of " + CStr(FORMAT(Parameters!RptDate.Value,"yyyy-MM-dd"))</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>15pt</FontSize>
@@ -5297,10 +5310,28 @@ where (act.A_C_Closing_Date is null or act.A_C_Closing_Date = '')
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="RptDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today()</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Rptort Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RptDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <EmbeddedImages>
