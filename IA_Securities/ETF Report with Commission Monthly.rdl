@@ -13,61 +13,72 @@
     <DataSet Name="iAS_Portal_DS">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>select
-		A.SECURITY_SYMBOL [ETF Ticker],
-		A.RR_NUMBER [Representative Code],
-		rep.repName [Representative Name],
-		sum(case when A.BUY_SELL_INDICATOR = 'B' then  1 else  0 end) [Buys],
-		sum(case when A.BUY_SELL_INDICATOR = 'S' then  1 else  0 end) [Sells],
-		sum(A.TRADE_GROUP_QUANTITY) [Quantity],
-		min(A.MIN_TRADED_PRICE) [Price], 
-		sum(A.TRADE_GROUP_GROSS_AMOUNT) [Transction Trading Gross Amount],
-		sum(A.TRADE_GROUP_GROSS_AMOUNT + A.TRADE_GRP_COMM_ENTERED_CAD) [Transction Trading Net Amount],
-		sum(case when A.BUY_SELL_INDICATOR = 'B' then  1 else  0 end) + sum(case when A.BUY_SELL_INDICATOR = 'S' then  1 else  0 end) [Total],
-		sum(A.TRADE_GRP_COMM_ENTERED_CAD) [CAD Gross Commission],
-		sum(COMM.netCommission) [CAD Net Commission],
-		case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end [Platform]
-from BACKOFFICE.CMSDT A
-	left outer join
-		(
-			select FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
-			from BACKOFFICE.CMSDT
-			where TRADE_DATE &gt;= '2019-01-01'
-				and SECURITY_SYMBOL IN ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')
-				and CANCEL_INDICATOR = 'Y'
-			group by  FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
-		) B
-		on  A.FMSL_ACCOUNT_NUMBER = B.FMSL_ACCOUNT_NUMBER
-		and A.SECURITY_SYMBOL = B.SECURITY_SYMBOL
-		and A.TRADE_DATE = B.TRADE_DATE
-		and A.TICKET_NUMBER = B.TICKET_NUMBER
+        <QueryParameters>
+          <QueryParameter Name="?">
+            <Value>=Parameters!Parameter1.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="?">
+            <Value>=Parameters!Parameter2.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>
+	SELECT  
+			
+			A.RR_NUMBER 'Representative Code',
+			rep.repName 'Representative Name',
+			A.SECURITY_SYMBOL  as 'Symbol',
+            'IA Clarington' AS 'ETF Provider',
+            sum(CASE WHEN A.BUY_SELL_INDICATOR = 'B' THEN  1 ELSE  0 END) as Buys,
+			sum(CASE WHEN A.BUY_SELL_INDICATOR = 'S' THEN  1 ELSE  0 END) as Sells,
+			sum(A.TRADE_GROUP_GROSS_AMOUNT) as 'Transction Trading Gross Amount',
+			sum(A.TRADE_GROUP_GROSS_AMOUNT+A.TRADE_GRP_COMM_ENTERED_CAD) as 'Transction Trading Net Amount',
+            sum(CASE WHEN A.BUY_SELL_INDICATOR = 'B' THEN  1 ELSE  0 END) + sum(CASE WHEN A.BUY_SELL_INDICATOR = 'S' THEN  1 ELSE  0 END) as 'Total',
+			sum(A.TRADE_GRP_COMM_ENTERED_CAD) as 'CAD Gross Commission',
+			sum(COMM.netCommission) as 'CAD Net Commission',
+			if(left(A.FMSL_ACCOUNT_NUMBER, 2) = '38', 'Hollis Wealth', if (left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38', 'IAS', '')) as 'Platform'
 
-	left outer join COMMISSION.[transaction] COMM
-		on A.COMMISSION_TRANS_ID = COMM.extTransId
-	
-	left outer join IAVM.rep
-		on A.RR_NUMBER = rep.repId
-
-where  A.BUY_SELL_INDICATOR  in ('B','S')
-	and B.SECURITY_SYMBOL is null
-	and A.SECURITY_SYMBOL in ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')		
-	and A.PROCESS_DATE  = (case datepart(weekday, getdate()) when 0 then cast(dateadd(day, -3,getdate()) as date) else cast(dateadd(day, -1, getdate()) as date) end)
-group by 
-	A.RR_NUMBER
-	,rep.repName
-	,case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end</CommandText>
+	FROM BACKOFFICE.CMSDT AS A
+			LEFT OUTER JOIN (
+								SELECT FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
+								FROM BACKOFFICE.CMSDT
+								WHERE 
+										TRADE_DATE &gt;= '2019-01-01'
+										AND SECURITY_SYMBOL IN ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')
+										AND CANCEL_INDICATOR = 'Y'
+										
+								GROUP BY  FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR
+					) AS B 
+				ON  A.FMSL_ACCOUNT_NUMBER = B.FMSL_ACCOUNT_NUMBER 
+				AND A.SECURITY_SYMBOL = B.SECURITY_SYMBOL 
+				AND A.TRADE_DATE = B.TRADE_DATE
+                AND A.TICKET_NUMBER = B.TICKET_NUMBER
+		LEFT OUTER JOIN COMMISSION.transaction AS COMM 
+			ON A.COMMISSION_TRANS_ID = COMM.extTransId
+		LEFT OUTER JOIN IAVM.rep
+			ON A.RR_NUMBER = rep.repId 
+	WHERE  A.BUY_SELL_INDICATOR  IN ('B','S')
+	AND B.SECURITY_SYMBOL IS NULL 
+			AND A.SECURITY_SYMBOL IN ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')		
+			AND A.PROCESS_DATE  BETWEEN ? AND ?
+	GROUP BY A.RR_NUMBER
+			,rep.repName
+			,if(left(A.FMSL_ACCOUNT_NUMBER, 2) = '38', 'Hollis Wealth', if (left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38', 'IAS', ''))</CommandText>
       </Query>
       <Fields>
-        <Field Name="ETF_Ticker">
-          <DataField>ETF Ticker</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
         <Field Name="Representative_Code">
           <DataField>Representative Code</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Representative_Name">
           <DataField>Representative Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Symbol">
+          <DataField>Symbol</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ETF_Provider">
+          <DataField>ETF Provider</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Buys">
@@ -78,16 +89,8 @@ group by
           <DataField>Sells</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Quantity">
-          <DataField>Quantity</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
         <Field Name="Transction_Trading_Gross_Amount">
           <DataField>Transction Trading Gross Amount</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Price">
-          <DataField>Price</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Transction_Trading_Net_Amount">
@@ -112,6 +115,36 @@ group by
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="Dates">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="?">
+            <Value>=Parameters!Type.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT * FROM( 
+SELECT CONCAT(DATE_FORMAT(DATE_ADD(now(), INTERVAL -1 MONTH),'%Y-%m'), '-01') AS StartDate, DATE_FORMAT(LAST_DAY(NOW() - INTERVAL 1 MONTH), '%Y-%m-%d') as EndDate, 'Monthly' as Freq
+ UNION ALL 
+ SELECT MAKEDATE(YEAR(CURDATE()), 1) + INTERVAL QUARTER(CURDATE()) QUARTER - INTERVAL    1 QUARTER AS StartDate, DATE_FORMAT(LAST_DAY(NOW() - INTERVAL 1 MONTH), '%Y-%m-%d') as EndDate, 'Quarterly' as Freq
+ ) AS A 
+WHERE Freq = ?</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="StartDate">
+          <DataField>StartDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="EndDate">
+          <DataField>EndDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Freq">
+          <DataField>Freq</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -121,25 +154,25 @@ group by
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>1in</Width>
-                </TablixColumn>
-                <TablixColumn>
                   <Width>1.125in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.72917in</Width>
+                  <Width>1.40625in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.76042in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.92708in</Width>
                 </TablixColumn>
                 <TablixColumn>
+                  <Width>1.32292in</Width>
+                </TablixColumn>
+                <TablixColumn>
                   <Width>0.82292in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>1.375in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.34375in</Width>
@@ -161,45 +194,6 @@ group by
                 <TablixRow>
                   <Height>0.22in</Height>
                   <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox6">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>ETF Ticker</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox6</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Style>Solid</Style>
-                            </BottomBorder>
-                            <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="textbox2">
@@ -282,6 +276,45 @@ group by
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="Textbox1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Symbol</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="textbox4">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -312,6 +345,45 @@ group by
                             </BottomBorder>
                             <BackgroundColor>LightGrey</BackgroundColor>
                             <FontFamily />
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox15">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>ETF Provider</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox15</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -364,14 +436,14 @@ group by
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox1">
+                        <Textbox Name="textbox6">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Quantity</Value>
+                                  <Value>Transction Trading Gross Amount</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontWeight>Bold</FontWeight>
@@ -383,7 +455,7 @@ group by
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <rd:DefaultName>textbox6</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -392,45 +464,7 @@ group by
                               <Style>Solid</Style>
                             </BottomBorder>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox14">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Price</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox14</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Style>Solid</Style>
-                            </BottomBorder>
-                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <FontFamily />
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -648,41 +682,6 @@ group by
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ETF_Ticker">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!ETF_Ticker.Value</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>8pt</FontSize>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>ETF_Ticker</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Style>Solid</Style>
-                            </BottomBorder>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="Representative_Code">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -755,6 +754,41 @@ group by
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="Symbol">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Symbol.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Symbol</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="Buys">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -781,6 +815,41 @@ group by
                               <Style>Solid</Style>
                             </BottomBorder>
                             <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ETF_Provider">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ETF_Provider.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ETF_Provider</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -827,46 +896,14 @@ group by
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Quantity">
+                        <Textbox Name="Transction_Trading_Gross_Amount">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Quantity.Value</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>8pt</FontSize>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Quantity</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Price">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Price.Value</Value>
+                                  <Value>=Fields!Transction_Trading_Gross_Amount.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>8pt</FontSize>
@@ -877,11 +914,12 @@ group by
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Price</rd:DefaultName>
+                          <rd:DefaultName>Transction_Trading_Gross_Amount</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
                             </Border>
+                            <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1109,16 +1147,17 @@ group by
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>iAS_Portal_DS</DataSetName>
+            <PageName>ETF Report</PageName>
             <Top>0.06944in</Top>
             <Height>0.43in</Height>
-            <Width>12.38543in</Width>
+            <Width>12.52085in</Width>
             <Style />
           </Tablix>
         </ReportItems>
         <Height>0.57291in</Height>
         <Style />
       </Body>
-      <Width>12.38543in</Width>
+      <Width>12.52085in</Width>
       <Page>
         <PageHeader>
           <Height>0.73958in</Height>
@@ -1132,7 +1171,7 @@ group by
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=CStr(Globals!ReportName)+" as of "+CStr(FORMAT(Now(),"yyyy-MM-dd"))</Value>
+                      <Value>="ETF Report With Commission "+Parameters!Type.Value+" from "+Parameters!Parameter1.Value+" to "+Parameters!Parameter2.Value</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>15pt</FontSize>
@@ -1148,7 +1187,7 @@ group by
               <rd:DefaultName>textbox1</rd:DefaultName>
               <Left>1.125in</Left>
               <Height>0.65917in</Height>
-              <Width>11.26043in</Width>
+              <Width>11.3646in</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1189,7 +1228,7 @@ group by
               <Top>0.06944in</Top>
               <Left>0.125in</Left>
               <Height>0in</Height>
-              <Width>12.125in</Width>
+              <Width>12.26042in</Width>
               <Style>
                 <Border>
                   <Style>Solid</Style>
@@ -1215,7 +1254,7 @@ group by
               </Paragraphs>
               <rd:DefaultName>Textbox11</rd:DefaultName>
               <Top>0.13889in</Top>
-              <Left>10.21875in</Left>
+              <Left>10.35417in</Left>
               <Height>0.25in</Height>
               <Width>2.03125in</Width>
               <ZIndex>1</ZIndex>
@@ -1308,10 +1347,69 @@ group by
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="Type">
+      <DataType>String</DataType>
+      <Prompt>Type</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>Monthly</Value>
+            <Label>Monthly</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Quarterly</Value>
+            <Label>Quarterly</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Other</Value>
+            <Label>Other</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="Parameter1">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>Dates</DataSetName>
+          <ValueField>StartDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Start Date</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="Parameter2">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>Dates</DataSetName>
+          <ValueField>EndDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>End Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Type</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Parameter1</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Parameter2</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <EmbeddedImages>
