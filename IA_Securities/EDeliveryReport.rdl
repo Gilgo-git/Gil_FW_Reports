@@ -10,6 +10,18 @@
     </DataSource>
   </DataSources>
   <DataSets>
+    <DataSet Name="RptDate">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>SELECT CAST(GETDATE() AS date) AS [CurrentReportDate]</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="CurrentReportDate">
+          <DataField>CurrentReportDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
     <DataSet Name="EDelivery">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
@@ -18,8 +30,68 @@
             <Value>=Parameters!RptDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>REPORTS.usp_SP_Get_EDeliveryReport</CommandText>
+        <CommandText>DECLARE @Doc_Type AS varchar(2) = '1C'
+DECLARE @CurrReportDate AS date = 	
+	CASE WHEN DATEPART(weekday, @RptDate) = 2 
+			THEN DATEADD(day, -3, @RptDate)
+			WHEN DATEPART(weekday, @RptDate) = 1 
+			THEN DATEADD(day, -2, @RptDate)
+			ELSE DATEADD(day, -1, @RptDate)
+	END
+
+--Get report data from IAVMACT, IAVMDOC and rep
+SELECT 	
+	[Representative_Code],
+	[Representative_Name],
+	[Account_ID],
+	[Client_ID],
+	[Account_Short_Name],
+	[Account_Holder_Name],
+	[Client_Name],
+	[Client_First_Name],
+	[Client_Initial],
+	[Client_Last_Name],
+	[Last_Update_Date],
+	[Document_Comments_1],
+	[Document_Comments_2],
+	[Document Comments 3],
+	[Document Type],
+	[Effective Date]
+FROM 
+(
+	SELECT
+		A.[A_C_Representative] AS [Representative_Code],
+		R.[repName] AS [Representative_Name],
+		A.[A_C_ID] AS [Account_ID],
+		A.[Client] AS [Client_ID],
+		A.[A_C_Short_Name] AS [Account_Short_Name],
+		A.[A_C_Name] AS [Account_Holder_Name],
+		A.[Client_Name] AS [Client_Name],
+		A.[Client_First_Name] AS [Client_First_Name],
+		A.[Client_Name_Initial] AS [Client_Initial],
+		A.[Client_Last_Name] AS [Client_Last_Name],
+		A.[A_C_LAST_UPDATE_DATE] AS [Last_Update_Date],
+		D.[Doc_Comments_1] AS [Document_Comments_1],
+		D.[Doc_Comments_2] AS [Document_Comments_2],
+		D.[Doc_Comments_3] AS [Document Comments 3],
+		D.[Doc_type] AS [Document Type],
+		D.[Doc_Eff_Start_Date] AS [Effective Date],
+		D.[Client] AS [Document_Client],
+		ROW_NUMBER() OVER(PARTITION BY D.[Client] ORDER BY D.[Client]) AS [Document_Client_Duped]
+	FROM BACKOFFICE.IAVMACT AS A
+	INNER JOIN IAVM.[rep] AS R 
+	ON A.[A_C_Representative] = R.[repId]
+	INNER JOIN BACKOFFICE.IAVMDOC AS D 
+	ON A.[Client] = D.[Client]
+	WHERE [A_C_Closing_Date] IS NULL 
+	AND	R.[activeInd] = -1 
+	AND	LEN(A.[A_C_ID]) &gt; 2 
+	AND	D.[Doc_Type] = @Doc_Type 
+	AND	A.[A_C_LAST_UPDATE_DATE] = D.[Doc_Eff_Start_Date] 	
+	AND	A.[A_C_LAST_UPDATE_DATE] = @CurrReportDate
+) AS CTE_Get_Derived_Cols 
+WHERE [Document_Client_Duped] = 1 
+ORDER BY [Document_Client] DESC</CommandText>
       </Query>
       <Fields>
         <Field Name="Representative_Code">
@@ -84,18 +156,6 @@
         </Field>
         <Field Name="Effective_Date">
           <DataField>Effective Date</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="RptDate">
-      <Query>
-        <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>SELECT CAST(GETDATE() AS date) AS [CurrentReportDate]</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="CurrentReportDate">
-          <DataField>CurrentReportDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
@@ -1278,7 +1338,7 @@
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>0.975in</Height>
+        <Height>0.90833in</Height>
         <Style />
       </Body>
       <Width>43.305in</Width>
