@@ -13,49 +13,55 @@
     <DataSet Name="iAS_Portal_DS">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>select
-		A.SECURITY_SYMBOL [ETF Ticker],
-		A.RR_NUMBER [Representative Code],
-		rep.repName [Representative Name],
-		sum(case when A.BUY_SELL_INDICATOR = 'B' then  1 else  0 end) [Buys],
-		sum(case when A.BUY_SELL_INDICATOR = 'S' then  1 else  0 end) [Sells],
-		sum(A.TRADE_GROUP_QUANTITY) [Quantity],
-		min(A.MIN_TRADED_PRICE) [Price], 
-		sum(A.TRADE_GROUP_GROSS_AMOUNT) [Transction Trading Gross Amount],
-		sum(A.TRADE_GROUP_GROSS_AMOUNT + A.TRADE_GRP_COMM_ENTERED_CAD) [Transction Trading Net Amount],
-		sum(case when A.BUY_SELL_INDICATOR = 'B' then  1 else  0 end) + sum(case when A.BUY_SELL_INDICATOR = 'S' then  1 else  0 end) [Total],
-		sum(A.TRADE_GRP_COMM_ENTERED_CAD) [CAD Gross Commission],
-		sum(COMM.netCommission) [CAD Net Commission],
-		case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end [Platform]
-from BACKOFFICE.CMSDT A
-	left outer join
-		(
-			select FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
-			from BACKOFFICE.CMSDT
-			where TRADE_DATE &gt;= '2019-01-01'
-				and SECURITY_SYMBOL IN ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')
-				and CANCEL_INDICATOR = 'Y'
-			group by  FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
-		) B
-		on  A.FMSL_ACCOUNT_NUMBER = B.FMSL_ACCOUNT_NUMBER
-		and A.SECURITY_SYMBOL = B.SECURITY_SYMBOL
-		and A.TRADE_DATE = B.TRADE_DATE
-		and A.TICKET_NUMBER = B.TICKET_NUMBER
-
-	left outer join COMMISSION.[transaction] COMM
-		on A.COMMISSION_TRANS_ID = COMM.extTransId
-	
-	left outer join IAVM.rep
-		on A.RR_NUMBER = rep.repId
-
-where  A.BUY_SELL_INDICATOR  in ('B','S')
-	and B.SECURITY_SYMBOL is null
-	and A.SECURITY_SYMBOL in ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')		
-	and A.PROCESS_DATE  = (case datepart(weekday, getdate()) when 0 then cast(dateadd(day, -3,getdate()) as date) else cast(dateadd(day, -1, getdate()) as date) end)
-group by 
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT  
+			A.SECURITY_SYMBOL  AS 'ETF Ticker',
+			A.RR_NUMBER 'Representative Code',
+			rep.repName 'Representative Name',
+			sum(CASE WHEN A.BUY_SELL_INDICATOR = 'B' THEN  1 ELSE  0 END) as Buys,
+			sum(CASE WHEN A.BUY_SELL_INDICATOR = 'S' THEN  1 ELSE  0 END) as Sells,
+			SUM(A.TRADE_GROUP_QUANTITY) AS Quantity,
+			MIN(A.MIN_TRADED_PRICE) AS Price, 
+			sum(A.TRADE_GROUP_GROSS_AMOUNT) as 'Transction Trading Gross Amount',
+			sum(A.TRADE_GROUP_GROSS_AMOUNT+A.TRADE_GRP_COMM_ENTERED_CAD) as 'Transction Trading Net Amount',
+			sum(CASE WHEN A.BUY_SELL_INDICATOR = 'B' THEN  1 ELSE  0 END) + sum(CASE WHEN A.BUY_SELL_INDICATOR = 'S' THEN  1 ELSE  0 END) as 'Total',
+			sum(A.TRADE_GRP_COMM_ENTERED_CAD) as 'CAD Gross Commission',
+			sum(COMM.netCommission) as 'CAD Net Commission',
+			case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end end [Platform]
+FROM BACKOFFICE.CMSDT AS A
+		LEFT OUTER JOIN (
+							SELECT FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
+							FROM BACKOFFICE.CMSDT
+							WHERE 
+									TRADE_DATE &gt;= '2019-01-01'
+									AND SECURITY_SYMBOL IN ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')
+									AND CANCEL_INDICATOR = 'Y'
+										
+							GROUP BY  FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
+				) AS B 
+			ON  A.FMSL_ACCOUNT_NUMBER = B.FMSL_ACCOUNT_NUMBER 
+			AND A.SECURITY_SYMBOL = B.SECURITY_SYMBOL 
+			AND A.TRADE_DATE = B.TRADE_DATE
+            AND A.TICKET_NUMBER = B.TICKET_NUMBER
+	LEFT OUTER JOIN REPORTS.COMMISSION_transaction AS COMM 
+		ON A.COMMISSION_TRANS_ID = COMM.extTransId
+	LEFT OUTER JOIN IAVM.rep
+		ON A.RR_NUMBER = rep.repId 
+WHERE  A.BUY_SELL_INDICATOR  IN ('B','S')
+	and B.SECURITY_SYMBOL IS NULL 
+	and A.SECURITY_SYMBOL IN ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')		
+	and A.PROCESS_DATE = (case datepart(weekday, @RptDate)  when 2 then cast(dateadd(day, -3, @RptDate) as date) else cast(dateadd(day, -1, @RptDate) as date) end)
+GROUP BY 
 	A.RR_NUMBER
 	,rep.repName
-	,case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end</CommandText>
+	,A.SECURITY_SYMBOL
+	,case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end end
+;</CommandText>
       </Query>
       <Fields>
         <Field Name="ETF_Ticker">
@@ -72,15 +78,15 @@ group by
         </Field>
         <Field Name="Buys">
           <DataField>Buys</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="Sells">
           <DataField>Sells</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="Quantity">
           <DataField>Quantity</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="Transction_Trading_Gross_Amount">
           <DataField>Transction Trading Gross Amount</DataField>
@@ -96,7 +102,7 @@ group by
         </Field>
         <Field Name="Total">
           <DataField>Total</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="CAD_Gross_Commission">
           <DataField>CAD Gross Commission</DataField>
@@ -1308,10 +1314,28 @@ group by
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="RptDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today()</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Rpt Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RptDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <EmbeddedImages>
