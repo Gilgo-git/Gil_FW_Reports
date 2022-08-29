@@ -13,6 +13,11 @@
     <DataSet Name="ds01_Rep_QYYY">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	a.A_C_ID AccountID,
 	a.A_C_Open_Date OpenDate, 
@@ -44,7 +49,8 @@ from BACKOFFICE.IAVMBK b
 			and d.Major_Sort = 1
 where
 	b.A_C_Representative = 'QYYY'
-	and b.Tran_Process_Date between dateadd(month, -3, getdate()) and dateadd(day, -1, getdate()); </CommandText>
+	and b.Tran_Process_Date between cast(dateadd(qq, datediff(qq, 0, @RptDate) - 1, 0) as date) 
+					and cast(dateadd(dd, -1, dateadd(qq, datediff(qq, 0, @RptDate), 0)) as date);</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -133,6 +139,11 @@ where
     <DataSet Name="ds02_Rep_SE73">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	a.A_C_ID AccountID,
 	a.A_C_Open_Date OpenDate, 
@@ -164,8 +175,8 @@ from BACKOFFICE.IAVMBK b
 			and d.Major_Sort = 1
 where
 	b.A_C_Representative = 'SE73'
-	and b.Tran_Process_Date between cast(dateadd(month, -3, getdate()) as date) and cast(dateadd(day, -1, getdate()) as date);
-</CommandText>
+	and b.Tran_Process_Date between cast(dateadd(qq, datediff(qq, 0, @RptDate) - 1, 0) as date) 
+		and cast(dateadd(dd, -1, dateadd(qq, datediff(qq, 0, @RptDate), 0)) as date);</CommandText>
       </Query>
       <Fields>
         <Field Name="AccountID">
@@ -253,6 +264,12 @@ where
     <DataSet Name="ds03_Rep_QYYY_PPostage">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	case	when 
 				  coalesce(round(a09.Interest, 2), 0)
@@ -324,7 +341,8 @@ from
 		where
 				b.A_C_Representative = 'QYYY'
 			and b.Tran_Entry_Description in ('A09', 'CXLA09')
-			and b.Tran_Process_Date between cast(dateadd(month, -3, getdate()) as date) and cast(dateadd(day, -1, getdate()) as date)
+			and b.Tran_Process_Date between cast(dateadd(qq, datediff(qq, 0, @RptDate) - 1, 0) as date) 
+				and cast(dateadd(dd, -1, dateadd(qq, datediff(qq, 0, @RptDate), 0)) as date)
 
 		group by	 b.A_C_ID
 					,a.A_C_Open_Date
@@ -454,6 +472,11 @@ group by
     <DataSet Name="ds04_Rep_SE73_PPostage">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	case when (	  coalesce(round(a09.Interest, 2), 0) 
 				+ coalesce(round(a09.AgentFee,2),0) 
@@ -525,7 +548,8 @@ FROM
 		where
 			b.A_C_Representative = 'SE73'
 			and b.Tran_Entry_Description in ('A09', 'CXLA09')
-			and b.Tran_Process_Date between cast(dateadd(month, -3, getdate()) as date) and cast(dateadd(day, -1, getdate()) as date)
+			and b.Tran_Process_Date between cast(dateadd(qq, datediff(qq, 0, @RptDate) - 1, 0) as date) 
+				and cast(dateadd(dd, -1, dateadd(qq, datediff(qq, 0, @RptDate), 0)) as date)
 
 		group by 
 			b.A_C_ID,
@@ -7045,10 +7069,28 @@ group by
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="RptDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today()</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Rpt Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RptDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <EmbeddedImages>
