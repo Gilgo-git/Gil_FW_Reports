@@ -117,48 +117,6 @@ group by
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="Dates_DS">
-      <Query>
-        <DataSourceName>iAS_Portal</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@Type">
-            <Value>=Parameters!Type.Value</Value>
-            <rd:UserDefined>true</rd:UserDefined>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>declare @RptDate date = getdate()
-select *
-from
-	( 
-		select
-			 cast(dateadd(mm, datediff(mm, 0, @RptDate) - 1, 0) as date) StartDate
-			,cast(dateadd(dd, -1, dateadd(mm, datediff(mm, 0, @RptDate), 0)) as date) EndDate
-			,'Monthly' Freq
-
-		union all 
- 
-		select
-			 cast(dateadd(qq, datediff(qq, 0, @RptDate) - 1, 0) as date) StartDate
-			,cast(dateadd(dd, -1, dateadd(qq, datediff(qq, 0, @RptDate), 0)) as date) EndDate
-			,'Quarterly' Freq
-	) dts 
-where Freq = @Type</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="StartDate">
-          <DataField>StartDate</DataField>
-          <rd:UserDefined>true</rd:UserDefined>
-        </Field>
-        <Field Name="EndDate">
-          <DataField>EndDate</DataField>
-          <rd:UserDefined>true</rd:UserDefined>
-        </Field>
-        <Field Name="Freq">
-          <DataField>Freq</DataField>
-          <rd:UserDefined>true</rd:UserDefined>
-        </Field>
-      </Fields>
-    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -1185,7 +1143,7 @@ where Freq = @Type</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>="ETF Report With Commission " + Parameters!Type.Value + " from " + Parameters!StartDate.Value + " to " + Parameters!EndDate.Value</Value>
+                      <Value>="ETF Report With Commission " + "from " + Parameters!StartDate.Value + " to " + Parameters!EndDate.Value</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>15pt</FontSize>
@@ -1362,45 +1320,13 @@ where Freq = @Type</CommandText>
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="Type">
-      <DataType>String</DataType>
-      <Prompt>Type</Prompt>
-      <ValidValues>
-        <ParameterValues>
-          <ParameterValue>
-            <Value>Monthly</Value>
-            <Label>Monthly</Label>
-          </ParameterValue>
-          <ParameterValue>
-            <Value>Quarterly</Value>
-            <Label>Quarterly</Label>
-          </ParameterValue>
-          <ParameterValue>
-            <Value>Other</Value>
-            <Label>Other</Label>
-          </ParameterValue>
-        </ParameterValues>
-      </ValidValues>
-    </ReportParameter>
     <ReportParameter Name="StartDate">
       <DataType>DateTime</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>Dates_DS</DataSetName>
-          <ValueField>StartDate</ValueField>
-        </DataSetReference>
-      </DefaultValue>
       <Prompt>Start Date</Prompt>
       <UsedInQuery>True</UsedInQuery>
     </ReportParameter>
     <ReportParameter Name="EndDate">
       <DataType>DateTime</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>Dates_DS</DataSetName>
-          <ValueField>EndDate</ValueField>
-        </DataSetReference>
-      </DefaultValue>
       <Prompt>End Date</Prompt>
       <UsedInQuery>True</UsedInQuery>
     </ReportParameter>
@@ -1410,11 +1336,6 @@ where Freq = @Type</CommandText>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>Type</ParameterName>
-        </CellDefinition>
         <CellDefinition>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
