@@ -21,50 +21,111 @@
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>select
-	 A.RR_NUMBER [Representative Code]
-	,rep.repName [Representative Name]
-	,A.SECURITY_SYMBOL [Symbol]
-    ,'IA Clarington' [ETF Provider]
-    ,sum(case when A.BUY_SELL_INDICATOR = 'B' then  1 else  0 end) [Buys]
-	,sum(case when A.BUY_SELL_INDICATOR = 'S' then  1 else  0 end) [Sells]
-	,sum(A.TRADE_GROUP_GROSS_AMOUNT) [Transction Trading Gross Amount]
-	,sum(A.TRADE_GROUP_GROSS_AMOUNT+A.TRADE_GRP_COMM_ENTERED_CAD) [Transction Trading Net Amount]
-    ,sum(case when A.BUY_SELL_INDICATOR = 'B' then  1 else  0 end) + sum(case when A.BUY_SELL_INDICATOR = 'S' then  1 else  0 end) [Total]
-	,sum(A.TRADE_GRP_COMM_ENTERED_CAD) [CAD Gross Commission]
-	,sum(COMM.netCommission) as [CAD Net Commission]
-	,case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end end [Platform]
+        <CommandText>;with tempOut
+as
+(
+	select
+		 A.RR_NUMBER [Representative Code]
+		,rep.repName [Representative Name]
+		,A.SECURITY_SYMBOL [Symbol]
+		,'IA Clarington' [ETF Provider]
+		,row_number() over
+			( partition by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			  order by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			) [RowCounts]
 
-from BACKOFFICE.CMSDT A
-	LEFT OUTER JOIN 
-	(
-		select FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
-		from BACKOFFICE.CMSDT
-		where 
+		,sum( case when A.BUY_SELL_INDICATOR = 'B' then  1 else  0 end) over
+			( partition by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			  order by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			) [Buys]
+
+		,sum( case when A.BUY_SELL_INDICATOR = 'S' then  1 else  0 end) over
+			( partition by 	A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			  order by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			) [Sells]
+
+		,sum(A.TRADE_GROUP_GROSS_AMOUNT) over
+			( partition by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			  order by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			) [Transction Trading Gross Amount]
+
+		,sum(A.TRADE_GROUP_GROSS_AMOUNT + A.TRADE_GRP_COMM_ENTERED_CAD) over
+			( partition by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			  order by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			) [Transction Trading Net Amount]
+
+		,(sum(case when A.BUY_SELL_INDICATOR = 'B' then  1 else  0 end) over
+			( partition by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			  order by A.RR_NUMBER, rep.repName,case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			)
+			+ sum(case when A.BUY_SELL_INDICATOR = 'S' then  1 else  0 end) over
+				( partition by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+				  order by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+				)
+		) [Total]
+
+		,sum(A.TRADE_GRP_COMM_ENTERED_CAD) over
+			( partition by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			  order by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			) [CAD Gross Commission]
+
+		,sum(COMM.netCommission) over
+			( partition by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			  order by A.RR_NUMBER, rep.repName, case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end
+			) [CAD Net Commission]
+
+		,case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else (case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end) end [Platform]
+
+	from BACKOFFICE.CMSDT A
+		left outer join 
+		(
+			select 
+				 FMSL_ACCOUNT_NUMBER
+				,SECURITY_SYMBOL
+				,TRADE_DATE
+				,CANCEL_INDICATOR
+				,TICKET_NUMBER
+				,row_number() over
+					( partition by FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR
+					  order by FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR
+					) RowCounts
+			from BACKOFFICE.CMSDT
+			where 
 				TRADE_DATE &gt;= '2019-01-01'
 				and SECURITY_SYMBOL IN ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')
-				and CANCEL_INDICATOR = 'Y'										
-		group by  FMSL_ACCOUNT_NUMBER, SECURITY_SYMBOL,TRADE_DATE, CANCEL_INDICATOR, TICKET_NUMBER
-	) B 
-		on  A.FMSL_ACCOUNT_NUMBER = B.FMSL_ACCOUNT_NUMBER 
-			and A.SECURITY_SYMBOL = B.SECURITY_SYMBOL 
-			and A.TRADE_DATE = B.TRADE_DATE
-            and A.TICKET_NUMBER = B.TICKET_NUMBER
-	left outer join REPORTS.COMMISSION_transaction COMM 
-		on A.COMMISSION_TRANS_ID = COMM.extTransId
-	left outer join IAVM.rep
-		on A.RR_NUMBER = rep.repId 
-where
-	A.BUY_SELL_INDICATOR  in ('B','S')
-	and B.SECURITY_SYMBOL is null 
-	and A.SECURITY_SYMBOL in ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')
-	and A.PROCESS_DATE  between @StartDate and @EndDate
-group by 
-	 A.RR_NUMBER
-	,rep.repName
-	,A.SECURITY_SYMBOL
-	,case when left(A.FMSL_ACCOUNT_NUMBER, 2) = '38' then 'Hollis Wealth' else case when left(A.FMSL_ACCOUNT_NUMBER, 2) &lt;&gt; '38' then 'IAS' else '' end end
-;</CommandText>
+				and CANCEL_INDICATOR = 'Y'
+		) B 
+			on  A.FMSL_ACCOUNT_NUMBER = B.FMSL_ACCOUNT_NUMBER 
+				and A.SECURITY_SYMBOL = B.SECURITY_SYMBOL 
+				and A.TRADE_DATE = B.TRADE_DATE
+				and A.TICKET_NUMBER = B.TICKET_NUMBER
+		left outer join REPORTS.COMMISSION_transaction COMM 
+			on A.COMMISSION_TRANS_ID = COMM.extTransId
+		left outer join IAVM.rep
+			on A.RR_NUMBER = rep.repId 
+	where
+		A.BUY_SELL_INDICATOR  in ('B','S')
+		and B.SECURITY_SYMBOL is null 
+		and A.SECURITY_SYMBOL in ('ICPB', 'IEMB', 'IGLB', 'IFRF', 'IGAF', 'ISIF')
+		and A.PROCESS_DATE  between @StartDate and @EndDate
+)
+
+select 
+	 [Representative Code]
+	,[Representative Name]
+	,[Symbol]
+	,[ETF Provider]
+	,[Buys]
+	,[Sells]
+	,[Transction Trading Gross Amount]
+	,[Transction Trading Net Amount]
+	,[Total]
+	,[CAD Gross Commission]
+	,[CAD Net Commission]
+	,[Platform]
+from tempOut 
+where RowCounts = 1 
+order by 1 ;</CommandText>
       </Query>
       <Fields>
         <Field Name="Representative_Code">
@@ -99,16 +160,16 @@ group by
           <DataField>Transction Trading Net Amount</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="CAD_Net_Commission">
+          <DataField>CAD Net Commission</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
         <Field Name="Total">
           <DataField>Total</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="CAD_Gross_Commission">
           <DataField>CAD Gross Commission</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="CAD_Net_Commission">
-          <DataField>CAD Net Commission</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Platform">
