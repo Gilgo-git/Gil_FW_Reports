@@ -13,8 +13,82 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>REPORTS.usp_SP_Closed_Accounts_with_Values</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT
+    c.A_C_Representative,
+    ISNULL(r.repName, '') AS repName,
+    ISNULL(r.branchCode, '') AS branchCode,
+    c.A_C_Closing_Date,
+    c.A_C_Closure_Reason Reason_Code,
+    CASE c.A_C_Closure_Reason
+        WHEN '1' THEN 'External Transfer'     
+        WHEN '2' THEN 'Internal Transfer'     
+        WHEN '3' THEN 'Full Dereg'     
+        WHEN '5' THEN 'To Purchase Annuity'     
+        WHEN '6' THEN 'Estate'     
+        WHEN '7' THEN 'Bankruptcy'     
+        WHEN '9' THEN 'Opened in Error'
+        WHEN ''  THEN ''
+        ELSE 'UNDEFINED'
+    END Reason_Description,
+    c.A_C_ID,
+    c.A_C_Short_Name,
+    c.A_C_Language,
+    c.Client_Residence_Region,
+    -1 * v.A_C_Summ_Equity AS A_C_Summ_Equity,
+    v.A_C_Summ_Mkt_Value AS A_C_Summ_Mkt_Value,
+    p.TI_Symbol AS symbol
+FROM
+    BACKOFFICE.IAVMACT c
+        LEFT JOIN IAVM.rep r
+            ON c.A_C_Representative = r.repId
+        LEFT JOIN BACKOFFICE.IAVMVAL v
+            ON v.A_C_ID = c.A_C_ID
+                AND v.A_C_Summ_Balance_Bus_Date = 
+					(
+                        SELECT 
+                            Last_Maint_Date
+                        FROM
+                            BACKOFFICE.IAVMSM
+                        WHERE
+                            ti_alternate_id = '000009'
+					)
+        LEFT JOIN  ( --BACKOFFICE.IAVMPSN 
+		                SELECT t2.A_C_ID,t2.Tran_Summ_Business_Date,
+                                    STUFF(
+                                            ( SELECT ',' + CAST(TI_Symbol AS varchar) 
+		                                        FROM BACKOFFICE.IAVMPSN t1  
+                                                WHERE t1.A_C_ID = t2.A_C_ID FOR XML PATH('')
+                                            ), 1 ,1, ''
+                                            ) [TI_Symbol]
+
+		                FROM BACKOFFICE.IAVMPSN t2
+		                GROUP BY t2.A_C_ID,t2.Tran_Summ_Business_Date
+
+	                )	p 
+            ON p.A_C_ID = c.A_C_ID
+                AND p.Tran_Summ_Business_Date = 
+					(   SELECT 
+                            Last_Maint_Date
+                        FROM
+                            BACKOFFICE.IAVMSM
+                        WHERE
+                            ti_alternate_id = '000009'
+                    )
+WHERE
+   	    c.A_C_Open_Date IS NOT NULL
+        AND c.A_C_Closing_Date IS NOT NULL
+		AND c.A_C_Closing_Date &lt;= @RptDate
+        AND (ISNULL(v.A_C_Summ_Equity, 0) != 0
+            OR ISNULL(v.A_C_Summ_Mkt_Value, 0) != 0
+            OR p.TI_Symbol IS NOT NULL
+            )
+ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
+</CommandText>
       </Query>
       <Fields>
         <Field Name="A_C_Representative">
@@ -1006,10 +1080,28 @@
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="RptDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=CDate(DatePart(DateInterval.Year, Now).ToString + "-" + iif(DatePart(DateInterval.Day, Now) &gt; 15 , DatePart(DateInterval.Month, Now).ToString, (DatePart(DateInterval.Month, Now) - 1).ToString)  + "-" + "15")</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Report Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RptDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <rd:ReportUnitType>Cm</rd:ReportUnitType>
