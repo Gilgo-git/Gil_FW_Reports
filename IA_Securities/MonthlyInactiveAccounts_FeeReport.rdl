@@ -13,6 +13,12 @@
     <DataSet Name="iAS_Portal_DS">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	 A.Client
 	,A.client_Name
@@ -58,9 +64,9 @@ from
 		where
 			A.account_rap_code IN ('A','B','E','F','G','H','U','V','X')
 			and (A.A_C_Closing_Date is null or A.A_C_Closing_Date = '')
-			and A.A_C_Open_Date &lt;= dateadd(year, - 2, cast(getdate() as date))
+			and A.A_C_Open_Date &lt;= dateadd(year, - 2, cast(@RptDate as date))
 			and (V.A_C_Summ_Mkt_Value &gt; 0 and V.A_C_Summ_Mkt_Value &lt; 1000)
-			and (V.A_C_Date_Last_Traded &lt;= dateadd(year, - 2, cast(getdate() as date)) or V.A_C_Date_Last_Traded is null)
+			and (V.A_C_Date_Last_Traded &lt;= dateadd(year, - 2, cast(@RptDate as date)) or V.A_C_Date_Last_Traded is null)
 			and A.Client_SIN not in
 				(
 					select distinct 
@@ -1335,10 +1341,28 @@ order by
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="RptDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today()</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Report Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RptDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <rd:ReportUnitType>Cm</rd:ReportUnitType>
