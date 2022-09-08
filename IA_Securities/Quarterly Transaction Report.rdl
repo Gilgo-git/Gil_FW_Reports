@@ -3,20 +3,16 @@
   <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="DataSource1">
-      <ConnectionProperties>
-        <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=sy-ias_portal.accp.sgbd.ia.iafg.net,45322;Initial Catalog=iAS_Portal</ConnectString>
-        <IntegratedSecurity>true</IntegratedSecurity>
-      </ConnectionProperties>
-      <rd:SecurityType>Integrated</rd:SecurityType>
-      <rd:DataSourceID>1aeb5504-1817-4b8a-8e2e-9619c1bf6f22</rd:DataSourceID>
+    <DataSource Name="iAS_Portal">
+      <DataSourceReference>iAS_Portal</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>b0533da5-c5c1-4033-93ee-4092cff8c23b</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DataSet1">
       <Query>
-        <DataSourceName>DataSource1</DataSourceName>
+        <DataSourceName>iAS_Portal</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@DateParameter">
             <Value>=Parameters!DateParameter.Value</Value>
@@ -111,7 +107,7 @@ order by a.commissionType,a.productCode
     </DataSet>
     <DataSet Name="DataSet2">
       <Query>
-        <DataSourceName>DataSource1</DataSourceName>
+        <DataSourceName>iAS_Portal</DataSourceName>
         <CommandText>DECLARE @StartDate DATE, @EndDate DATE
 set @EndDate = DATEADD (dd, -1, DATEADD(qq, DATEDIFF(qq, 0, GETDATE()) , 0));
 set @StartDate=DATEADD (yy, -5, DATEADD(qq, DATEDIFF(qq, 0, GETDATE()) , 0));
@@ -643,7 +639,7 @@ ORDER BY AllDates DESC</CommandText>
             <Top>0.27028in</Top>
             <Left>0.00001in</Left>
             <Height>0.75in</Height>
-            <Width>6.73959in</Width>
+            <Width>6.73958in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
