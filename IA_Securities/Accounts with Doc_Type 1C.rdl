@@ -13,6 +13,12 @@
     <DataSet Name="iAS_Portal_DS">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select distinct
 	 act.Client [ClientID]
 	,act.A_C_ID [ACT_NO]
@@ -37,7 +43,8 @@ from
 
 where
 	len(act.A_C_ID) &gt; 2
-	and (act.A_C_CLOSING_DATE is null or act.A_C_CLOSING_DATE = '')
+	and (act.A_C_Closing_Date is null or act.A_C_Closing_Date &gt; @RptDate)
+	and (act.A_C_Open_Date &lt; @RptDate)
 	and act.A_C_Representative in 
 		(
 			 'SD01', 'SBF9', 'SG2P', 'SGB9', 'SGCD', 'SGCF', 'SGCG', 'SGCH', 'SGCJ', 'SGCK'
@@ -1211,7 +1218,7 @@ where
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=CStr(Globals!ReportName)+" as of "+CStr(FORMAT(Now(),"yyyy-MM-dd"))</Value>
+                      <Value>=CStr(Globals!ReportName)+" as of "+CStr(FORMAT(Parameters!RptDate.Value,"yyyy-MM-dd"))</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>15pt</FontSize>
@@ -1387,10 +1394,28 @@ where
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="RptDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Today()</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Report Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RptDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <EmbeddedImages>
