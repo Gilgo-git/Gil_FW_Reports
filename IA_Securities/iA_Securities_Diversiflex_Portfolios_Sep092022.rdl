@@ -19,33 +19,34 @@
             <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE @Process_Date1 Date = @processDate DECLARE @Process_Date Date /*SET @Process_Date1='2022-08-18'*/ SELECT @Process_Date = max(processDate)
-                                                                                                                                    FROM   IAVM.position
-                                                                                                                                    WHERE processDate &lt;= @Process_Date1
-                                                                                                                                                     /*SELECT @Process_Date*/ SELECT act.Client AS ClientID, act.A_C_ID AS ACT_NO, CASE WHEN LEFT(act.A_C_ID, 2) = 38 THEN 'HW' ELSE 'IAS' END AS Broker, 
-                                                                                                                                                                 act.A_C_Representative AS RR_Code, rep.repName AS RR_Name, rep.branchCode AS BR_Code, act.A_C_Short_Name AS Client_Name, act.A_C_Open_Date AS Open_Date, 
-                                                                                                                                                                 act.A_C_Closing_Date AS Close_Date, act.A_C_Type AS Acct_Type, act.ASC_3_Managed_Type AS Managed_Type, pos.productCode AS Security_Type, pos.symbol AS Symbol, 
-                                                                                                                                                                 psn.TI_Short_Desc AS Description, pos.qty AS Qty, pos.priceCurrency AS Price_Currency, pos.closePrice AS Price, pos.closeValue AS MktValue, pos.closeValueCAD AS MktValueCAD, 
-                                                                                                                                                                 MKTACCT.Acct_Mkt_Value_CAD, 
-                                                                                                                                                                 CONCAT(CAST(CASE WHEN pos.closeValueCAD &lt;&gt; 0 THEN pos.closeValueCAD END / CASE WHEN MKTACCT.Acct_Mkt_Value_CAD &lt;&gt; 0 THEN MKTACCT.Acct_Mkt_Value_CAD END * 100 AS
-                                                                                                                                                                  decimal(10, 1)), '%') AS MV_Percentage
-                                                                                                                                                    FROM    BACKOFFICE.IAVMACT act INNER JOIN
-                                                                                                                                                                 IAVM.position pos ON act.A_C_ID = pos.accountId INNER JOIN
-                                                                                                                                                                     (SELECT act.A_C_ID, SUM(pos.closeValueCAD) AS Acct_Mkt_Value_CAD
-                                                                                                                                                                     FROM    BACKOFFICE.IAVMACT act INNER JOIN
-                                                                                                                                                                                  IAVM.position pos ON act.A_C_ID = pos.accountId
-                                                                                                                                                                     WHERE LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' 
-AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X') AND 
-                                                                                                                                                                                  pos.processDate = @Process_Date
-                                                                                                                                                                     /*S(ELECT max(processDate) FROM IAVM.position)*/ GROUP BY act.A_C_ID) AS MKTACCT ON pos.accountId = MKTACCT.A_C_ID LEFT OUTER JOIN
-                                                                                                                                                                 IAVM.rep rep ON pos.repId = rep.repId LEFT OUTER JOIN
-                                                                                                                                                                     (SELECT psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID
-                                                                                                                                                                     FROM    BACKOFFICE.IAVMPSN psn INNER JOIN
-                                                                                                                                                                                  BACKOFFICE.IAVMACT act ON psn.A_C_ID = act.A_C_ID
-                                                                                                                                                                     WHERE LEN(psn.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X')
-                                                                                                                                                                     GROUP BY psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID) AS psn ON psn.TI_Symbol = pos.symbol AND psn.A_C_ID = pos.accountId
-                                                                                                                                                    WHERE LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X') AND 
-                                                                                                                                                                 pos.processDate = @Process_Date</CommandText>
+        <CommandText>
+
+DECLARE @Process_Date1 Date  = @processDate
+
+DECLARE @Process_Date Date /*SET @Process_Date1='2022-08-18'*/ SELECT @Process_Date = max(processDate)
+                                                                                                         FROM   IAVM.position
+                                                                                                         WHERE processDate &lt;= @Process_Date1
+                                                                                                                          /*SELECT @Process_Date*/ SELECT act.Client AS ClientID, act.A_C_ID AS ACT_NO, CASE WHEN LEFT(act.A_C_ID, 2) = 38 THEN 'HW' ELSE 'IAS' END AS Broker, act.A_C_Representative AS RR_Code, 
+                                                                                                                                      rep.repName AS RR_Name, rep.branchCode AS BR_Code, act.A_C_Short_Name AS Client_Name, act.A_C_Open_Date AS Open_Date, act.A_C_Closing_Date AS Close_Date, act.A_C_Type AS Acct_Type, 
+                                                                                                                                      act.ASC_3_Managed_Type AS Managed_Type, pos.productCode AS Security_Type, pos.symbol AS Symbol, psn.TI_Short_Desc AS Description, pos.qty AS Qty, pos.priceCurrency AS Price_Currency, 
+                                                                                                                                      pos.closePrice AS Price, pos.closeValue AS MktValue, pos.closeValueCAD AS MktValueCAD, MKTACCT.Acct_Mkt_Value_CAD, 
+                                                                                                                                      CONCAT(CAST(CASE WHEN pos.closeValueCAD &lt;&gt; 0 THEN pos.closeValueCAD END / CASE WHEN MKTACCT.Acct_Mkt_Value_CAD &lt;&gt; 0 THEN MKTACCT.Acct_Mkt_Value_CAD END * 100 AS decimal(10, 1)), 
+                                                                                                                                      '%') AS MV_Percentage
+                                                                                                                         FROM    BACKOFFICE.IAVMACT act INNER JOIN
+                                                                                                                                      IAVM.position pos ON act.A_C_ID = pos.accountId INNER JOIN
+                                                                                                                                          (SELECT act.A_C_ID, SUM(pos.closeValueCAD) AS Acct_Mkt_Value_CAD
+                                                                                                                                          FROM    BACKOFFICE.IAVMACT act INNER JOIN
+                                                                                                                                                       IAVM.position pos ON act.A_C_ID = pos.accountId
+                                                                                                                                          WHERE LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X', 'L') AND 
+                                                                                                                                                       pos.processDate = @Process_Date
+                                                                                                                                          /*S(ELECT max(processDate) FROM IAVM.position)*/ GROUP BY act.A_C_ID) AS MKTACCT ON pos.accountId = MKTACCT.A_C_ID LEFT OUTER JOIN
+                                                                                                                                      IAVM.rep rep ON pos.repId = rep.repId LEFT OUTER JOIN
+                                                                                                                                          (SELECT psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID
+                                                                                                                                          FROM    BACKOFFICE.IAVMPSN psn INNER JOIN
+                                                                                                                                                       BACKOFFICE.IAVMACT act ON psn.A_C_ID = act.A_C_ID
+                                                                                                                                          WHERE LEN(psn.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X', 'L')
+                                                                                                                                          GROUP BY psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID) AS psn ON psn.TI_Symbol = pos.symbol AND psn.A_C_ID = pos.accountId
+                                                                                                                         WHERE LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X', 'L') AND pos.processDate = @Process_Date</CommandText>
       </Query>
       <Fields>
         <Field Name="ClientID">
@@ -143,31 +144,32 @@ AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type I
             <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE @Process_Date1 Date = @processDate DECLARE @Process_Date Date /*SET       @Process_Date1 = '2022-08-18'*/ SELECT @Process_Date = max(processDate)
-                                                                                                                                    FROM   IAVM.position
-                                                                                                                                    WHERE processDate &lt;= @Process_Date1
-                                                                                                                                                     SELECT CASE WHEN (pos.Symbol) IS NULL THEN '' ELSE pos.Symbol END AS Symbol, CASE WHEN (psn.TI_Short_Desc) IS NULL THEN '' ELSE psn.TI_Short_Desc END AS Description, 
-                                                                                                                                                                 COUNT(act.Client) 'Number of Clients', SUM(pos.qty) AS Total_Qty, SUM(pos.closeValueCAD) AS Total_Amount, SUM(CASE WHEN t1.Date_Month = MONTH(Getdate()) 
-                                                                                                                                                                 THEN t1.Trade_Count ELSE 0 END) AS Month_Trade_Count, SUM(t1.Trade_Count) AS YTD_Trade_Count
-                                                                                                                                                    FROM    BACKOFFICE.IAVMACT act INNER JOIN
-                                                                                                                                                                 IAVM.position pos ON act.A_C_ID = pos.accountId LEFT OUTER JOIN
-                                                                                                                                                                     (SELECT psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID
-                                                                                                                                                                     FROM    BACKOFFICE.IAVMPSN psn INNER JOIN
-                                                                                                                                                                                  BACKOFFICE.IAVMACT act ON psn.A_C_ID = act.A_C_ID
-                                                                                                                                                                     WHERE LEN(psn.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X')
-                                                                                                                                                                     GROUP BY psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID) psn ON psn.TI_Symbol = pos.symbol AND psn.A_C_ID = pos.accountId LEFT OUTER JOIN
-                                                                                                                                                                     (SELECT act.A_C_ID, cmsdt.SECURITY_SYMBOL, MONTH(cmsdt.PROCESS_DATE) AS Date_Month, COUNT(cmsdt.TRANSACTION_NUMBER) AS Trade_Count
-                                                                                                                                                                     FROM    BACKOFFICE.IAVMACT act INNER JOIN
-                                                                                                                                                                                  BACKOFFICE.CMSDT cmsdt ON cmsdt.FMSL_ACCOUNT_NUMBER = act.A_C_ID
-                                                                                                                                                                     WHERE LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X') AND 
-                                                                                                                                                                                  cmsdt.BUY_SELL_INDICATOR IN ('B', 'S') AND cmsdt.CANCEL_INDICATOR = 'N' AND YEAR(cmsdt.PROCESS_DATE) = YEAR(getdate())
-                                                                                                                                                                     /*	#AND MONTH(cmsdt.PROCESS_DATE) = MONTH(CURDATE())*/ GROUP BY act.A_C_ID, cmsdt.SECURITY_SYMBOL, MONTH(cmsdt.PROCESS_DATE)) t1 ON t1.A_C_ID = act.A_C_ID AND 
-                                                                                                                                                                 t1.SECURITY_SYMBOL = pos.Symbol
-                                                                                                                                                    WHERE LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X') AND 
-                                                                                                                                                                 pos.processDate = @Process_Date
-                                                                                                                                                    /*S(ELECT max(processDate) FROM IAVM.position)*/ GROUP BY CASE WHEN (pos.Symbol) IS NULL THEN '' ELSE pos.Symbol END, CASE WHEN (psn.TI_Short_Desc) IS NULL 
-                                                                                                                                                                 THEN '' ELSE psn.TI_Short_Desc END
-                                                                                                                                                    ORDER BY COUNT(act.Client) DESC</CommandText>
+        <CommandText>DECLARE @Process_Date1 Date  = @processDate
+
+DECLARE @Process_Date Date
+--SET       @Process_Date1 = '2022-08-18'
+                 SELECT @Process_Date = max(processDate)
+                FROM    IAVM.position
+                WHERE processDate &lt;= @Process_Date1
+                                 SELECT CASE WHEN (pos.Symbol) IS NULL THEN '' ELSE pos.Symbol END AS Symbol, CASE WHEN (psn.TI_Short_Desc) IS NULL THEN '' ELSE psn.TI_Short_Desc END AS Description, COUNT(act.Client) 'Number of Clients', SUM(pos.qty) AS Total_Qty, 
+                                             SUM(pos.closeValueCAD) AS Total_Amount, SUM(CASE WHEN t1.Date_Month = MONTH(Getdate()) THEN t1.Trade_Count ELSE 0 END) AS Month_Trade_Count, SUM(t1.Trade_Count) AS YTD_Trade_Count
+                                FROM    BACKOFFICE.IAVMACT act INNER JOIN
+                                             IAVM.position pos ON act.A_C_ID = pos.accountId LEFT OUTER JOIN
+                                                 (SELECT psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID
+                                                 FROM    BACKOFFICE.IAVMPSN psn INNER JOIN
+                                                              BACKOFFICE.IAVMACT act ON psn.A_C_ID = act.A_C_ID
+                                                 WHERE LEN(psn.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X', 'L')
+                                                 GROUP BY psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID) psn ON psn.TI_Symbol = pos.symbol AND psn.A_C_ID = pos.accountId LEFT OUTER JOIN
+                                                 (SELECT act.A_C_ID, cmsdt.SECURITY_SYMBOL, MONTH(cmsdt.PROCESS_DATE) AS Date_Month, COUNT(cmsdt.TRANSACTION_NUMBER) AS Trade_Count
+                                                 FROM    BACKOFFICE.IAVMACT act INNER JOIN
+                                                              BACKOFFICE.CMSDT cmsdt ON cmsdt.FMSL_ACCOUNT_NUMBER = act.A_C_ID
+                                                 WHERE LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X', 'L') AND cmsdt.BUY_SELL_INDICATOR IN ('B', 'S') AND 
+                                                              cmsdt.CANCEL_INDICATOR = 'N' AND YEAR(cmsdt.PROCESS_DATE) = YEAR(getdate())
+                                                 /*	#AND MONTH(cmsdt.PROCESS_DATE) = MONTH(CURDATE())*/ GROUP BY act.A_C_ID, cmsdt.SECURITY_SYMBOL, MONTH(cmsdt.PROCESS_DATE)) t1 ON t1.A_C_ID = act.A_C_ID AND t1.SECURITY_SYMBOL = pos.Symbol
+                                WHERE LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X', 'L') AND 
+                                             pos.processDate = @Process_Date
+                                /*S(ELECT max(processDate) FROM IAVM.position)*/ GROUP BY CASE WHEN (pos.Symbol) IS NULL THEN '' ELSE pos.Symbol END, CASE WHEN (psn.TI_Short_Desc) IS NULL THEN '' ELSE psn.TI_Short_Desc END
+                                ORDER BY COUNT(act.Client) DESC</CommandText>
       </Query>
       <Fields>
         <Field Name="Symbol">
@@ -209,67 +211,143 @@ AND act.A_C_CLOSING_DATE IS NULL /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type I
             <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE @Process_Date1 Date = @processDate DECLARE @Process_Date Date DECLARE @SummbyAcct_Process_Date Date /*SET @Process_Date1='2022-08-15'*/ SELECT @Process_Date = max(processDate)
-                                                                                                                                                                                                              FROM    IAVM.position
-                                                                                                                                                                                                              WHERE processDate &lt;= @Process_Date1
-                                                                                                                                                                                                                               SELECT @SummbyAcct_Process_Date = MAX(processDate)
-                                                                                                                                                                                                                              FROM    IAVM.positionSummaryByAccount
-                                                                                                                                                                                                                              WHERE processDate &lt;= @Process_Date1
-                                                                                                                                                                                                                                               SELECT SUM(CASE WHEN pos.processDate = @Process_Date /*S(ELECT MAX(processDate) FROM IAVM.position) */ THEN pos.closeValueCAD
-                                                                                                                                                                                                                                                            ELSE 0 END) AS MktValueCAD_Total, 
-                                                                                                                                                                                                                                                           SUM(CASE WHEN pos.processDate = @Process_Date /*S(ELECT MAX(processDate) FROM IAVM.position)  */ THEN CASE WHEN LEFT(pos.symbol,
-                                                                                                                                                                                                                                                            3) = 'CCM' THEN pos.closeValueCAD ELSE 0 END ELSE 0 END) AS MktValueCAD_CCM_Total, 
-                                                                                                                                                                                                                                                           concat(CAST(CASE WHEN (SUM(CASE WHEN pos.processDate = @Process_Date THEN pos.closeValueCAD ELSE 0 END)) 
-                                                                                                                                                                                                                                                           &lt;&gt; 0 THEN (SUM(CASE WHEN pos.processDate = @Process_Date /*S(ELECT MAX(processDate) FROM IAVM.position) */ THEN CASE
-                                                                                                                                                                                                                                                            WHEN LEFT(pos.symbol, 3) = 'CCM' THEN pos.closeValueCAD ELSE 0 END ELSE 0 END)) 
-                                                                                                                                                                                                                                                           / (SUM(CASE WHEN pos.processDate = @Process_Date /*S(ELECT MAX(processDate) FROM IAVM.position) */ THEN pos.closeValueCAD
-                                                                                                                                                                                                                                                            ELSE 0 END)) * 100 END AS Decimal(10, 1)), '%') AS CCM_Percent, SUM(CASE WHEN pos.processDate = DATEADD(DAY, - 7, 
-                                                                                                                                                                                                                                                           @SummbyAcct_Process_Date) 
-                                                                                                                                                                                                                                                           /*S(ELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY */ THEN pos.closeValueCAD ELSE 0 END)
-                                                                                                                                                                                                                                                            AS MktValueCAD_Total_7_Days, 
-                                                                                                                                                                                                                                                           SUM(CASE WHEN pos.processDate = @Process_Date /*S(ELECT MAX(processDate) FROM IAVM.position) */ THEN pos.closeValueCAD
-                                                                                                                                                                                                                                                            ELSE 0 END) - SUM(CASE WHEN pos.processDate = DATEADD(DAY, - 7, @SummbyAcct_Process_Date) 
-                                                                                                                                                                                                                                                           /*S(ELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY */ THEN pos.closeValueCAD ELSE 0 END)
-                                                                                                                                                                                                                                                            AS MktValueCAD_DIFF, CONCAT(CAST(CASE WHEN (SUM(CASE WHEN pos.processDate = DATEADD(DAY, - 7, 
-                                                                                                                                                                                                                                                           @SummbyAcct_Process_Date) THEN pos.closeValueCAD ELSE 0 END)) 
-                                                                                                                                                                                                                                                           &lt;&gt; 0 THEN (SUM(CASE WHEN pos.processDate = @Process_Date THEN pos.closeValueCAD ELSE 0 END) 
-                                                                                                                                                                                                                                                           - SUM(CASE WHEN pos.processDate = DATEADD(DAY, - 7, @SummbyAcct_Process_Date) THEN pos.closeValueCAD ELSE 0 END)) 
-                                                                                                                                                                                                                                                           / (SUM(CASE WHEN pos.processDate = DATEADD(DAY, - 7, @SummbyAcct_Process_Date) THEN pos.closeValueCAD ELSE 0 END)) 
-                                                                                                                                                                                                                                                           * 100 END AS Decimal(10, 1)), '%') AS Asset_Change_in_Percentage, 
-                                                                                                                                                                                                                                                           COUNT(DISTINCT CASE WHEN pos.processDate = @Process_Date /*S(ELECT MAX(processDate) FROM IAVM.position) */ THEN pos.Client
-                                                                                                                                                                                                                                                            ELSE NULL END) AS CLIENT_COUNT, COUNT(DISTINCT CASE WHEN pos.processDate = DATEADD(DAY, - 7, 
-                                                                                                                                                                                                                                                           @SummbyAcct_Process_Date) 
-                                                                                                                                                                                                                                                           /*S(ELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY */ THEN pos.Client ELSE NULL END) 
-                                                                                                                                                                                                                                                           AS CLIENT_COUNT_7_Days, 
-                                                                                                                                                                                                                                                           COUNT(DISTINCT CASE WHEN pos.processDate = @Process_Date /*S(ELECT MAX(processDate) FROM IAVM.position) */ THEN pos.Client
-                                                                                                                                                                                                                                                            ELSE NULL END) - COUNT(DISTINCT CASE WHEN pos.processDate = DATEADD(DAY, - 7, @SummbyAcct_Process_Date) 
-                                                                                                                                                                                                                                                           /*S(ELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY */ THEN pos.Client ELSE NULL END) 
-                                                                                                                                                                                                                                                           AS CLIENT_DIFF, 
-                                                                                                                                                                                                                                                           COUNT(DISTINCT CASE WHEN pos.processDate = @Process_Date /*S(ELECT MAX(processDate) FROM IAVM.position) */ THEN pos.repName
-                                                                                                                                                                                                                                                            ELSE NULL END) AS REP_COUNT, COUNT(DISTINCT CASE WHEN pos.processDate = DATEADD(DAY, - 7, 
-                                                                                                                                                                                                                                                           @SummbyAcct_Process_Date) 
-                                                                                                                                                                                                                                                           /*S(ELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY */ THEN pos.repName ELSE NULL END) 
-                                                                                                                                                                                                                                                           AS REP_COUNT_7_Days, 
-                                                                                                                                                                                                                                                           COUNT(DISTINCT CASE WHEN pos.processDate = @Process_Date /*S(ELECT MAX(processDate) FROM IAVM.position) */ THEN pos.repName
-                                                                                                                                                                                                                                                            ELSE NULL END) - COUNT(DISTINCT CASE WHEN pos.processDate = DATEADD(DAY, - 7, @SummbyAcct_Process_Date) 
-                                                                                                                                                                                                                                                           /*S(ELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY */ THEN pos.repName ELSE NULL END) 
-                                                                                                                                                                                                                                                           AS REP_DIFF
-                                                                                                                                                                                                                                              FROM    (SELECT pos.processDate, pos.closeValueCAD, pos.symbol, act.Client, rep.repName
-                                                                                                                                                                                                                                                            FROM    BACKOFFICE.IAVMACT act INNER JOIN
-                                                                                                                                                                                                                                                                          IAVM.position pos ON act.A_C_ID = pos.accountId LEFT OUTER JOIN
-                                                                                                                                                                                                                                                                          IAVM.rep rep ON pos.repId = rep.repId
-                                                                                                                                                                                                                                                            WHERE  LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL 
-                                                                                                                                                                                                                                                                          /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X') AND 
-                                                                                                                                                                                                                                                                          pos.processDate = @Process_Date
-                                                                                                                                                                                                                                                            /*S(ELECT MAX(processDate) FROM IAVM.position)*/ UNION ALL
-                                                                                                                                                                                                                                                            SELECT pos.processDate, pos.closeValueCAD, pos.symbol, act.Client, rep.repName
-                                                                                                                                                                                                                                                            FROM   BACKOFFICE.IAVMACT act INNER JOIN
-                                                                                                                                                                                                                                                                         IAVM.position pos ON act.A_C_ID = pos.accountId LEFT OUTER JOIN
-                                                                                                                                                                                                                                                                         IAVM.rep rep ON pos.repId = rep.repId
-                                                                                                                                                                                                                                                            WHERE LEN(act.A_C_ID) &gt; 2 AND act.A_C_Inventory_Account_Sw = 'N' AND act.A_C_CLOSING_DATE IS NULL 
-                                                                                                                                                                                                                                                                         /*= '0000-00-00'*/ AND act.ASC_3_Managed_Type IN ('X') AND pos.processDate = DATEADD(DAY, - 7, 
-                                                                                                                                                                                                                                                                         @SummbyAcct_Process_Date)/* (SELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY */ )
-                                                                                                                                                                                                                                                            AS pos;</CommandText>
+        <CommandText>DECLARE @Process_Date1 Date  = @processDate
+DECLARE @Process_Date Date
+DECLARE @SummbyAcct_Process_Date Date
+
+
+--SET @Process_Date1='2022-08-15'
+SELECT @Process_Date=max(processDate) FROM IAVM.position WHERE processDate&lt;=@Process_Date1
+SELECT @SummbyAcct_Process_Date=MAX(processDate) FROM IAVM.positionSummaryByAccount WHERE processDate&lt;=@Process_Date1
+
+
+SELECT 
+        SUM(CASE WHEN pos.processDate = @Process_Date--(SELECT MAX(processDate) FROM IAVM.position) 
+		                       THEN pos.closeValueCAD ELSE 0 END) AS MktValueCAD_Total
+        ,SUM(CASE WHEN pos.processDate = @Process_Date--(SELECT MAX(processDate) FROM IAVM.position)  
+								THEN   CASE WHEN left(pos.symbol,3) = 'CCM' THEN pos.closeValueCAD ELSE 0 END
+               ELSE 0 END) AS MktValueCAD_CCM_Total
+        ,concat(
+		 CAST(
+		 CASE WHEN (
+							SUM(CASE WHEN pos.processDate = @Process_Date
+														THEN pos.closeValueCAD ELSE 0 END)
+							) &lt;&gt; 0 THEN 
+		 (SUM(CASE WHEN pos.processDate = @Process_Date--(SELECT MAX(processDate) FROM IAVM.position) 
+		                      THEN CASE WHEN left(pos.symbol,3) = 'CCM' THEN pos.closeValueCAD ELSE 0 END
+                            ELSE 0 END))/
+					   (SUM(CASE WHEN pos.processDate = @Process_Date--(SELECT MAX(processDate) FROM IAVM.position) 
+					          THEN pos.closeValueCAD ELSE 0 END))*100
+							  END
+							  as Decimal(10,1))
+							  ,'%') 
+							  as CCM_Percent
+            
+        ,SUM(CASE WHEN pos.processDate = DATEADD(DAY, -7, @SummbyAcct_Process_Date)
+		                --(SELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY 
+						        THEN pos.closeValueCAD ELSE 0 END)
+								AS MktValueCAD_Total_7_Days
+        ,SUM(CASE WHEN pos.processDate = @Process_Date
+		--(SELECT MAX(processDate) FROM IAVM.position) 
+		THEN pos.closeValueCAD ELSE 0 END) - 
+		SUM(CASE WHEN pos.processDate =  DATEADD(DAY, -7, @SummbyAcct_Process_Date)
+		--(SELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY 
+		THEN pos.closeValueCAD ELSE 0 END) AS MktValueCAD_DIFF
+
+
+
+
+,CONCAT(
+CAST(
+					CASE WHEN (
+							SUM(CASE WHEN pos.processDate = DATEADD(DAY, -7, @SummbyAcct_Process_Date)
+														THEN pos.closeValueCAD ELSE 0 END)
+							) &lt;&gt; 0 THEN 
+					
+					(
+					
+					        SUM(CASE WHEN pos.processDate = @Process_Date THEN pos.closeValueCAD ELSE 0 END) - 
+							SUM(CASE WHEN pos.processDate = DATEADD(DAY, -7, @SummbyAcct_Process_Date)
+														THEN pos.closeValueCAD ELSE 0 END)
+					) /
+							
+							(
+							SUM(CASE WHEN pos.processDate = DATEADD(DAY, -7, @SummbyAcct_Process_Date)
+														THEN pos.closeValueCAD ELSE 0 END)
+							) * 100
+                                                                      
+                                                                            
+					END
+					  as Decimal(10,1))	,   '%')														AS Asset_Change_in_Percentage
+
+                    
+           
+        ,COUNT(distinct CASE WHEN pos.processDate = 
+		         @Process_Date--(SELECT MAX(processDate) FROM IAVM.position) 
+				 THEN pos.Client ELSE NULL END)   AS CLIENT_COUNT
+      ,COUNT(distinct CASE WHEN pos.processDate = 
+	  DATEADD(DAY, -7, @SummbyAcct_Process_Date)--(SELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY 
+	   THEN pos.Client ELSE NULL END) AS CLIENT_COUNT_7_Days
+      ,COUNT(distinct CASE WHEN pos.processDate = @Process_Date--(SELECT MAX(processDate) FROM IAVM.position) 
+	            THEN pos.Client ELSE NULL END)  - 
+				COUNT(distinct CASE WHEN pos.processDate = 
+				DATEADD(DAY, -7, @SummbyAcct_Process_Date)--(SELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY 
+				THEN pos.Client ELSE NULL END) AS CLIENT_DIFF
+        
+        ,COUNT(distinct CASE WHEN pos.processDate = @Process_Date--(SELECT MAX(processDate) FROM IAVM.position) 
+		         THEN pos.repName ELSE NULL END)   AS REP_COUNT
+        ,COUNT(distinct CASE WHEN pos.processDate = DATEADD(DAY, -7, @SummbyAcct_Process_Date)--
+		--(SELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY 
+		THEN pos.repName ELSE NULL END) AS REP_COUNT_7_Days
+           ,COUNT(distinct CASE WHEN pos.processDate = @Process_Date--(SELECT MAX(processDate) FROM IAVM.position) 
+		   THEN pos.repName ELSE NULL END)  - 
+		   COUNT(distinct CASE WHEN pos.processDate = DATEADD(DAY, -7, @SummbyAcct_Process_Date)--
+		   --(SELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY 
+		   THEN pos.repName ELSE NULL END) AS REP_DIFF
+    FROM 
+	
+	(
+	
+	
+	
+	
+	SELECT pos.processDate 
+				,pos.closeValueCAD
+				,pos.symbol
+				,act.Client 
+				,rep.repName	
+			FROM BACKOFFICE.IAVMACT act 
+				INNER JOIN IAVM.position pos 
+					ON act.A_C_ID = pos.accountId
+				LEFT OUTER JOIN IAVM.rep rep 
+					ON pos.repId = rep.repId
+			WHERE
+				LEN(act.A_C_ID) &gt; 2
+				AND act.A_C_Inventory_Account_Sw = 'N'
+					AND act.A_C_CLOSING_DATE IS NULL--= '0000-00-00'
+					AND act.ASC_3_Managed_Type in('X','L')
+					AND pos.processDate = @Process_Date--(SELECT MAX(processDate) FROM IAVM.position)
+																			
+		UNION ALL      
+                                                                
+		SELECT pos.processDate 
+			,pos.closeValueCAD
+			,pos.symbol
+			,act.Client 
+			,rep.repName	
+		FROM BACKOFFICE.IAVMACT act 
+			INNER JOIN IAVM.position pos 
+				ON act.A_C_ID = pos.accountId
+			LEFT OUTER JOIN IAVM.rep rep 
+				ON pos.repId = rep.repId
+		WHERE
+			LEN(act.A_C_ID) &gt; 2
+			AND act.A_C_Inventory_Account_Sw = 'N'
+				AND act.A_C_CLOSING_DATE IS NULL--= '0000-00-00'
+				AND act.ASC_3_Managed_Type in('X','L')
+				AND pos.processDate =DATEADD(DAY, -7, @SummbyAcct_Process_Date)
+				        -- (SELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY 
+				    ) as pos;</CommandText>
       </Query>
       <Fields>
         <Field Name="MktValueCAD_Total">
