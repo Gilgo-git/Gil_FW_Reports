@@ -6,142 +6,118 @@
     <DataSource Name="iAS_Portal">
       <DataSourceReference>iAS_Portal</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>b063ea80-99a6-49ab-95a3-6e0300639490</rd:DataSourceID>
+      <rd:DataSourceID>4d1eee65-d052-446d-86aa-f13464b46788</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="DataSet1">
+    <DataSet Name="OffshoreAccounts">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@RptDate">
-            <Value>=Parameters!RptDate.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandText>SELECT
-    c.A_C_Representative,
-    ISNULL(r.repName, '') AS repName,
-    ISNULL(r.branchCode, '') AS branchCode,
-    c.A_C_Closing_Date,
-    c.A_C_Closure_Reason Reason_Code,
-    CASE c.A_C_Closure_Reason
-        WHEN '1' THEN 'External Transfer'     
-        WHEN '2' THEN 'Internal Transfer'     
-        WHEN '3' THEN 'Full Dereg'     
-        WHEN '5' THEN 'To Purchase Annuity'     
-        WHEN '6' THEN 'Estate'     
-        WHEN '7' THEN 'Bankruptcy'     
-        WHEN '9' THEN 'Opened in Error'
-        WHEN ''  THEN ''
-        ELSE 'UNDEFINED'
-    END Reason_Description,
-    c.A_C_ID,
-    c.A_C_Short_Name,
-    c.A_C_Language,
-    c.Client_Residence_Region,
-    -1 * v.A_C_Summ_Equity AS A_C_Summ_Equity,
-    v.A_C_Summ_Mkt_Value AS A_C_Summ_Mkt_Value,
-    p.TI_Symbol AS symbol
-FROM
-    BACKOFFICE.IAVMACT c
-        LEFT JOIN IAVM.rep r
-            ON c.A_C_Representative = r.repId
-        LEFT JOIN BACKOFFICE.IAVMVAL v
-            ON v.A_C_ID = c.A_C_ID
-                AND v.A_C_Summ_Balance_Bus_Date = 
-					(
-                        SELECT 
-                            Last_Maint_Date
-                        FROM
-                            BACKOFFICE.IAVMSM
-                        WHERE
-                            ti_alternate_id = '000009'
-					)
-        LEFT JOIN  ( --BACKOFFICE.IAVMPSN 
-		                SELECT t2.A_C_ID,t2.Tran_Summ_Business_Date,
-                                    STUFF(
-                                            ( SELECT ',' + CAST(TI_Symbol AS varchar) 
-		                                        FROM BACKOFFICE.IAVMPSN t1  
-                                                WHERE t1.A_C_ID = t2.A_C_ID FOR XML PATH('')
-                                            ), 1 ,1, ''
-                                            ) [TI_Symbol]
-
-		                FROM BACKOFFICE.IAVMPSN t2
-		                GROUP BY t2.A_C_ID,t2.Tran_Summ_Business_Date
-
-	                )	p 
-            ON p.A_C_ID = c.A_C_ID
-                AND p.Tran_Summ_Business_Date = 
-					(   SELECT 
-                            Last_Maint_Date
-                        FROM
-                            BACKOFFICE.IAVMSM
-                        WHERE
-                            ti_alternate_id = '000009'
-                    )
-WHERE
-   	    c.A_C_Open_Date IS NOT NULL
-        AND c.A_C_Closing_Date IS NOT NULL
-		AND c.A_C_Closing_Date &lt;= @RptDate
-        AND (ISNULL(v.A_C_Summ_Equity, 0) != 0
-            OR ISNULL(v.A_C_Summ_Mkt_Value, 0) != 0
-            OR p.TI_Symbol IS NOT NULL
-            )
-ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
-</CommandText>
+        <CommandText>SELECT DISTINCT
+	CASE WHEN SUBSTRING(A.A_C_ID, 1, 2) = '38' 
+		 THEN 'HW' 
+		 ELSE 'IAS' 
+		 END AS Broker,
+	A.A_C_Representative AS [RR_Code],
+	R.repName AS [Rep_Name],
+	A.Client AS [ClientID],
+	A.A_C_ID AS [AccountID],
+	A.A_C_Name AS [Account_Name],
+	A.Account_Rap_Code AS [RapCode],
+	CASE WHEN A.Account_Rap_Code IN ('A', 'B') THEN 'Cash'
+		 WHEN A.Account_Rap_Code IN ('C', 'D') THEN 'COD'
+		 WHEN A.Account_Rap_Code IN ('E', 'F') THEN 'Margin'
+		 WHEN A.Account_Rap_Code IN ('G', 'H') THEN 'Margin Short'
+		 WHEN A.Account_Rap_Code IN ('I') THEN 'IPP'
+		 WHEN A.Account_Rap_Code IN ('K', 'J') THEN 'Income Account Generation'
+		 WHEN A.Account_Rap_Code IN ('N', '9') THEN 'LIRA'
+		 WHEN A.Account_Rap_Code IN ('0') THEN 'RDSP'
+		 WHEN A.Account_Rap_Code IN ('O') THEN 'Off Book Mutual Fund Account'
+		 WHEN A.Account_Rap_Code IN ('P') THEN 'LIF'
+		 WHEN A.Account_Rap_Code IN ('R', '8') THEN 'Spousal RRSP'
+		 WHEN A.Account_Rap_Code IN ('Q') THEN 'PSSP'
+		 WHEN A.Account_Rap_Code IN ('S', '7') THEN 'RRSP'
+		 WHEN A.Account_Rap_Code IN ('T') THEN 'RIF'
+		 WHEN A.Account_Rap_Code IN ('U', 'V') THEN 'Hedge'
+		 WHEN A.Account_Rap_Code IN ('W', '6') THEN 'TFSA'
+		 WHEN A.Account_Rap_Code IN ('X') THEN 'Pledge/Collateral Account'
+		 WHEN A.Account_Rap_Code IN ('Y') THEN 'Spousal RIF'
+		 ELSE 'RESP' 
+	END AS [AccountType],
+	A.ASC_3_Managed_Type AS [ASC_Code],
+	A.A_C_Open_Date AS [Open_Date],
+	A.Client_Residence AS [ClientResidence],
+	A.Client_Residence_Region AS [ClientResidenceRegion],
+	A.CITIZENSHIP,
+	-1 * V.A_C_Summ_Equity AS [AccountMktValue]
+FROM 
+	BACKOFFICE.IAVMACT AS A
+	INNER JOIN IAVM.rep AS R 
+	ON A.A_C_Representative = R.repId
+	LEFT OUTER JOIN BACKOFFICE.IAVMVAL AS V 
+	ON A.A_C_Representative = V.A_C_Representative 
+	AND A.A_C_ID = V.A_C_ID
+WHERE  
+	LEN(A.A_C_ID) &gt; 2 
+	AND A.A_C_CLOSING_DATE IS Null
+	AND A.Client_Residence != 'CAN'</CommandText>
       </Query>
       <Fields>
-        <Field Name="A_C_Representative">
-          <DataField>A_C_Representative</DataField>
+        <Field Name="Broker">
+          <DataField>Broker</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="repName">
-          <DataField>repName</DataField>
+        <Field Name="RR_Code">
+          <DataField>RR_Code</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="branchCode">
-          <DataField>branchCode</DataField>
+        <Field Name="Rep_Name">
+          <DataField>Rep_Name</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="A_C_Closing_Date">
-          <DataField>A_C_Closing_Date</DataField>
+        <Field Name="ClientID">
+          <DataField>ClientID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="AccountID">
+          <DataField>AccountID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Account_Name">
+          <DataField>Account_Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RapCode">
+          <DataField>RapCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="AccountType">
+          <DataField>AccountType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ASC_Code">
+          <DataField>ASC_Code</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Open_Date">
+          <DataField>Open_Date</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="Reason_Code">
-          <DataField>Reason_Code</DataField>
+        <Field Name="ClientResidence">
+          <DataField>ClientResidence</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Reason_Description">
-          <DataField>Reason_Description</DataField>
+        <Field Name="ClientResidenceRegion">
+          <DataField>ClientResidenceRegion</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="A_C_ID">
-          <DataField>A_C_ID</DataField>
+        <Field Name="CITIZENSHIP">
+          <DataField>CITIZENSHIP</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="A_C_Short_Name">
-          <DataField>A_C_Short_Name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="A_C_Language">
-          <DataField>A_C_Language</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Client_Residence_Region">
-          <DataField>Client_Residence_Region</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="A_C_Summ_Equity">
-          <DataField>A_C_Summ_Equity</DataField>
+        <Field Name="AccountMktValue">
+          <DataField>AccountMktValue</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="A_C_Summ_Mkt_Value">
-          <DataField>A_C_Summ_Mkt_Value</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="symbol">
-          <DataField>symbol</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -154,74 +130,79 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>8.56778cm</Width>
+                  <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>8.47958cm</Width>
+                  <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>5.60444cm</Width>
+                  <Width>1.96667in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>3.27611cm</Width>
+                  <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.5cm</Width>
+                  <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>7.77403cm</Width>
+                  <Width>2.675in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.5cm</Width>
+                  <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>5.65736cm</Width>
+                  <Width>2.16667in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.5cm</Width>
+                  <Width>1.03333in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>4.47556cm</Width>
+                  <Width>2.23333in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>3.36431cm</Width>
+                  <Width>1.58333in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>4.38736cm</Width>
+                  <Width>1.96666in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>6.46875cm</Width>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.625in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.6cm</Height>
+                  <Height>0.25in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox2">
+                        <Textbox Name="Textbox1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>A C Representative</Value>
+                                  <Value>Broker</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox2</rd:DefaultName>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -232,29 +213,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox4">
+                        <Textbox Name="Textbox3">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>rep Name</Value>
+                                  <Value>RR Code</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox4</rd:DefaultName>
+                          <rd:DefaultName>Textbox3</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -265,29 +248,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox6">
+                        <Textbox Name="Textbox5">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>branch Code</Value>
+                                  <Value>Rep Name</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <rd:DefaultName>Textbox5</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -298,29 +283,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox8">
+                        <Textbox Name="Textbox7">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>A C Closing Date</Value>
+                                  <Value>Client ID</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox8</rd:DefaultName>
+                          <rd:DefaultName>Textbox7</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -331,29 +318,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox10">
+                        <Textbox Name="Textbox9">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Reason Code</Value>
+                                  <Value>Account ID</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox10</rd:DefaultName>
+                          <rd:DefaultName>Textbox9</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -364,29 +353,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox12">
+                        <Textbox Name="Textbox11">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Reason Description</Value>
+                                  <Value>Account Name</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox12</rd:DefaultName>
+                          <rd:DefaultName>Textbox11</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -397,29 +388,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox14">
+                        <Textbox Name="Textbox13">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>A C ID</Value>
+                                  <Value>Rap Code</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox14</rd:DefaultName>
+                          <rd:DefaultName>Textbox13</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -430,29 +423,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox16">
+                        <Textbox Name="Textbox15">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>A C Short Name</Value>
+                                  <Value>Account Type</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox16</rd:DefaultName>
+                          <rd:DefaultName>Textbox15</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -463,29 +458,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox18">
+                        <Textbox Name="Textbox17">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>A C Language</Value>
+                                  <Value>ASC Code</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox18</rd:DefaultName>
+                          <rd:DefaultName>Textbox17</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -496,7 +493,77 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox20">
+                        <Textbox Name="Textbox19">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Open Date</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox19</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox21">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Client Residence</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox21</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox23">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -505,20 +572,22 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                                 <TextRun>
                                   <Value>Client Residence Region</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox20</rd:DefaultName>
+                          <rd:DefaultName>Textbox23</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -529,29 +598,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox22">
+                        <Textbox Name="Textbox25">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>A C Summ Equity</Value>
+                                  <Value>Citizenship</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox22</rd:DefaultName>
+                          <rd:DefaultName>Textbox25</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -562,62 +633,31 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox24">
+                        <Textbox Name="Textbox27">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>A C Summ Mkt Value</Value>
+                                  <Value>Account Mkt Value</Value>
                                   <Style>
-                                    <Color>White</Color>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox24</rd:DefaultName>
+                          <rd:DefaultName>Textbox27</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox26">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>symbol</Value>
-                                  <Style>
-                                    <Color>White</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox26</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>SeaGreen</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -629,25 +669,25 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.6cm</Height>
+                  <Height>0.25in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="A_C_Representative">
+                        <Textbox Name="Broker">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!A_C_Representative.Value</Value>
+                                  <Value>=Fields!Broker.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>A_C_Representative</rd:DefaultName>
+                          <rd:DefaultName>Broker</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -663,21 +703,21 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="repName">
+                        <Textbox Name="RR_Code">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!repName.Value</Value>
+                                  <Value>=Fields!RR_Code.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>repName</rd:DefaultName>
+                          <rd:DefaultName>RR_Code</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -693,21 +733,21 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="branchCode">
+                        <Textbox Name="Rep_Name">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!branchCode.Value</Value>
+                                  <Value>=Fields!Rep_Name.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>branchCode</rd:DefaultName>
+                          <rd:DefaultName>Rep_Name</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -723,23 +763,23 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="A_C_Closing_Date">
+                        <Textbox Name="ClientID">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!A_C_Closing_Date.Value</Value>
+                                  <Value>=Fields!ClientID.Value</Value>
                                   <Style>
-                                    <Format>dd-MMM-yyyy</Format>
+                                    <FontFamily>Arial</FontFamily>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>A_C_Closing_Date</rd:DefaultName>
+                          <rd:DefaultName>ClientID</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -755,21 +795,23 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Reason_Code">
+                        <Textbox Name="AccountID">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Reason_Code.Value</Value>
-                                  <Style />
+                                  <Value>=Fields!AccountID.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Reason_Code</rd:DefaultName>
+                          <rd:DefaultName>AccountID</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -785,21 +827,23 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Reason_Description">
+                        <Textbox Name="Account_Name">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Reason_Description.Value</Value>
-                                  <Style />
+                                  <Value>=Fields!Account_Name.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Reason_Description</rd:DefaultName>
+                          <rd:DefaultName>Account_Name</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -815,21 +859,23 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="A_C_ID">
+                        <Textbox Name="RapCode">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!A_C_ID.Value</Value>
-                                  <Style />
+                                  <Value>=Fields!RapCode.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>A_C_ID</rd:DefaultName>
+                          <rd:DefaultName>RapCode</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -845,21 +891,23 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="A_C_Short_Name">
+                        <Textbox Name="AccountType">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!A_C_Short_Name.Value</Value>
-                                  <Style />
+                                  <Value>=Fields!AccountType.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>A_C_Short_Name</rd:DefaultName>
+                          <rd:DefaultName>AccountType</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -875,21 +923,23 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="A_C_Language">
+                        <Textbox Name="ASC_Code">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!A_C_Language.Value</Value>
-                                  <Style />
+                                  <Value>=Fields!ASC_Code.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>A_C_Language</rd:DefaultName>
+                          <rd:DefaultName>ASC_Code</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -905,21 +955,23 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Client_Residence_Region">
+                        <Textbox Name="Open_Date">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Client_Residence_Region.Value</Value>
-                                  <Style />
+                                  <Value>=Fields!Open_Date.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Client_Residence_Region</rd:DefaultName>
+                          <rd:DefaultName>Open_Date</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -935,21 +987,23 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="A_C_Summ_Equity">
+                        <Textbox Name="ClientResidence">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!A_C_Summ_Equity.Value</Value>
-                                  <Style />
+                                  <Value>=Fields!ClientResidence.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>A_C_Summ_Equity</rd:DefaultName>
+                          <rd:DefaultName>ClientResidence</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -965,21 +1019,23 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="A_C_Summ_Mkt_Value">
+                        <Textbox Name="ClientResidenceRegion">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!A_C_Summ_Mkt_Value.Value</Value>
-                                  <Style />
+                                  <Value>=Fields!ClientResidenceRegion.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>A_C_Summ_Mkt_Value</rd:DefaultName>
+                          <rd:DefaultName>ClientResidenceRegion</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -995,21 +1051,55 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="symbol">
+                        <Textbox Name="CITIZENSHIP">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!symbol.Value</Value>
-                                  <Style />
+                                  <Value>=Fields!CITIZENSHIP.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>symbol</rd:DefaultName>
+                          <rd:DefaultName>CITIZENSHIP</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="AccountMktValue">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!AccountMktValue.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>AccountMktValue</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1042,6 +1132,7 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -1054,9 +1145,11 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
-            <DataSetName>DataSet1</DataSetName>
-            <Height>1.2cm</Height>
-            <Width>65.55528cm</Width>
+            <DataSetName>OffshoreAccounts</DataSetName>
+            <Top>0.255in</Top>
+            <Left>0.36334in</Left>
+            <Height>0.5in</Height>
+            <Width>21.24999in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1064,46 +1157,113 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>2in</Height>
+        <Height>0.96667in</Height>
         <Style />
       </Body>
-      <Width>25.80917in</Width>
+      <Width>21.61333in</Width>
       <Page>
-        <PageHeight>29.7cm</PageHeight>
-        <PageWidth>21cm</PageWidth>
-        <LeftMargin>2cm</LeftMargin>
-        <RightMargin>2cm</RightMargin>
-        <TopMargin>2cm</TopMargin>
-        <BottomMargin>2cm</BottomMargin>
-        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <PageHeader>
+          <Height>0.675in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Textbox Name="Textbox37">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>= "Offshore Accounts Report" + " As Of " + CStr(FORMAT(Now(),"yyyy-MM-dd hh:mm:ss"))</Value>
+                      <Style>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox37</rd:DefaultName>
+              <Top>0.15in</Top>
+              <Left>0.36333in</Left>
+              <Height>0.35in</Height>
+              <Width>10.18333in</Width>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageHeader>
+        <PageFooter>
+          <Height>0.65in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Textbox Name="Textbox4">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>="Total Rows # : " + CStr(CountRows("OffshoreAccounts")) + ", from source: NBCN, Investia"</Value>
+                      <Style>
+                        <FontSize>16pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style />
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox3</rd:DefaultName>
+              <Top>0.125in</Top>
+              <Left>0.36334in</Left>
+              <Height>0.31667in</Height>
+              <Width>7.30833in</Width>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
+        <TopMargin>1in</TopMargin>
+        <BottomMargin>1in</BottomMargin>
         <Style />
       </Page>
     </ReportSection>
   </ReportSections>
-  <ReportParameters>
-    <ReportParameter Name="RptDate">
-      <DataType>DateTime</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>=CDate(DatePart(DateInterval.Year, Now).ToString + "-" + iif(DatePart(DateInterval.Day, Now) &gt; 15 , DatePart(DateInterval.Month, Now).ToString, (DatePart(DateInterval.Month, Now) - 1).ToString)  + "-" + "15")</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>Report Date</Prompt>
-    </ReportParameter>
-  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
-      <CellDefinitions>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>RptDate</ParameterName>
-        </CellDefinition>
-      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
-  <rd:ReportUnitType>Cm</rd:ReportUnitType>
-  <rd:ReportID>f3508a3a-b343-4ea8-86b0-7cb9b7ac1ad3</rd:ReportID>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>8fc47039-2e5a-4f43-89de-e52ca58d6a50</rd:ReportID>
 </Report>
