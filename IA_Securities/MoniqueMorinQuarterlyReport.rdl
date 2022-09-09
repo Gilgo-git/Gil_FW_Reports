@@ -13,13 +13,20 @@
     <DataSet Name="iAS_Portal_DS_ClientCount">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	count(distinct a.A_C_Client) [clientCount]
 from
 	BACKOFFICE.IAVMACT a
 where
-	(a.A_C_Open_Date is not null or a.A_C_Open_Date &lt;&gt; '')
-	and (a.A_C_Closing_Date is null or a.A_C_Closing_Date = '')
+		a.A_C_Open_Date is not null
+	and a.A_C_Open_Date &lt;= @RptDate
+	and (a.A_C_Closing_Date is null or a.A_C_Closing_Date &gt; @RptDate)
 	and a.BROKER_CODE = 'IAVM'
 ;</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
@@ -34,6 +41,11 @@ where
     <DataSet Name="iAS_Portal_DS_Tab2">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	 'Tab2' tab
 	,a.A_C_Representative
@@ -72,11 +84,12 @@ from
 			on r.repId = a.A_C_Representative
 
 where 
-		a.A_C_Representative not like 'SA%'
+	a.A_C_Representative not like 'SA%'
 	and a.A_C_Account_Class = '038'
 	and right(a.A_C_ID, 1) &lt;&gt; 'Z'
-	and (a.A_C_Open_Date is not null or a.A_C_Open_Date &lt;&gt; '' )
-	and (a.A_C_Closing_Date is null or a.A_C_Closing_Date = '')
+	and a.A_C_Open_Date is not null
+	and a.A_C_Open_Date &lt;= @RptDate
+	and (a.A_C_Closing_Date is null or a.A_C_Closing_Date &gt; @RptDate)
 order by 
 	 a.A_C_Representative
 	,a.A_C_ID
@@ -161,6 +174,11 @@ order by
     <DataSet Name="iAS_Portal_DS_Tab3">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>SELECT  
 	 'tab3' tab
 	,coalesce(v.A_C_SUMM_BALANCE_BUS_DATE,
@@ -192,11 +210,11 @@ WHERE
     and a.A_C_ID not in ('37M300A', '37M300B')
     and a.A_C_Account_Class = '038'
     and right(a.A_C_ID, 1) &lt;&gt; 'Z'
-    and (a.A_C_Open_Date is not null or a.A_C_Open_Date &lt;&gt; '')
-    and (a.A_C_Closing_Date is null or a.A_C_Closing_Date = '')
+    	and a.A_C_Open_Date is not null
+	and a.A_C_Open_Date &lt;= @RptDate
+	and (a.A_C_Closing_Date is null or a.A_C_Closing_Date &gt; @RptDate)
 order by a.A_C_ID
-;
-</CommandText>
+;</CommandText>
       </Query>
       <Fields>
         <Field Name="tab">
@@ -253,6 +271,18 @@ order by a.A_C_ID
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="iAS_Portal_Quarter_End">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>select cast(dateadd(dd, -1, dateadd(qq, datediff(qq, 0, getdate()), 0)) as date) EndDate</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="EndDate">
+          <DataField>EndDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -265,7 +295,7 @@ order by a.A_C_ID
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="Client Count [" &amp; today &amp; "]"</Value>
+                    <Value>="Client Count [" &amp; Parameters!RptDate.Value &amp; "]"</Value>
                     <Style>
                       <FontFamily>Segoe UI Light</FontFamily>
                       <FontSize>12pt</FontSize>
@@ -454,7 +484,7 @@ order by a.A_C_ID
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="Rapport Trimestriel [" &amp; today &amp; "]"</Value>
+                    <Value>="Rapport Trimestriel [" &amp; Parameters!RptDate.Value &amp; "]"</Value>
                     <Style>
                       <FontFamily>Segoe UI Light</FontFamily>
                       <FontSize>12pt</FontSize>
@@ -2570,7 +2600,7 @@ order by a.A_C_ID
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="DetailCompteEn1 [" &amp; today &amp; "]"</Value>
+                    <Value>="DetailCompteEn1 [" &amp; Parameters!RptDate.Value &amp; "]"</Value>
                     <Style>
                       <FontFamily>Segoe UI Light</FontFamily>
                       <FontSize>12pt</FontSize>
@@ -4092,10 +4122,29 @@ order by a.A_C_ID
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="RptDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>iAS_Portal_Quarter_End</DataSetName>
+          <ValueField>EndDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Report Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RptDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>
