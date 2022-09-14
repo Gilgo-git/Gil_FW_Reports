@@ -49,7 +49,7 @@
 					A.A_C_Open_Date AS [Open_Date],
 					A.Client_Residence AS [ClientResidence],
 					CASE WHEN A.Client_Residence = 'GBR' THEN SUBSTRING(C.[countryNameEn], 1, 14)
-					WHEN A.Client_Residence = 'VNM' THEN REPLACE(C.[countryNameEn], SPACE(1), '')
+					WHEN A.Client_Residence = 'VNM' THEN REPLACE(REPLACE([countryNameEn], SPACE(1), ''), 'N', 'n')
 					ELSE C.[countryNameEn]
 					END AS [Country_Name],
 					A.Client_Residence_Region AS [ClientResidenceRegion],
