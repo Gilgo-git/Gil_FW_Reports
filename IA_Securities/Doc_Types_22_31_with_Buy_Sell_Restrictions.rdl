@@ -22,7 +22,8 @@
   FROM [iAS_Portal].[BACKOFFICE].[IAVMDOC] doc
 	inner join [iAS_Portal].[BACKOFFICE].[IAVMACT] act
   on act.Client = doc.Client
-    where Doc_Date &gt;=@ParmDate  and Doc_Date &lt; '2022-09-12'
+    where Doc_Date &gt;=CAST(@ParmDate AS datetime)
+                   and Doc_Date &lt;CAST(@ParmDate AS datetime) + 1
 	and (act.A_C_Sw_11='R' or act.A_C_Sw_12='R')
 	and doc_type_2 in('31','22')
 	order by   doc.Doc_Date ,act.A_C_ID</CommandText>
@@ -73,9 +74,9 @@
     <DataSet Name="DataSet2">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>DECLARE @StartDate DATE, @EndDate DATE
-set @EndDate = DATEADD (dd, -1, DATEADD(dd, DATEDIFF(dd, 0, GETDATE()) , 0));
-set @StartDate=DATEADD (dd, -30, DATEADD(dd, DATEDIFF(dd, 0, GETDATE()) , 0));
+        <CommandText>DECLARE @StartDate datetime, @EndDate datetime
+set @EndDate = DATEADD (dd, 0, DATEADD(dd, DATEDIFF(dd, 0, GETDATE()) , 0));
+set @StartDate=DATEADD (dd, -15, DATEADD(dd, DATEDIFF(dd, 0, GETDATE()) , 0));
 
 WITH ListDates(AllDates) AS
 (    SELECT @StartDate AS DATE
@@ -84,7 +85,7 @@ WITH ListDates(AllDates) AS
     FROM ListDates 
     WHERE AllDates &lt; @EndDate)
 
-SELECT CAST(CONVERT(Date, DATEADD (dd, -1,AllDates),101)as VARCHAR) AS AllDates
+SELECT CAST(CONVERT(Date, DATEADD (dd, 0,AllDates),101)as VARCHAR) AS AllDates, AllDates as AllDates2
 FROM ListDates
 ORDER BY AllDates DESC</CommandText>
       </Query>
@@ -837,7 +838,7 @@ ORDER BY AllDates DESC</CommandText>
             <DataSetName>DataSet1</DataSetName>
             <Top>0.6cm</Top>
             <Height>1.2cm</Height>
-            <Width>34.21979cm</Width>
+            <Width>34.2198cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -851,7 +852,7 @@ ORDER BY AllDates DESC</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="Doc Types (22 &amp; 31) with Buy or Sell Restrictions [" &amp; Now &amp; "]"</Value>
+                    <Value>="Doc Types (22 &amp; 31) with Buy or Sell Restrictions for [" &amp; Parameters!ParmDate.Value &amp; "]"</Value>
                     <Style>
                       <FontWeight>Bold</FontWeight>
                     </Style>
@@ -900,7 +901,7 @@ ORDER BY AllDates DESC</CommandText>
           <ValueField>AllDates</ValueField>
         </DataSetReference>
       </DefaultValue>
-      <Prompt>Previous Date</Prompt>
+      <Prompt>Select a Date</Prompt>
       <ValidValues>
         <DataSetReference>
           <DataSetName>DataSet2</DataSetName>
