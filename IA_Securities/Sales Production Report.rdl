@@ -13,6 +13,11 @@
     <DataSet Name="iAS_Portal_DS1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	 rep.repId [Representative_Code]
 	,rep.repName [Representative_Name]
@@ -20,7 +25,6 @@
 			when SALES.[Platform] is null then TRANSFERS.Platform
 			when  SALES.Platform = TRANSFERS.Platform then SALES.Platform
 	 end [Platform]
---,TRANSFERS.Platform, SALES.Platform
 	,coalesce(SALES.Transaction_Gross_Amount, 0) [Transaction_Gross_Amount]
 	,coalesce(SALES.TRADE_COMM_ENTERED, 0) [TRADE_COMM_ENTERED]
 	,coalesce(SALES.Sells, 0) [Sells]
@@ -32,7 +36,7 @@
 	,coalesce(TRANSFERS.Transfer_IN, 0) [Transfer_IN]
 
 from  IAVM.rep rep
-	left outer join 
+	left join 
 		(
 			select
 				 rep.repId [Representative_Code]
@@ -50,25 +54,26 @@ from  IAVM.rep rep
 				 ,count(cmsdt.BUY_SELL_INDICATOR) - sum(case when cmsdt.CANCEL_INDICATOR = 'Y' then 1 else 0 end) [Final_Count]
 
 			from BACKOFFICE.CMSDT cmsdt
-				left outer join BACKOFFICE.IAVMACT act 
+				left join BACKOFFICE.IAVMACT act 
 					on act.A_C_ID = cmsdt.FMSL_ACCOUNT_NUMBER
 				inner join IAVM.rep rep 
 					on cmsdt.RR_NUMBER = rep.repId
 
 			where
 					(
-						(datepart(month, cmsdt.PROCESS_DATE) = (datepart(month, getdate()) - 1) and datepart(year, cmsdt.PROCESS_DATE) = datepart(year, getdate())) 
+						(datepart(month, cmsdt.PROCESS_DATE) = (datepart(month, @RptDate) - 1) and datepart(year, cmsdt.PROCESS_DATE) = datepart(year, @RptDate)) 
 						or
-						(datepart(month, cmsdt.PROCESS_DATE) = 12 and datepart(month, getdate()) = 1 and datepart(year, cmsdt.PROCESS_DATE) = (datepart(year, getdate()) - 1))
+						(datepart(month, cmsdt.PROCESS_DATE) = 12 and datepart(month, @RptDate) = 1 and datepart(year, cmsdt.PROCESS_DATE) = (datepart(year, @RptDate) - 1))
 					)	and
 					--#length(cmsdt.FMSL_ACCOUNT_NUMBER) &gt; 2 and
 					cmsdt.RR_NUMBER in (
-											 'SD01','SBF9','JLAA','SG2P','SGB9','SGCD','SGCF','SGCG','SGCH','SGCJ','SGCK'
-											,'SGCL','SGCM','SGCN','SGCP','SGCQ','SGNG','SGNJ','SGV5','SNRA','SS2P','SS53'
-											,'SS54','SS5H','SSCF','SSCG','SSCH','SSCJ','SSCM','SSCN','SSCP','SSCQ','SSNG'
-											,'SSNJ','SGNH','SSCD','SSCE','SNSC','SNZA','SG5H','SGCE','SGSX','JGA7'
-										)
-			group by rep.repId, rep.repName
+								 'SD01','SBF9','JLAA','SG2P','SGB9','SGCD','SGCF','SGCG','SGCH','SGCJ','SGCK'
+								,'SGCL','SGCM','SGCN','SGCP','SGCQ','SGNG','SGNJ','SGV5','SNRA','SS2P','SS53'
+								,'SS54','SS5H','SSCF','SSCG','SSCH','SSCJ','SSCM','SSCN','SSCP','SSCQ','SSNG'
+								,'SSNJ','SGNH','SSCD','SSCE','SNSC','SNZA','SG5H','SGCE','SGSX','JGA7'
+							)
+			group by 	 rep.repId
+					,rep.repName
 					,case	when act.ASC_3_Managed_Type in ('V','N') then 'Vintage - Buys'
 							when act.ASC_3_Managed_Type in ('J') then 'Strategic Managed - Buys' 
 							when act.ASC_3_Managed_Type in ('X','L') then 'Diversiflex - Buys'
@@ -76,7 +81,7 @@ from  IAVM.rep rep
 					 end
 		 ) SALES
 		on SALES.Representative_Code = rep.repId
-	left outer join
+	left join
 		(
 			select
 				 bk.A_C_Representative [Representative_Code]
@@ -86,69 +91,69 @@ from  IAVM.rep rep
 						else  'Sales Production Report - Buys'
 				  end [Platform]
 				,sum(case when bk.Tran_Entry_Description in (   'AU-REE','DEL','DEL04','DEL30','DEL64','DEL66','DEL67','DEL68','DEL71','DEL78'
-																,'DEL79','DEL80','DEL81','DEL82','DEL83','DEL85','DEL88','DEL89','DEL94','DEL95'
-																,'DEL96','DEL97','D00','D01','D08','D71','D79','D80','D81','D84','D90'
-																,'MBD','TFOUT','TFROUT','TOUACO','TSFLIV','TSFOUT','AU-RER','TO-RSP','AU-CEL','TO-TFS'
-															 ) then bk.Tran_Gross_Amt else 0 end ) [External_Transfer_Out]
+									,'DEL79','DEL80','DEL81','DEL82','DEL83','DEL85','DEL88','DEL89','DEL94','DEL95'
+									,'DEL96','DEL97','D00','D01','D08','D71','D79','D80','D81','D84','D90'
+									,'MBD','TFOUT','TFROUT','TOUACO','TSFLIV','TSFOUT','AU-RER','TO-RSP','AU-CEL','TO-TFS'
+								 ) then bk.Tran_Gross_Amt else 0 end ) [External_Transfer_Out]
 
 				,sum(case when bk.Tran_Entry_Description in ('ITFR','CDSJNL','DTCJNL','MDB','RDM','TFR-IN','TFRLIV','TIHIST','TLHSIT'
-															,'TO-ESP','TOENT','TOFULL','TOHIST','TRHIST','TRSF','TRTFR-IN','TSFREC'
-															) then bk.Tran_Gross_Amt else 0 end ) [Internal_Transfers]
+									,'TO-ESP','TOENT','TOFULL','TOHIST','TRHIST','TRSF','TRTFR-IN','TSFREC'
+								) then bk.Tran_Gross_Amt else 0 end ) [Internal_Transfers]
 
 				,sum(case when bk.Tran_Entry_Description in ('MDB-IN','RDM-IN','REC','REC04','REC30','REC64','REC66','REC67','REC68'
-															,'REC71','REC78','REC79','REC80','REC81','REC82','REC83','REC85','REC88'
-															,'REC89','REC94','REC95','REC96','REC97','R00','R01','R08','R71'
-															,'R79','R80','R81','R84','R90','TFIN','TFRIN','TFRREC','TFSENT','TIUACO'
-															) then bk.Tran_Gross_Amt else 0 end ) [Transfer_IN]
+									,'REC71','REC78','REC79','REC80','REC81','REC82','REC83','REC85','REC88'
+									,'REC89','REC94','REC95','REC96','REC97','R00','R01','R08','R71'
+									,'R79','R80','R81','R84','R90','TFIN','TFRIN','TFRREC','TFSENT','TIUACO'
+								) then bk.Tran_Gross_Amt else 0 end ) [Transfer_IN]
 				 
 			from BACKOFFICE.IAVMBK bk
-				left outer join BACKOFFICE.IAVMACT act 
+				left join BACKOFFICE.IAVMACT act 
 					on act.A_C_ID = bk.A_C_ID
 				inner join IAVM.rep rep 
 					on bk.A_C_Representative = rep.repId
 			where
 				(
-					(datepart(month, bk.Tran_Process_Date) = (datepart(month, getdate()) - 1) and datepart(year, bk.Tran_Process_Date) = datepart(year, getdate())) 
+					(datepart(month, bk.Tran_Process_Date) = (datepart(month, @RptDate) - 1) and datepart(year, bk.Tran_Process_Date) = datepart(year, @RptDate)) 
 					or
-					(datepart(month, bk.Tran_Process_Date) = 12 and datepart(month, getdate()) = 1 and datepart(year, bk.Tran_Process_Date) = (datepart(year,getdate()) - 1))
+					(datepart(month, bk.Tran_Process_Date) = 12 and datepart(month, @RptDate) = 1 and datepart(year, bk.Tran_Process_Date) = (datepart(year,@RptDate) - 1))
 				) 
 				and bk.A_C_Representative in ('SD01','SBF9','JLAA','SG2P','SGB9','SGCD','SGCF','SGCG','SGCH','SGCJ'
-											 ,'SGCK','SGCL','SGCM','SGCN','SGCP','SGCQ','SGNG','SGNJ','SGV5','SNRA'
-											 ,'SS2P','SS53','SS54','SS5H','SSCF','SSCG','SSCH','SSCJ','SSCM','SSCN'
-											 ,'SSCP','SSCQ','SSNG','SSNJ','SGNH','SSCD','SSCE','SNSC','SNZA','SG5H'
-											 ,'SGCE','SGSX','JGA7'
-											 )
+								 ,'SGCK','SGCL','SGCM','SGCN','SGCP','SGCQ','SGNG','SGNJ','SGV5','SNRA'
+								 ,'SS2P','SS53','SS54','SS5H','SSCF','SSCG','SSCH','SSCJ','SSCM','SSCN'
+								 ,'SSCP','SSCQ','SSNG','SSNJ','SGNH','SSCD','SSCE','SNSC','SNZA','SG5H'
+								 ,'SGCE','SGSX','JGA7'
+							 )
 				and bk.Tran_Entry_Description IN (  'AU-REE','DEL','DEL04','DEL30','DEL64','DEL66','DEL67','DEL68','DEL71','DEL78'
-													,'DEL79','DEL80','DEL81','DEL82','DEL83','DEL85','DEL88','DEL89','DEL94','DEL95'
-													,'DEL96','DEL97','D00','D01','D08','D71','D79','D80','D81','D84'
-													,'D90','MBD','TFOUT','TFROUT','TOUACO','TSFLIV','TSFOUT','AU-RER','TO-RSP','AU-CEL'
-													,'TO-TFS','ITFR','CDSJNL','DTCJNL','MDB','RDM','TFR-IN','TFRLIV','TIHIST','TLHSIT'
-													,'TO-ESP','TOENT','TOFULL','TOHIST','TRHIST','TRSF','TRTFR-IN','TSFREC','MDB-IN','RDM-IN'
-													,'REC','REC04','REC30','REC64','REC66','REC67','REC68','REC71','REC78','REC79'
-													,'REC80','REC81','REC82','REC83','REC85','REC88','REC89','REC94','REC95','REC96'
-													,'REC97','R00','R01','R08','R71','R79','R80','R81','R84','R90'
-													,'TFIN','TFRIN','TFRREC','TFSENT','TIUACO'
-													)
+								,'DEL79','DEL80','DEL81','DEL82','DEL83','DEL85','DEL88','DEL89','DEL94','DEL95'
+								,'DEL96','DEL97','D00','D01','D08','D71','D79','D80','D81','D84'
+								,'D90','MBD','TFOUT','TFROUT','TOUACO','TSFLIV','TSFOUT','AU-RER','TO-RSP','AU-CEL'
+								,'TO-TFS','ITFR','CDSJNL','DTCJNL','MDB','RDM','TFR-IN','TFRLIV','TIHIST','TLHSIT'
+								,'TO-ESP','TOENT','TOFULL','TOHIST','TRHIST','TRSF','TRTFR-IN','TSFREC','MDB-IN','RDM-IN'
+								,'REC','REC04','REC30','REC64','REC66','REC67','REC68','REC71','REC78','REC79'
+								,'REC80','REC81','REC82','REC83','REC85','REC88','REC89','REC94','REC95','REC96'
+								,'REC97','R00','R01','R08','R71','R79','R80','R81','R84','R90'
+								,'TFIN','TFRIN','TFRREC','TFSENT','TIUACO'
+							)
 			group by
 				 bk.A_C_Representative
 				,case	when act.ASC_3_Managed_Type in ('V','N') then 'Vintage - Buys'
-						when act.ASC_3_Managed_Type in ('J') then 'Strategic Managed - Buys' 
-						when act.ASC_3_Managed_Type in ('X','L') then 'Diversiflex - Buys'
-						else  'Sales Production Report - Buys'
+					when act.ASC_3_Managed_Type in ('J') then 'Strategic Managed - Buys' 
+					when act.ASC_3_Managed_Type in ('X','L') then 'Diversiflex - Buys'
+					else  'Sales Production Report - Buys'
 				 end
 		) [TRANSFERS]
     		on TRANSFERS.Representative_Code = rep.repId
 where
 	rep.repId in (	 'SD01','SBF9','JLAA','SG2P','SGB9','SGCD','SGCF','SGCG','SGCH','SGCJ'
-					,'SGCK','SGCL','SGCM','SGCN','SGCP','SGCQ','SGNG','SGNJ','SGV5','SNRA'
-					,'SS2P','SS53','SS54','SS5H','SSCF','SSCG','SSCH','SSCJ','SSCM','SSCN'
-					,'SSCP','SSCQ','SSNG','SSNJ','SGNH','SSCD','SSCE','SNSC','SNZA','SG5H'
-					,'SGCE','SGSX','JGA7'
-				 )
+			,'SGCK','SGCL','SGCM','SGCN','SGCP','SGCQ','SGNG','SGNJ','SGV5','SNRA'
+			,'SS2P','SS53','SS54','SS5H','SSCF','SSCG','SSCH','SSCJ','SSCM','SSCN'
+			,'SSCP','SSCQ','SSNG','SSNJ','SGNH','SSCD','SSCE','SNSC','SNZA','SG5H'
+			,'SGCE','SGSX','JGA7'
+		 )
 order by rep.repId asc
 		,case	when TRANSFERS.[Platform] is null then SALES.[Platform]
-				when SALES.[Platform] is null then TRANSFERS.[Platform] 
-				when SALES.[Platform] = TRANSFERS.[Platform] then SALES.[Platform]
+			when SALES.[Platform] is null then TRANSFERS.[Platform] 
+			when SALES.[Platform] = TRANSFERS.[Platform] then SALES.[Platform]
 		  end asc;</CommandText>
       </Query>
       <Fields>
@@ -205,6 +210,11 @@ order by rep.repId asc
     <DataSet Name="Buys">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	 cmsdt.RR_NUMBER [Representative Code]
 	,rep.RepName [Representative Name]
@@ -217,16 +227,16 @@ order by rep.repId asc
 	 end [Platform]
 
 from BACKOFFICE.CMSDT cmsdt
-	left outer join BACKOFFICE.IAVMACT act 
+	left join BACKOFFICE.IAVMACT act 
 		on act.A_C_ID = cmsdt.FMSL_ACCOUNT_NUMBER 
 	inner join IAVM.rep rep 
 		on cmsdt.RR_NUMBER = rep.repId
 
 where 
 	(
-		(datepart(month, cmsdt.PROCESS_DATE) = (datepart(month, getdate()) - 1) and datepart(year, cmsdt.PROCESS_DATE) = datepart(year, GETDATE())) 
+		(datepart(month, cmsdt.PROCESS_DATE) = (datepart(month, @RptDate) - 1) and datepart(year, cmsdt.PROCESS_DATE) = datepart(year, @RptDate)) 
 		or
-		(datepart(month, cmsdt.PROCESS_DATE) = 12 and datepart(month, getdate()) = 1 and datepart(year, cmsdt.PROCESS_DATE) = (datepart(year, getdate()) - 1))
+		(datepart(month, cmsdt.PROCESS_DATE) = 12 and datepart(month, @RptDate) = 1 and datepart(year, cmsdt.PROCESS_DATE) = (datepart(year, @RptDate) - 1))
 	)
 	and cmsdt.BUY_SELL_INDICATOR = 'B' 
 	and cmsdt.CANCEL_INDICATOR &lt;&gt; 'Y' 
@@ -251,8 +261,7 @@ group by
 order by 
 	 rep.repName
 	,cmsdt.RR_NUMBER
-;
-</CommandText>
+;</CommandText>
       </Query>
       <Fields>
         <Field Name="Representative_Code">
@@ -276,6 +285,11 @@ order by
     <DataSet Name="Sells">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	 cmsdt.RR_NUMBER [Representative Code]
 	,rep.RepName [Representative Name]
@@ -288,16 +302,16 @@ order by
 	,sum(cmsdt.TRANS_TRADING_GROSS_AMT) [Transaction Gross Amount]
 
 from BACKOFFICE.CMSDT cmsdt
-	left outer join BACKOFFICE.IAVMACT act 
+	left join BACKOFFICE.IAVMACT act 
 		on act.A_C_ID = cmsdt.FMSL_ACCOUNT_NUMBER 
 	inner join IAVM.rep rep 
 		on cmsdt.RR_NUMBER = rep.repId
 
 where 
 	(
-		(datepart(month, cmsdt.PROCESS_DATE ) = (datepart(month, getdate()) - 1) and datepart(year, cmsdt.PROCESS_DATE) = datepart(year, getdate())) 
+		(datepart(month, cmsdt.PROCESS_DATE ) = (datepart(month, @RptDate) - 1) and datepart(year, cmsdt.PROCESS_DATE) = datepart(year, @RptDate)) 
 		or
-		(datepart(month, cmsdt.PROCESS_DATE ) = 12 and datepart(month, getdate()) = 1 and datepart(year, cmsdt.PROCESS_DATE ) = (datepart(year,getdate()) - 1))
+		(datepart(month, cmsdt.PROCESS_DATE ) = 12 and datepart(month, @RptDate) = 1 and datepart(year, cmsdt.PROCESS_DATE ) = (datepart(year,@RptDate) - 1))
 	)
 	and	cmsdt.BUY_SELL_INDICATOR = 'S'
 	and cmsdt.CANCEL_INDICATOR &lt;&gt; 'Y' 
@@ -348,6 +362,11 @@ order by
     <DataSet Name="Commissions">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	cmsdt.RR_NUMBER [Representative Code]
 	,rep.repName [Representative Name]
@@ -360,16 +379,16 @@ order by
 	,sum(cmsdt.TRADE_COMM_ENTERED) [TRADE_COMM_ENTERED]
 
 from BACKOFFICE.CMSDT cmsdt
-	left outer join BACKOFFICE.IAVMACT act 
+	left join BACKOFFICE.IAVMACT act 
 		on act.A_C_ID = cmsdt.FMSL_ACCOUNT_NUMBER 
 	inner join IAVM.rep rep 
 		on cmsdt.RR_NUMBER = rep.repId
 
 where
 	(
-		(datepart(month, cmsdt.SETTLEMENT_DATE) = (datepart(month, getdate()) - 1) and datepart(year, cmsdt.SETTLEMENT_DATE) = datepart(year, getdate()))
+		(datepart(month, cmsdt.SETTLEMENT_DATE) = (datepart(month, @RptDate) - 1) and datepart(year, cmsdt.SETTLEMENT_DATE) = datepart(year, @RptDate))
 		or
-		(datepart(month, cmsdt.SETTLEMENT_DATE) = 12 AND datepart(month, getdate()) = 1 and datepart(year, cmsdt.SETTLEMENT_DATE) = (datepart(year, getdate()) - 1))
+		(datepart(month, cmsdt.SETTLEMENT_DATE) = 12 AND datepart(month, @RptDate) = 1 and datepart(year, cmsdt.SETTLEMENT_DATE) = (datepart(year, @RptDate) - 1))
 	)
 	--and length(cmsdt.FMSL_ACCOUNT_NUMBER) &gt; 2
 	and cmsdt.RR_NUMBER in 
@@ -386,7 +405,7 @@ group by
 	,rep.repName
 	,case
 		when act.ASC_3_Managed_Type in ('V','N') then 'Vintage - Buys'
-		when act.ASC_3_Managed_Type in ('J') then 'Strategic Managed - Buys' 
+		when act.ASC_3_Managed_Type in ('J') then 'Strategic Managed - Buys'
 		when act.ASC_3_Managed_Type in ('X','L') then 'Diversiflex - Buys'
         else 'Sales Production Report - Buys'
 	 end
@@ -394,8 +413,7 @@ group by
 order by
 	 rep.repName
 	,cmsdt.RR_NUMBER
-;
-</CommandText>
+;</CommandText>
       </Query>
       <Fields>
         <Field Name="Representative_Code">
@@ -419,6 +437,11 @@ order by
     <DataSet Name="Transfer_Out">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	 bk.A_C_Representative [Representative Code]
 	,rep.RepName [Representative Name]
@@ -432,16 +455,16 @@ order by
 	,bk.Tran_Entry_Description [Transaction Description]
 
 from BACKOFFICE.IAVMBK bk
-	left outer join BACKOFFICE.IAVMACT act 
+	left join BACKOFFICE.IAVMACT act 
 		on act.A_C_ID = bk.A_C_ID 
 	inner join IAVM.rep rep 
 		on bk.A_C_Representative = rep.repId
 
 where
 	(
-		(datepart(month,bk.Tran_Process_Date) = (datepart(month,getdate()) - 1) and datepart(year, bk.Tran_Process_Date) = datepart(year, getdate()))
+		(datepart(month,bk.Tran_Process_Date) = (datepart(month,@RptDate) - 1) and datepart(year, bk.Tran_Process_Date) = datepart(year, @RptDate))
 		or
-		(datepart(month,bk.Tran_Process_Date) = 12 and datepart(month,getdate()) = 1 and datepart(year, bk.Tran_Process_Date) = (datepart(year, getdate()) - 1))
+		(datepart(month,bk.Tran_Process_Date) = 12 and datepart(month,@RptDate) = 1 and datepart(year, bk.Tran_Process_Date) = (datepart(year, @RptDate) - 1))
 	) 
 	
 	and bk.Tran_Entry_Description in 
@@ -502,6 +525,11 @@ order by
     <DataSet Name="Int_Transfer">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	 bk.A_C_Representative [Representative Code]
 	,rep.RepName [Representative Name]
@@ -515,16 +543,16 @@ order by
 	,bk.Tran_Entry_Description[Transaction Description]
 
 from BACKOFFICE.IAVMBK bk
-	left outer join BACKOFFICE.IAVMACT act 
+	left join BACKOFFICE.IAVMACT act 
 		on act.A_C_ID = bk.A_C_ID 
 	inner join IAVM.rep rep 
 		on bk.A_C_Representative = rep.repId
 
 where 
 	(
-		(datepart(month,bk.Tran_Process_Date) = (datepart(month,getdate()) - 1) and datepart(year,bk.Tran_Process_Date) = datepart(year,getdate()))
+		(datepart(month,bk.Tran_Process_Date) = (datepart(month,@RptDate) - 1) and datepart(year,bk.Tran_Process_Date) = datepart(year,@RptDate))
 		or
-		(datepart(month,bk.Tran_Process_Date) = 12 and datepart(month,getdate()) = 1 and datepart(year,bk.Tran_Process_Date) = (datepart(year,getdate()) - 1))
+		(datepart(month,bk.Tran_Process_Date) = 12 and datepart(month,@RptDate) = 1 and datepart(year,bk.Tran_Process_Date) = (datepart(year,@RptDate) - 1))
 	)
 
 	--and bk.Tran_Process_Date Between '2018-05-01' and '2018-05-31'
@@ -586,6 +614,11 @@ order by
     <DataSet Name="Transactions">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RptDate">
+            <Value>=Parameters!RptDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>select
 	 cmsdt.RR_NUMBER [Representative Code]
 	,rep.repName [Representative Name]
@@ -600,16 +633,16 @@ order by
 	,count(cmsdt.BUY_SELL_INDICATOR) - sum(case when cmsdt.CANCEL_INDICATOR = 'Y' then 1 else 0 end) [Final Count]
 
 from BACKOFFICE.CMSDT cmsdt
-	left outer join BACKOFFICE.IAVMACT act 
+	left join BACKOFFICE.IAVMACT act 
 		on act.A_C_ID = cmsdt.FMSL_ACCOUNT_NUMBER
 	inner join IAVM.rep rep 
 		on cmsdt.RR_NUMBER = rep.repId
 
 Where
 	(
-		(datepart(month, cmsdt.PROCESS_DATE ) = (datepart(month, getdate()) - 1) and datepart(year, cmsdt.PROCESS_DATE ) = datepart(year, getdate()))
+		(datepart(month, cmsdt.PROCESS_DATE ) = (datepart(month, @RptDate) - 1) and datepart(year, cmsdt.PROCESS_DATE ) = datepart(year, @RptDate))
 		or
-		(datepart(month, cmsdt.PROCESS_DATE ) = 12 and datepart(month, getdate()) = 1 and datepart(year, cmsdt.PROCESS_DATE ) = (datepart(year, getdate()) - 1)))
+		(datepart(month, cmsdt.PROCESS_DATE ) = 12 and datepart(month, @RptDate) = 1 and datepart(year, cmsdt.PROCESS_DATE ) = (datepart(year, @RptDate) - 1)))
 	--and length(cmsdt.FMSL_ACCOUNT_NUMBER) &gt; 2
 	and cmsdt.RR_NUMBER in 
 		(
@@ -4252,7 +4285,7 @@ order by
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=CStr(Globals!ReportName)+" as of "+CStr(FORMAT(Now(),"yyyy-MM-dd"))</Value>
+                      <Value>=CStr(Globals!ReportName) + " as of " + CStr(FORMAT(Parameters!RptDate.Value,"yyyy-MM-dd"))</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>15pt</FontSize>
@@ -4430,10 +4463,28 @@ order by
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="RptDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=CDate(Cstr(Year(Today)) + "-" + CStr(Month(Today)) + "-" + "01")</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Report Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RptDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <EmbeddedImages>

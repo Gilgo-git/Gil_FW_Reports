@@ -48,8 +48,10 @@
 					A.ASC_3_Managed_Type AS [ASC_Code],
 					A.A_C_Open_Date AS [Open_Date],
 					A.Client_Residence AS [ClientResidence],
-					A.Client_First_Name,
-					A.Client_Last_Name,
+					CASE WHEN A.Client_Residence = 'GBR' THEN SUBSTRING(C.[countryNameEn], 1, 14)
+					WHEN A.Client_Residence = 'VNM' THEN REPLACE(REPLACE([countryNameEn], SPACE(1), ''), 'N', 'n')
+					ELSE C.[countryNameEn]
+					END AS [Country_Name],
 					A.Client_Residence_Region AS [ClientResidenceRegion],
 					A.CITIZENSHIP,
 					-1 * V.A_C_Summ_Equity AS [AccountMktValue]
@@ -60,10 +62,13 @@
 					LEFT OUTER JOIN BACKOFFICE.IAVMVAL AS V
 					ON A.A_C_Representative = V.A_C_Representative
 					AND A.A_C_ID = V.A_C_ID
+					LEFT OUTER JOIN [IAVM].[countryCode] AS C
+					ON A.[Client_Residence] = C.[isoAlpha3]
 					WHERE
 					LEN(A.A_C_ID) &gt; 2
 					AND A.A_C_CLOSING_DATE IS Null
 					AND A.Client_Residence != 'CAN'
+					ORDER BY A.A_C_ID
 				</CommandText>
       </Query>
       <Fields>
@@ -111,16 +116,12 @@
           <DataField>ClientResidence</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Client_First_Name">
-          <DataField>Client_First_Name</DataField>
+        <Field Name="Country_Name">
+          <DataField>Country_Name</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ClientResidenceRegion">
           <DataField>ClientResidenceRegion</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Client_Last_Name">
-          <DataField>Client_Last_Name</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="CITIZENSHIP">
@@ -175,10 +176,7 @@
                   <Width>1.58333in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.2in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>2.425in</Width>
+                  <Width>4.03333in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.96666in</Width>
@@ -588,7 +586,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Client First Name</Value>
+                                  <Value>Country Name</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>11pt</FontSize>
@@ -601,41 +599,6 @@
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox2</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox8">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Client Last Name</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox8</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1107,14 +1070,14 @@
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Client_First_Name">
+                        <Textbox Name="Country_Name">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Client_First_Name.Value</Value>
+                                  <Value>=Fields!Country_Name.Value</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                   </Style>
@@ -1123,39 +1086,7 @@
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Client_First_Name</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Client_Last_Name">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Client_Last_Name.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Client_Last_Name</rd:DefaultName>
+                          <rd:DefaultName>Country_Name</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -1286,7 +1217,6 @@
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -1303,7 +1233,7 @@
             <Top>0.255in</Top>
             <Left>0.36334in</Left>
             <Height>0.5in</Height>
-            <Width>26.56665in</Width>
+            <Width>25.97498in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1314,7 +1244,7 @@
         <Height>0.96667in</Height>
         <Style />
       </Body>
-      <Width>26.92999in</Width>
+      <Width>27.27166in</Width>
       <Page>
         <PageHeader>
           <Height>0.675in</Height>
@@ -1386,7 +1316,7 @@
               <Top>0.125in</Top>
               <Left>0.36334in</Left>
               <Height>0.31667in</Height>
-              <Width>7.53333in</Width>
+              <Width>7.79166in</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
