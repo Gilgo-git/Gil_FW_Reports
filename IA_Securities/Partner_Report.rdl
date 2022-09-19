@@ -275,7 +275,7 @@ GROUP BY pos.Symbol, act.A_C_Representative, rep.Repname
 CASE WHEN DAY(Getdate())  &lt; 15 THEN
 					DATEADD(m,-2,
 									DATEADD(d, 1, EOMONTH(Getdate())))
-ELSE 
+ELSE     
 FORMAT(
 DATEADD(m,-1,EOMONTH(Getdate()))
 , 'yyyy-MM-15')
@@ -284,8 +284,7 @@ END as previousMonthDate,
 CASE WHEN DAY(Getdate())  &lt; 15 THEN EOMONTH(DATEADD(m,-1,Getdate()))
 ELSE 
 FORMAT(GETDATE(), 'yyyy-MM-14') END
-as currentDate
-</CommandText>
+as currentDate</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -2991,6 +2990,7 @@ as currentDate
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
