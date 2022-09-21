@@ -43,11 +43,15 @@ SELECT  TI_Symbol Symbol,
 FROM BACKOFFICE.IAVMSM   
 
 WHERE TI_Symbol IN  (
-'CSAV', 'DXP', 'ESGA''ESGE', 'FCSW', 'PMIF', 'VAB', 'VCN','VFV', 
-'VIU', 'VUN', 'VXC', 'XBB', 'XCB', 'XEF','XIC''XIU','XMW', 'XSB', 
-'XSH', 'XSP', 'XSUS', 'XUS', 'XUU','ZAG', 'ZCN', 'ZDV', 'ZDY', 'ZEA',
-'ZEB', 'ZEM', 'ZFL', 'ZLB', 'ZLU','ZMU', 'ZPR', 'ZSP', 'ZUE'
- 
+'BTCX.B',	'CGAA',	'CGL',	'CGL.C',	'CSAV',	'DXC',	'DXG',	'DXP',	'ESGA',	'ESGE',	'FBTC',	'FCGB',	'FCSW',	'FGRO',	'FIG',	'FSB',	'FSF',	'HBAL',	'HBB',	'HCON',	'HGRO',	'HLIT',	'FLCI',        'HMMJ-',
+ 'HMMJ',	'HSH',	'HXCN',	'HXDM',	'HXEM',	'HXS',	'HYI',	'IFRF',	'IGAF',	'MBAL',	'MCON',	'MFT',	'MGRW',	'MHYB',	'NUBF',	'PMIF',	'PSA',	'QEBH',	'QEBL',	'QIF',	'QINF',	'RIRA',	'RIT',	'SVR',	
+'SVR.C',	'TEC',	'VA ',	'VAB',
+'VALT',	'VBAL',	'VCIP',	'VCN',       'VCNS',	'VE',	'VEE',	'VEQT',	'VFV',	'VGG',
+'VGRO',	'VIU',	'VRIF',		'VUN',	'VVL',	'VXC',	'XBAL',	'XBB',	'XCB',	'XCS',	'XEC',	'XEF',	'XEG',	'XEH',	'XEU',
+'XFN',	'XGD',	'XIC',	'XIT',	'XIU',	'XMA',	'XMD',	'XMW',	'XQQ',	'XRB',	'XRE',	'XSB',	'XSH',	'XSP',	'XSU ',	'XSUS',	'XUS',	'XUU',	'ZAG',	'ZBK',	'ZCH',	'ZCM',	'ZCN',	'ZCON',	
+'ZDV',	'ZDY',
+'ZEA',	'ZEB',	'ZEM',	'ZEO',	'ZEQ',	'ZFH',	'ZFL',	'ZGD',	'ZGI',	'ZGQ',	'ZLB',	'ZLU',	'ZMID',	'ZMU',	'ZPR',	'ZRE',	'ZRR',	'ZSML',	'ZSP',	'ZUB',	'ZUE',	'ZUH',	'ZUT',	'ZZZD'																									
+
  --add new symbol here
 
 )
@@ -1217,7 +1221,7 @@ AND @parmDate &lt; getdate()
           <Value>=Today()</Value>
         </Values>
       </DefaultValue>
-      <Prompt>parm Date</Prompt>
+      <Prompt>Select Date</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
