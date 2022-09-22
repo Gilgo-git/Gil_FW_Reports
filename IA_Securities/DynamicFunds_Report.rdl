@@ -45,7 +45,8 @@ Tran_Summ_Business_Date AS processDate
 FROM BACKOFFICE.IAVMPSN
 LEFT JOIN IAVM.rep b ON b.repId = A_C_Representative
 
-WHERE English_Description LIKE 'Dynamic%' </CommandText>
+WHERE (English_Description LIKE 'Dynamic%'
+OR English_Description LIKE 'DYN%') </CommandText>
       </Query>
       <Fields>
         <Field Name="Account">
@@ -911,7 +912,7 @@ WHERE English_Description LIKE 'Dynamic%' </CommandText>
             </TablixRowHierarchy>
             <DataSetName>DataSet1</DataSetName>
             <Height>1.2cm</Height>
-            <Width>50.25889cm</Width>
+            <Width>50.25888cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
