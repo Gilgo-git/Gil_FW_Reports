@@ -45,7 +45,8 @@ Tran_Summ_Business_Date AS processDate
 FROM BACKOFFICE.IAVMPSN
 LEFT JOIN IAVM.rep b ON b.repId = A_C_Representative
 
-WHERE English_Description LIKE 'Dynamic%' </CommandText>
+WHERE (English_Description LIKE 'Dynamic%'
+OR English_Description LIKE 'DYN%') </CommandText>
       </Query>
       <Fields>
         <Field Name="Account">
@@ -200,7 +201,7 @@ WHERE English_Description LIKE 'Dynamic%' </CommandText>
                   <Width>3.32903cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>8.67361cm</Width>
+                  <Width>9.04403cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.5cm</Width>
@@ -355,6 +356,7 @@ WHERE English_Description LIKE 'Dynamic%' </CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -911,7 +913,7 @@ WHERE English_Description LIKE 'Dynamic%' </CommandText>
             </TablixRowHierarchy>
             <DataSetName>DataSet1</DataSetName>
             <Height>1.2cm</Height>
-            <Width>50.25889cm</Width>
+            <Width>50.6293cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -922,7 +924,7 @@ WHERE English_Description LIKE 'Dynamic%' </CommandText>
         <Height>0.47244in</Height>
         <Style />
       </Body>
-      <Width>19.78696in</Width>
+      <Width>19.93279in</Width>
       <Page>
         <PageHeight>29.7cm</PageHeight>
         <PageWidth>21cm</PageWidth>

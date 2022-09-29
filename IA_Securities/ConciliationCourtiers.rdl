@@ -1,812 +1,919 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
-  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
-  <AutoRefresh>0</AutoRefresh>
-  <DataSources>
-    <DataSource Name="iAS_Portal">
-      <DataSourceReference>iAS_Portal</DataSourceReference>
-      <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>3d846881-ac3d-4d5b-ab2d-1452c6bec0ce</rd:DataSourceID>
-    </DataSource>
-  </DataSources>
-  <DataSets>
-    <DataSet Name="ConciliationCourtiers">
-      <Query>
-        <DataSourceName>iAS_Portal</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="Date">
-            <Value>=Parameters!Date.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>REPORTS.usp_SP_Get_ConciliationCourtiersReport</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="Account">
-          <DataField>Account</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Account_Name">
-          <DataField>Account Name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Rep_Number">
-          <DataField>Rep Number</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Rep_Name">
-          <DataField>Rep Name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Account_Class">
-          <DataField>Account Class</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Currency">
-          <DataField>Currency</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="SSS_Type">
-          <DataField>SSS Type</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="SSS_Agent">
-          <DataField>SSS Agent</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="Default_Date">
-      <Query>
-        <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>SELECT MAX([PROCESS_DATE]) AS [MonthEnd]
-FROM [BACKOFFICE].[CMSDT] (nolock)
-WHERE [PROCESS_DATE]&lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="MonthEnd">
-          <DataField>MonthEnd</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-  </DataSets>
-  <ReportSections>
-    <ReportSection>
-      <Body>
-        <ReportItems>
-          <Tablix Name="Tablix1">
-            <TablixBody>
-              <TablixColumns>
-                <TablixColumn>
-                  <Width>1in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>4.29167in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.24167in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>2.68333in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.16667in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.80833in</Width>
-                </TablixColumn>
-              </TablixColumns>
-              <TablixRows>
-                <TablixRow>
-                  <Height>0.25in</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="textbox2">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Account</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>textbox2</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <FontFamily />
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox3">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Account Name</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox3</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox5">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Rep Number</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox5</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox7">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Rep Name</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox7</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox9">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Account Class</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox9</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox11">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Currency</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox11</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox13">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>SSS Type</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox13</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox15">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>SSS Agenty</Value>
-                                  <Style>
-                                    <FontFamily />
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox15</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
-                <TablixRow>
-                  <Height>0.25in</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Account">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Account.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Account</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Account_Name">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Account_Name.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Account_Name</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Rep_Number">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Rep_Number.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Rep_Number</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Rep_Name">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Rep_Name.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Rep_Name</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Account_Class">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Account_Class.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Account_Class</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Currency">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Currency.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Currency</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="SSS_Type">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!SSS_Type.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>SSS_Type</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="SSS_Agent">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!SSS_Agent.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>SSS_Agent</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
-              </TablixRows>
-            </TablixBody>
-            <TablixColumnHierarchy>
-              <TablixMembers>
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-              </TablixMembers>
-            </TablixColumnHierarchy>
-            <TablixRowHierarchy>
-              <TablixMembers>
-                <TablixMember>
-                  <KeepWithGroup>After</KeepWithGroup>
-                </TablixMember>
-                <TablixMember>
-                  <Group Name="Details" />
-                </TablixMember>
-              </TablixMembers>
-            </TablixRowHierarchy>
-            <DataSetName>ConciliationCourtiers</DataSetName>
-            <Top>0.205in</Top>
-            <Left>0.53in</Left>
-            <Height>0.5in</Height>
-            <Width>14.19167in</Width>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-            </Style>
-          </Tablix>
-        </ReportItems>
-        <Height>1in</Height>
-        <Style />
-      </Body>
-      <Width>15.39667in</Width>
-      <Page>
-        <PageHeader>
-          <Height>0.675in</Height>
-          <PrintOnFirstPage>true</PrintOnFirstPage>
-          <PrintOnLastPage>true</PrintOnLastPage>
-          <ReportItems>
-            <Textbox Name="Textbox37">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>= "Conciliation Courtiers Report" + " As Of " + CStr(FORMAT(Now(),"yyyy-MM-dd hh:mm:ss"))</Value>
-                      <Style>
-                        <FontSize>16pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox37</rd:DefaultName>
-              <Top>0.25556in</Top>
-              <Left>0.53in</Left>
-              <Height>0.35in</Height>
-              <Width>10.18333in</Width>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-          </ReportItems>
-          <Style>
-            <Border>
-              <Style>None</Style>
-            </Border>
-          </Style>
-        </PageHeader>
-        <PageFooter>
-          <Height>0.70833in</Height>
-          <PrintOnFirstPage>true</PrintOnFirstPage>
-          <PrintOnLastPage>true</PrintOnLastPage>
-          <ReportItems>
-            <Textbox Name="Textbox4">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>="Total Rows # : " + CStr(CountRows("ConciliationCourtiers")) + ", from source: NBCN"</Value>
-                      <Style>
-                        <FontSize>16pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox3</rd:DefaultName>
-              <Top>0.11667in</Top>
-              <Left>0.53in</Left>
-              <Height>0.31667in</Height>
-              <Width>7.30833in</Width>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-          </ReportItems>
-          <Style>
-            <Border>
-              <Style>None</Style>
-            </Border>
-          </Style>
-        </PageFooter>
-        <LeftMargin>1in</LeftMargin>
-        <RightMargin>1in</RightMargin>
-        <TopMargin>1in</TopMargin>
-        <BottomMargin>1in</BottomMargin>
-        <Style />
-      </Page>
-    </ReportSection>
-  </ReportSections>
-  <ReportParameters>
-    <ReportParameter Name="Date">
-      <DataType>DateTime</DataType>
-      <DefaultValue>
-        <DataSetReference>
-          <DataSetName>Default_Date</DataSetName>
-          <ValueField>MonthEnd</ValueField>
-        </DataSetReference>
-      </DefaultValue>
-      <Prompt>Process Date</Prompt>
-    </ReportParameter>
-  </ReportParameters>
-  <ReportParametersLayout>
-    <GridLayoutDefinition>
-      <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
-      <CellDefinitions>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>Date</ParameterName>
-        </CellDefinition>
-      </CellDefinitions>
-    </GridLayoutDefinition>
-  </ReportParametersLayout>
-  <rd:ReportUnitType>Inch</rd:ReportUnitType>
-  <rd:ReportID>41cdafc6-0da5-4691-9d99-5876e8adecb9</rd:ReportID>
+	<df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+	<AutoRefresh>0</AutoRefresh>
+	<DataSources>
+		<DataSource Name="iAS_Portal">
+			<DataSourceReference>iAS_Portal</DataSourceReference>
+			<rd:SecurityType>None</rd:SecurityType>
+			<rd:DataSourceID>3d846881-ac3d-4d5b-ab2d-1452c6bec0ce</rd:DataSourceID>
+		</DataSource>
+	</DataSources>
+	<DataSets>
+		<DataSet Name="ConciliationCourtiers">
+			<Query>
+				<DataSourceName>iAS_Portal</DataSourceName>
+				<QueryParameters>
+					<QueryParameter Name="@RptStartDate">
+						<Value>=Parameters!RptStartDate.Value</Value>
+					</QueryParameter>
+					<QueryParameter Name="@RptEndDate">
+						<Value>=Parameters!RptEndDate.Value</Value>
+					</QueryParameter>
+				</QueryParameters>
+				<CommandText>
+					/*	=======================================================================================================================================
+					|
+					|	Author:			Yong Sun
+					|
+					|	Create Date:	Aug 5, 2022
+					|
+					|	Description:	Get report data for Conciliation Courtiers Report from sources with parameter's value,
+					|
+					|	Sources:		1, [BACKOFFICE].[CMSDT]
+					|					2, [BACKOFFICE].[IAVMACT]
+					|					3, [BACKOFFICE].[IAVMBK]
+					|					4, [IAVM].[rep]
+					|
+					|	Updates:		Sep 28, 2022
+					|
+					|	Version:		1.01
+					|
+					|	=======================================================================================================================================	*/
+
+					--Declare variables for search
+
+					DECLARE @TRANSACTION_TYPE AS char(3) = 'TRD'
+					DECLARE @A_C_Type AS char(3) = 'COD'
+					DECLARE @A_C_Account_Class AS char(3) = '060'
+					DECLARE @A_C_SSS_Type AS char(1) = 'D'
+					DECLARE @A_C_NSCC_ID AS char(4) = ''
+
+					--Get report data from CMSDT, IAVMACT and rep
+					SELECT DISTINCT
+					C.[FMSL_ACCOUNT_NUMBER] AS [Account],
+					A.[A_C_Name] AS [Account Name],
+					C.[RR_NUMBER] AS [Rep Number],
+					R.[repName] AS [Rep Name],
+					A.[A_C_Account_Class] AS [Account Class],
+					A.[A_C_Currency] AS [Currency],
+					A.[A_C_SSS_Type] AS [SSS Type],
+					A.[A_C_SSS_Agent] AS [SSS Agent]
+					FROM [BACKOFFICE].[CMSDT] AS C
+					INNER JOIN [BACKOFFICE].[IAVMACT] AS A
+					ON A.[A_C_ID] = C.[FMSL_ACCOUNT_NUMBER]
+					LEFT JOIN [IAVM].[rep] AS R
+					ON R.[repId] = C.[RR_NUMBER]
+					WHERE
+					C.[TRANSACTION_TYPE] = @TRANSACTION_TYPE AND
+					C.[PROCESS_DATE] BETWEEN @RptStartDate AND @RptEndDate
+					AND	A.[A_C_Type] = @A_C_Type
+					AND	A.[A_C_Account_Class] = @A_C_Account_Class
+					AND	A.[A_C_SSS_Type] != @A_C_SSS_Type
+					AND	A.[A_C_NSCC_ID] = @A_C_NSCC_ID
+					UNION
+					--Get report data from IAVMBK, IAVMACT and rep
+					SELECT DISTINCT
+					B.[A_C_ID] AS [Account],
+					A.[A_C_Name] AS [Account Name],
+					B.[A_C_Representative] AS [Rep Number],
+					R.[repName] AS [Rep Name],
+					A.[A_C_Account_Class] AS [Account Class],
+					A.[A_C_Currency] AS [Currency],
+					A.[A_C_SSS_Type] AS [SSS Type],
+					A.[A_C_SSS_Agent] AS [SSS Agent]
+					FROM [BACKOFFICE].[IAVMBK] AS b
+					INNER JOIN [BACKOFFICE].[IAVMACT] AS A
+					ON A.[A_C_ID] = B.[A_C_ID]
+					LEFT JOIN [IAVM].[rep] AS R
+					ON R.[repId] = B.[A_C_Representative]
+					WHERE
+					B.[Tran_Process_Date] BETWEEN @RptStartDate AND @RptEndDate
+					AND A.[A_C_Type] = @A_C_Type
+					AND	A.[A_C_Account_Class] = @A_C_Account_Class
+					AND	A.[A_C_SSS_Type] != @A_C_SSS_Type
+					AND A.[A_C_NSCC_ID] = @A_C_NSCC_ID
+				</CommandText>
+			</Query>
+			<Fields>
+				<Field Name="Account">
+					<DataField>Account</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="Account_Name">
+					<DataField>Account Name</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="Rep_Number">
+					<DataField>Rep Number</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="Rep_Name">
+					<DataField>Rep Name</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="Account_Class">
+					<DataField>Account Class</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="Currency">
+					<DataField>Currency</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="SSS_Type">
+					<DataField>SSS Type</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="SSS_Agent">
+					<DataField>SSS Agent</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+			</Fields>
+		</DataSet>
+		<DataSet Name="Default_Rpt_End_Date">
+			<Query>
+				<DataSourceName>iAS_Portal</DataSourceName>
+				<CommandText>
+					SELECT MAX([PROCESS_DATE]) AS [MonthEnd]
+					FROM [BACKOFFICE].[CMSDT] (nolock)
+					WHERE [PROCESS_DATE]&lt; DateAdd(month, DateDiff(month, 0, GetDate()) + 1, 0)
+				</CommandText>
+			</Query>
+			<Fields>
+				<Field Name="MonthEnd">
+					<DataField>MonthEnd</DataField>
+					<rd:TypeName>System.DateTime</rd:TypeName>
+				</Field>
+			</Fields>
+		</DataSet>
+		<DataSet Name="Default_Rpt_Start_Date">
+			<Query>
+				<DataSourceName>iAS_Portal</DataSourceName>
+				<CommandText>
+					SELECT MIN([PROCESS_DATE]) AS [MonthStart]
+					FROM [BACKOFFICE].[CMSDT] (nolock)
+					WHERE [PROCESS_DATE] &gt;= DateAdd(month, DateDiff(month, 0, GetDate()), 0)
+				</CommandText>
+			</Query>
+			<Fields>
+				<Field Name="MonthStart">
+					<DataField>MonthStart</DataField>
+					<rd:TypeName>System.DateTime</rd:TypeName>
+				</Field>
+			</Fields>
+		</DataSet>
+	</DataSets>
+	<ReportSections>
+		<ReportSection>
+			<Body>
+				<ReportItems>
+					<Tablix Name="Tablix1">
+						<TablixBody>
+							<TablixColumns>
+								<TablixColumn>
+									<Width>1in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>4.29167in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1.24167in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>2.68333in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1.16667in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1.80833in</Width>
+								</TablixColumn>
+							</TablixColumns>
+							<TablixRows>
+								<TablixRow>
+									<Height>0.25in</Height>
+									<TablixCells>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Account">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!Account.Value</Value>
+																	<Style />
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Account</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Account_Name">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!Account_Name.Value</Value>
+																	<Style />
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Account_Name</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Rep_Number">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!Rep_Number.Value</Value>
+																	<Style />
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Rep_Number</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Rep_Name">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!Rep_Name.Value</Value>
+																	<Style>
+																		<FontFamily>Arial</FontFamily>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Rep_Name</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Account_Class">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!Account_Class.Value</Value>
+																	<Style>
+																		<FontFamily>Arial</FontFamily>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Account_Class</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Currency">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!Currency.Value</Value>
+																	<Style>
+																		<FontFamily>Arial</FontFamily>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Currency</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="SSS_Type">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!SSS_Type.Value</Value>
+																	<Style>
+																		<FontFamily>Arial</FontFamily>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>SSS_Type</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="SSS_Agent">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!SSS_Agent.Value</Value>
+																	<Style>
+																		<FontFamily>Arial</FontFamily>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>SSS_Agent</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+									</TablixCells>
+								</TablixRow>
+							</TablixRows>
+						</TablixBody>
+						<TablixColumnHierarchy>
+							<TablixMembers>
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+							</TablixMembers>
+						</TablixColumnHierarchy>
+						<TablixRowHierarchy>
+							<TablixMembers>
+								<TablixMember>
+									<Group Name="Details" />
+								</TablixMember>
+							</TablixMembers>
+						</TablixRowHierarchy>
+						<DataSetName>ConciliationCourtiers</DataSetName>
+						<Top>0.01389in</Top>
+						<Left>0.53in</Left>
+						<Height>0.25in</Height>
+						<Width>14.19167in</Width>
+						<Style>
+							<Border>
+								<Style>None</Style>
+							</Border>
+						</Style>
+					</Tablix>
+				</ReportItems>
+				<Height>0.34375in</Height>
+				<Style />
+			</Body>
+			<Width>15.39667in</Width>
+			<Page>
+				<PageHeader>
+					<Height>1.05694in</Height>
+					<PrintOnFirstPage>true</PrintOnFirstPage>
+					<PrintOnLastPage>true</PrintOnLastPage>
+					<ReportItems>
+						<Textbox Name="Textbox37">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>= "Conciliation Courtiers Report" + " As Of " + CStr(FORMAT(Now(),"yyyy-MM-dd hh:mm:ss"))</Value>
+											<Style>
+												<FontSize>16pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox37</rd:DefaultName>
+							<Top>0.25556in</Top>
+							<Left>0.53in</Left>
+							<Height>0.35in</Height>
+							<Width>10.18333in</Width>
+							<Style>
+								<Border>
+									<Style>None</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+						<Textbox Name="textbox2">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>Account</Value>
+											<Style>
+												<FontFamily />
+												<FontSize>11pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+												<Color>#666666</Color>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>textbox2</rd:DefaultName>
+							<Top>0.79306in</Top>
+							<Left>0.53in</Left>
+							<Height>0.25in</Height>
+							<Width>1in</Width>
+							<ZIndex>1</ZIndex>
+							<Style>
+								<Border>
+									<Color>LightGrey</Color>
+									<Style>Solid</Style>
+								</Border>
+								<FontFamily />
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+						<Textbox Name="Textbox3">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>Account Name</Value>
+											<Style>
+												<FontFamily />
+												<FontSize>11pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+												<Color>#666666</Color>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox3</rd:DefaultName>
+							<Top>0.79306in</Top>
+							<Left>1.53in</Left>
+							<Height>0.25in</Height>
+							<Width>4.29167in</Width>
+							<ZIndex>2</ZIndex>
+							<Style>
+								<Border>
+									<Color>LightGrey</Color>
+									<Style>Solid</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+						<Textbox Name="Textbox5">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>Rep Number</Value>
+											<Style>
+												<FontFamily />
+												<FontSize>11pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+												<Color>#666666</Color>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox5</rd:DefaultName>
+							<Top>0.79306in</Top>
+							<Left>5.82167in</Left>
+							<Height>0.25in</Height>
+							<Width>1.24167in</Width>
+							<ZIndex>3</ZIndex>
+							<Style>
+								<Border>
+									<Color>LightGrey</Color>
+									<Style>Solid</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+						<Textbox Name="Textbox7">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>Rep Name</Value>
+											<Style>
+												<FontFamily />
+												<FontSize>11pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+												<Color>#666666</Color>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox7</rd:DefaultName>
+							<Top>0.79306in</Top>
+							<Left>7.06334in</Left>
+							<Height>0.25in</Height>
+							<Width>2.68333in</Width>
+							<ZIndex>4</ZIndex>
+							<Style>
+								<Border>
+									<Color>LightGrey</Color>
+									<Style>Solid</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+						<Textbox Name="Textbox9">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>Account Class</Value>
+											<Style>
+												<FontFamily />
+												<FontSize>11pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+												<Color>#666666</Color>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox9</rd:DefaultName>
+							<Top>0.79306in</Top>
+							<Left>9.74667in</Left>
+							<Height>0.25in</Height>
+							<Width>1.16667in</Width>
+							<ZIndex>5</ZIndex>
+							<Style>
+								<Border>
+									<Color>LightGrey</Color>
+									<Style>Solid</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+						<Textbox Name="Textbox11">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>Currency</Value>
+											<Style>
+												<FontFamily />
+												<FontSize>11pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+												<Color>#666666</Color>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox11</rd:DefaultName>
+							<Top>0.79306in</Top>
+							<Left>10.91334in</Left>
+							<Height>0.25in</Height>
+							<Width>1in</Width>
+							<ZIndex>6</ZIndex>
+							<Style>
+								<Border>
+									<Color>LightGrey</Color>
+									<Style>Solid</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+						<Textbox Name="Textbox13">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>SSS Type</Value>
+											<Style>
+												<FontFamily />
+												<FontSize>11pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+												<Color>#666666</Color>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox13</rd:DefaultName>
+							<Top>0.79306in</Top>
+							<Left>11.91334in</Left>
+							<Height>0.25in</Height>
+							<Width>1in</Width>
+							<ZIndex>7</ZIndex>
+							<Style>
+								<Border>
+									<Color>LightGrey</Color>
+									<Style>Solid</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+						<Textbox Name="Textbox15">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>SSS Agenty</Value>
+											<Style>
+												<FontFamily />
+												<FontSize>11pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+												<Color>#666666</Color>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox15</rd:DefaultName>
+							<Top>0.79306in</Top>
+							<Left>12.91334in</Left>
+							<Height>0.25in</Height>
+							<Width>1.80833in</Width>
+							<ZIndex>8</ZIndex>
+							<Style>
+								<Border>
+									<Color>LightGrey</Color>
+									<Style>Solid</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+					</ReportItems>
+					<Style>
+						<Border>
+							<Style>None</Style>
+						</Border>
+					</Style>
+				</PageHeader>
+				<PageFooter>
+					<Height>0.70833in</Height>
+					<PrintOnFirstPage>true</PrintOnFirstPage>
+					<PrintOnLastPage>true</PrintOnLastPage>
+					<ReportItems>
+						<Textbox Name="Textbox4">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>="Total Rows # : " + CStr(CountRows("ConciliationCourtiers")) + ", from source: NBCN"</Value>
+											<Style>
+												<FontSize>16pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox3</rd:DefaultName>
+							<Top>0.11667in</Top>
+							<Left>0.53in</Left>
+							<Height>0.31667in</Height>
+							<Width>7.30833in</Width>
+							<Style>
+								<Border>
+									<Style>None</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+					</ReportItems>
+					<Style>
+						<Border>
+							<Style>None</Style>
+						</Border>
+					</Style>
+				</PageFooter>
+				<LeftMargin>1in</LeftMargin>
+				<RightMargin>1in</RightMargin>
+				<TopMargin>1in</TopMargin>
+				<BottomMargin>1in</BottomMargin>
+				<Style />
+			</Page>
+		</ReportSection>
+	</ReportSections>
+	<ReportParameters>
+		<ReportParameter Name="RptStartDate">
+			<DataType>DateTime</DataType>
+			<DefaultValue>
+				<DataSetReference>
+					<DataSetName>Default_Rpt_Start_Date</DataSetName>
+					<ValueField>MonthStart</ValueField>
+				</DataSetReference>
+			</DefaultValue>
+			<Prompt>Report Start Date</Prompt>
+		</ReportParameter>
+		<ReportParameter Name="RptEndDate">
+			<DataType>DateTime</DataType>
+			<DefaultValue>
+				<DataSetReference>
+					<DataSetName>Default_Rpt_End_Date</DataSetName>
+					<ValueField>MonthEnd</ValueField>
+				</DataSetReference>
+			</DefaultValue>
+			<Prompt>Report End Date</Prompt>
+		</ReportParameter>
+	</ReportParameters>
+	<ReportParametersLayout>
+		<GridLayoutDefinition>
+			<NumberOfColumns>3</NumberOfColumns>
+			<NumberOfRows>2</NumberOfRows>
+			<CellDefinitions>
+				<CellDefinition>
+					<ColumnIndex>1</ColumnIndex>
+					<RowIndex>0</RowIndex>
+					<ParameterName>RptEndDate</ParameterName>
+				</CellDefinition>
+				<CellDefinition>
+					<ColumnIndex>0</ColumnIndex>
+					<RowIndex>0</RowIndex>
+					<ParameterName>RptStartDate</ParameterName>
+				</CellDefinition>
+			</CellDefinitions>
+		</GridLayoutDefinition>
+	</ReportParametersLayout>
+	<rd:ReportUnitType>Inch</rd:ReportUnitType>
+	<rd:ReportID>41cdafc6-0da5-4691-9d99-5876e8adecb9</rd:ReportID>
 </Report>
