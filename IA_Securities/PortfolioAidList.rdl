@@ -126,6 +126,14 @@
           <DataField>MIDDLE_NM</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="RepUserId">
+          <DataField>RepUserId</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
+        </Field>
+        <Field Name="CbmUserId">
+          <DataField>CbmUserId</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="BranchCode">
@@ -596,7 +604,7 @@ order by b.firmCode
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!CBM.Value</Value>
+                                  <Value>=Fields!CBM.Value + iif(IsNothing(Fields!CbmUserId.Value), "", " (" + Fields!CbmUserId.Value + ")")</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
@@ -670,7 +678,7 @@ order by b.firmCode
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!FirstName.Value + " " + Fields!MIDDLE_NM.Value + iif(IsNothing(Fields!MIDDLE_NM.Value), "", " ") + Fields!LastName.Value + " (" + Lookup(Fields!RepCode.Value, Fields!repCode.Value, Fields!userId.Value, "BranchCode") + ")"</Value>
+                                  <Value>=Fields!FirstName.Value + " " + Fields!MIDDLE_NM.Value + iif(IsNothing(Fields!MIDDLE_NM.Value), "", " ") + Fields!LastName.Value + iif(IsNothing(Fields!RepUserId.Value), "", " (" + Fields!RepUserId.Value + ")")</Value>
                                   <Style>
                                     <FontFamily />
                                     <Color>#333333</Color>
