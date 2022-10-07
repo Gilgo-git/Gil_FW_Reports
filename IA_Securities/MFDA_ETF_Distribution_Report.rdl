@@ -50,7 +50,7 @@ WHERE TI_Symbol IN  (
 'XBAL',	 'XBB',	'XCB',	'XCS',	'XEC',	'XEF',	'XEG',	'XEH',	'XEU',  'XFN',	'XGD',	'XIC',	'XIT',	'XIU',	'XMA',	'XMD',	'XMW',	'XQQ',	
 'XRB',	 'XRE',	'XSB',	'XSH',	'XSP',	'XSU ',	'XSUS',	'XUS',	'XUU',	'ZAG',	'ZBK',	'ZCH',	'ZCM',	'ZCN',	'ZCON',	'ZDV',	'ZDY',
 'ZEA',	 'ZEB',	'ZEM',	'ZEO',	'ZEQ',	'ZFH',	'ZFL',	'ZGD',	'ZGI',	'ZGQ',	'ZLB',	'ZLU',	'ZMID',	'ZMU',	'ZPR',	'ZRE',	'ZRR',	
-'ZSML',	 'ZSP',	'ZUB',	'ZUE',	'ZUH',	'ZUT',	'ZZZD'												--add new symbol here
+'ZSML',	 'ZSP',	'ZUB',	'ZUE',	'ZUH',	'ZUT',	'ZZZD',			'RCD','CDIV','UDIV' --SCTASK0172410									--add new symbol here
 )
  
 AND  TI_Income_Record_Date &gt;=  CASE WHEN Income_Frequency = 12 THEN cast(cast(DATEADD(m,-12,@parmDate) as date) as datetime)
