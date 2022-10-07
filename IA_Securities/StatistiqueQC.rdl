@@ -13,120 +13,255 @@
     <DataSet Name="statistiqueQC">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>;WITH CTE_Core_Selection AS
-(
-	SELECT --DISTINCT
-		p.Tran_Summ_Business_Date AS processDate, 
-		r.repId AS R_repId, 
-		a.A_C_Representative,
-		a.A_C_ID AS A_A_C_ID, 
-		p.A_C_ID AS P_A_C_ID, 
-		p.Tran_Summ_Business_Date, 
-		pc.typeCode,
-		RTRIM(p.TI_Alternate_TI_Type) AS TI_Alternate_TI_Type,
-		RTRIM(p.TI_Type) AS TI_Type, 
-		pc.classCode, 
-		p.TI_Alternate_TI_Class, 
-		a.A_C_Open_Date,
-		a.Client_Residence_Region,
-		p.Tran_Summ_Curr_Mkt_Value,
-		r.branchCode,
-		r.repId,
-		a.A_C_Client AS clientId,
-		a.A_C_ID AS accountId,
-		a.A_C_Currency AS accountCurrency,
-		a.A_C_Open_Date AS accountOpenDate,
-		pc.productCode, 
-		CASE WHEN RTRIM(TI_Type) = 'CD' THEN 'COM'
-				WHEN RTRIM(TI_Type) IN ('BD' , 'AB', 'MM', 'ST') THEN 'FIX'
-				WHEN RTRIM(TI_Type) = 'EQ' THEN 'EQT'
-				WHEN RTRIM(TI_Type) IN ('OD') THEN 'GIC'
-				WHEN RTRIM(TI_Type) IN ('MF') THEN 'MUT'
-				WHEN RTRIM(TI_Type) IN ('CR' , 'IX') THEN 'OPT'
-				ELSE 'EQT'
-		END AS Derived_productCode
-		--	Mapping LEN(TI_Type) from 2 to 3 as productCode
-	FROM BACKOFFICE.IAVMACT a
-	LEFT OUTER JOIN IAVM.rep r 
-	ON r.repId = a.A_C_Representative
-	INNER JOIN BACKOFFICE.IAVMPSN p 
-	ON a.A_C_ID = p.A_C_ID
-	AND p.Tran_Summ_Business_Date IN
-	(
-		SELECT DISTINCT Last_Maint_Date
-		FROM BACKOFFICE.IAVMSM
-		WHERE ti_alternate_id = '000009'
-	)
-	LEFT OUTER JOIN	IAVM.product pc 
-	ON pc.typeCode = RTRIM(p.TI_Alternate_TI_Type)
-	AND pc.classCode = p.TI_Alternate_TI_Class
-	WHERE a.A_C_Open_Date IS NOT Null
-	AND a.Client_Residence_Region = 'QC'
-),
-	CTE_Core_Sum AS
-(
-	SELECT processDate, R_repId, A_C_Representative, A_A_C_ID, P_A_C_ID, Tran_Summ_Business_Date, 
-		typeCode, 
-		TI_Alternate_TI_Type, 
-		TI_Type, classCode, 
-		TI_Alternate_TI_Class, 
-		A_C_Open_Date, 
-		Client_Residence_Region, 
-		Tran_Summ_Curr_Mkt_Value, 
-		branchCode, 
-		repId, 
-		clientId, 
-		accountId, 
-		accountCurrency, 
-		accountOpenDate, 
-		productCode, 
-		Derived_productCode, 
-		ROW_NUMBER() 
-			OVER(PARTITION BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode  
-				 ORDER BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode)
-		AS DeDupCounts,
-		SUM(Tran_Summ_Curr_Mkt_Value) 
-			OVER(PARTITION BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode   
-				 ORDER BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode)
-		AS [value]
-	FROM CTE_Core_Selection
-)
-SELECT processDate, 
-	branchCode, 
-	repId, 
-	clientId, 
-	accountId, 
-	accountCurrency, 
-	accountOpenDate,
-	Derived_productCode AS productCode, 
-	[value]
-FROM CTE_Core_Sum
-WHERE DeDupCounts = 1
+        <CommandText>
+					;WITH CTE_Core_Selection AS
+					(
+					SELECT --DISTINCT
+					p.Tran_Summ_Business_Date AS processDate,
+					r.repId AS R_repId,
+					a.A_C_Representative,
+					a.A_C_ID AS A_A_C_ID,
+					p.A_C_ID AS P_A_C_ID,
+					p.Tran_Summ_Business_Date,
+					pc.typeCode,
+					RTRIM(p.TI_Alternate_TI_Type) AS TI_Alternate_TI_Type,
+					RTRIM(p.TI_Type) AS TI_Type,
+					pc.classCode,
+					p.TI_Alternate_TI_Class,
+					a.A_C_Open_Date,
+					a.Client_Residence_Region,
+					p.Tran_Summ_Curr_Mkt_Value,
+					r.branchCode,
+					r.repId,
+					a.A_C_Client AS clientId,
+					a.A_C_ID AS accountId,
+					a.A_C_Currency AS accountCurrency,
+					a.A_C_Open_Date AS accountOpenDate,
+					pc.productCode,
+					CASE WHEN RTRIM(TI_Type) = 'CD' THEN 'COM'
+					WHEN RTRIM(TI_Type) IN ('BD' , 'AB', 'MM', 'ST') THEN 'FIX'
+					WHEN RTRIM(TI_Type) = 'EQ' THEN 'EQT'
+					WHEN RTRIM(TI_Type) IN ('OD') THEN 'GIC'
+					WHEN RTRIM(TI_Type) IN ('MF') THEN 'MUT'
+					WHEN RTRIM(TI_Type) IN ('CR' , 'IX') THEN 'OPT'
+					ELSE 'EQT'
+					END AS Derived_productCode
+					--	Mapping LEN(TI_Type) from 2 to 3 as productCode
+					FROM BACKOFFICE.IAVMACT a
+					LEFT OUTER JOIN IAVM.rep r
+					ON r.repId = a.A_C_Representative
+					INNER JOIN BACKOFFICE.IAVMPSN p
+					ON a.A_C_ID = p.A_C_ID
+					AND p.Tran_Summ_Business_Date IN
+					(
+					SELECT DISTINCT Last_Maint_Date
+					FROM BACKOFFICE.IAVMSM
+					WHERE ti_alternate_id = '000009'
+					)
+					LEFT OUTER JOIN	IAVM.product pc
+					ON pc.typeCode = RTRIM(p.TI_Alternate_TI_Type)
+					AND pc.classCode = p.TI_Alternate_TI_Class
+					WHERE a.A_C_Open_Date IS NOT Null
+					AND a.Client_Residence_Region = 'QC'
+					),
+					CTE_Core_Sum AS
+					(
+					SELECT processDate, R_repId, A_C_Representative, A_A_C_ID, P_A_C_ID, Tran_Summ_Business_Date,
+					typeCode,
+					TI_Alternate_TI_Type,
+					TI_Type, classCode,
+					TI_Alternate_TI_Class,
+					A_C_Open_Date,
+					Client_Residence_Region,
+					Tran_Summ_Curr_Mkt_Value,
+					branchCode,
+					repId,
+					clientId,
+					accountId,
+					accountCurrency,
+					accountOpenDate,
+					productCode,
+					Derived_productCode,
+					ROW_NUMBER()
+					OVER(PARTITION BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode
+					ORDER BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode)
+					AS DeDupCounts,
+					SUM(Tran_Summ_Curr_Mkt_Value)
+					OVER(PARTITION BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode
+					ORDER BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode)
+					AS [value]
+					FROM CTE_Core_Selection
+					)
+					SELECT processDate,
+					branchCode,
+					repId,
+					clientId,
+					accountId,
+					accountCurrency,
+					accountOpenDate,
+					Derived_productCode AS productCode,
+					[value]
+					FROM CTE_Core_Sum
+					WHERE DeDupCounts = 1
 
-UNION
+					UNION
 
-SELECT DISTINCT
-    v.A_C_SUMM_BALANCE_BUS_DATE AS processDate,
-    r.branchCode,
-    r.repId,
-    a.A_C_Client AS clientId,
-    a.A_C_ID AS accountId,
-    a.A_C_Currency AS accountCurrency,
-    a.A_C_Open_Date AS accountOpenDate,
-    'CASH' AS productCode,
-    (v.A_C_Summ_TD_Net_Amt * - 1) AS value
-FROM BACKOFFICE.IAVMACT a
-    INNER JOIN IAVM.rep r 
-	ON r.repId = a.A_C_Representative
-    INNER JOIN BACKOFFICE.IAVMVAL v ON a.A_C_ID = v.A_C_ID
-	AND v.A_C_SUMM_BALANCE_BUS_DATE IN  
-	(
-		SELECT DISTINCT Last_Maint_Date
-        FROM BACKOFFICE.IAVMSM
-        WHERE ti_alternate_id = '000009'
-	)
-WHERE a.A_C_Open_Date IS NOT Null
-AND a.Client_Residence_Region = 'QC'</CommandText>
+					SELECT DISTINCT
+					v.A_C_SUMM_BALANCE_BUS_DATE AS processDate,
+					r.branchCode,
+					r.repId,
+					a.A_C_Client AS clientId,
+					a.A_C_ID AS accountId,
+					a.A_C_Currency AS accountCurrency,
+					a.A_C_Open_Date AS accountOpenDate,
+					'CASH' AS productCode,
+					(v.A_C_Summ_TD_Net_Amt * - 1) AS value
+					FROM BACKOFFICE.IAVMACT a
+					INNER JOIN IAVM.rep r
+					ON r.repId = a.A_C_Representative
+					INNER JOIN BACKOFFICE.IAVMVAL v ON a.A_C_ID = v.A_C_ID
+					AND v.A_C_SUMM_BALANCE_BUS_DATE IN
+					(
+					SELECT DISTINCT Last_Maint_Date
+					FROM BACKOFFICE.IAVMSM
+					WHERE ti_alternate_id = '000009'
+					)
+					WHERE a.A_C_Open_Date IS NOT Null
+					AND a.Client_Residence_Region = 'QC'
+				</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="processDate">
+          <DataField>processDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="branchCode">
+          <DataField>branchCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="repId">
+          <DataField>repId</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="clientId">
+          <DataField>clientId</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="accountId">
+          <DataField>accountId</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="accountCurrency">
+          <DataField>accountCurrency</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="accountOpenDate">
+          <DataField>accountOpenDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="productCode">
+          <DataField>productCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="value">
+          <DataField>value</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>					;WITH CTE_Core_Selection AS
+					(
+					SELECT --DISTINCT
+					p.Tran_Summ_Business_Date AS processDate,
+					r.repId AS R_repId,
+					a.A_C_Representative,
+					a.A_C_ID AS A_A_C_ID,
+					p.A_C_ID AS P_A_C_ID,
+					p.Tran_Summ_Business_Date,
+					pc.typeCode,
+					RTRIM(p.TI_Alternate_TI_Type) AS TI_Alternate_TI_Type,
+					RTRIM(p.TI_Type) AS TI_Type,
+					pc.classCode,
+					p.TI_Alternate_TI_Class,
+					a.A_C_Open_Date,
+					a.Client_Residence_Region,
+					p.Tran_Summ_Curr_Mkt_Value,
+					r.branchCode,
+					r.repId,
+					a.A_C_Client AS clientId,
+					a.A_C_ID AS accountId,
+					a.A_C_Currency AS accountCurrency,
+					a.A_C_Open_Date AS accountOpenDate,
+					pc.productCode,
+					CASE WHEN RTRIM(TI_Type) = 'CD' THEN 'COM'
+					WHEN RTRIM(TI_Type) IN ('BD' , 'AB', 'MM', 'ST') THEN 'FIX'
+					WHEN RTRIM(TI_Type) = 'EQ' THEN 'EQT'
+					WHEN RTRIM(TI_Type) IN ('OD') THEN 'GIC'
+					WHEN RTRIM(TI_Type) IN ('MF') THEN 'MUT'
+					WHEN RTRIM(TI_Type) IN ('CR' , 'IX') THEN 'OPT'
+					ELSE 'EQT'
+					END AS Derived_productCode
+					--	Mapping LEN(TI_Type) from 2 to 3 as productCode
+					FROM BACKOFFICE.IAVMACT a
+					LEFT OUTER JOIN IAVM.rep r
+					ON r.repId = a.A_C_Representative
+					INNER JOIN BACKOFFICE.IAVMPSN p
+					ON a.A_C_ID = p.A_C_ID
+					AND p.Tran_Summ_Business_Date IN
+					(
+					SELECT DISTINCT Last_Maint_Date
+					FROM BACKOFFICE.IAVMSM
+					WHERE ti_alternate_id = '000009'
+					)
+					LEFT OUTER JOIN	IAVM.product pc
+					ON pc.typeCode = RTRIM(p.TI_Alternate_TI_Type)
+					AND pc.classCode = p.TI_Alternate_TI_Class
+					WHERE a.A_C_Open_Date IS NOT Null
+					AND a.Client_Residence_Region = 'QC'
+					),
+					CTE_Core_Sum AS
+					(
+					SELECT processDate, R_repId, A_C_Representative, A_A_C_ID, P_A_C_ID, Tran_Summ_Business_Date,
+					typeCode,
+					TI_Alternate_TI_Type,
+					TI_Type, classCode,
+					TI_Alternate_TI_Class,
+					A_C_Open_Date,
+					Client_Residence_Region,
+					Tran_Summ_Curr_Mkt_Value,
+					branchCode,
+					repId,
+					clientId,
+					accountId,
+					accountCurrency,
+					accountOpenDate,
+					productCode,
+					Derived_productCode,
+					ROW_NUMBER()
+					OVER(PARTITION BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode
+					ORDER BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode)
+					AS DeDupCounts,
+					SUM(Tran_Summ_Curr_Mkt_Value)
+					OVER(PARTITION BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode
+					ORDER BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode)
+					AS [value]
+					FROM CTE_Core_Selection
+					)
+					SELECT processDate,
+					branchCode,
+					repId,
+					clientId,
+					accountId,
+					accountCurrency,
+					accountOpenDate,
+					Derived_productCode AS productCode,
+					[value]
+					FROM CTE_Core_Sum
+					WHERE DeDupCounts = 1
+					AND 0 = 1</CommandText>
       </Query>
       <Fields>
         <Field Name="processDate">
@@ -172,35 +307,29 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
     <ReportSection>
       <Body>
         <ReportItems>
-          <Tablix Name="Tablix1">
+          <Tablix Name="Tablix5">
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>2.2in</Width>
+                  <Width>1.76428in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.90833in</Width>
+                  <Width>1.15595in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.55833in</Width>
+                  <Width>1.15595in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>1.15595in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>2.20595in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.50833in</Width>
+                  <Width>1.15595in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.33333in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.175in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>1.15595in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -209,37 +338,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="processDate">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!processDate.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>processDate</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="branchCode">
+                        <Textbox Name="branchCode1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -253,7 +352,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>branchCode</rd:DefaultName>
+                          <rd:DefaultName>branchCode1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -299,7 +398,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="clientId">
+                        <Textbox Name="clientId1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -307,15 +406,13 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Fields!clientId.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>clientId</rd:DefaultName>
+                          <rd:DefaultName>clientId1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -331,7 +428,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="accountId">
+                        <Textbox Name="accountId1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -347,7 +444,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>accountId</rd:DefaultName>
+                          <rd:DefaultName>accountId1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -363,7 +460,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="accountCurrency">
+                        <Textbox Name="accountCurrency1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -379,7 +476,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>accountCurrency</rd:DefaultName>
+                          <rd:DefaultName>accountCurrency1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -395,39 +492,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="accountOpenDate">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!accountOpenDate.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>accountOpenDate</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="productCode">
+                        <Textbox Name="productCode1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -443,7 +508,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>productCode</rd:DefaultName>
+                          <rd:DefaultName>productCode1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -459,7 +524,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="value">
+                        <Textbox Name="value1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -475,7 +540,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>value</rd:DefaultName>
+                          <rd:DefaultName>value1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -502,21 +567,20 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
               <TablixMembers>
                 <TablixMember>
-                  <Group Name="Details" />
+                  <Group Name="Details1" />
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
+            <FixedRowHeaders>true</FixedRowHeaders>
             <DataSetName>statistiqueQC</DataSetName>
-            <Left>0.455in</Left>
+            <Left>0.46333in</Left>
             <Height>0.25in</Height>
-            <Width>13.68332in</Width>
+            <Width>9.74999in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -524,13 +588,17 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>0.33334in</Height>
-        <Style />
+        <Height>0.255in</Height>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+        </Style>
       </Body>
-      <Width>14.30221in</Width>
+      <Width>10.21333in</Width>
       <Page>
         <PageHeader>
-          <Height>0.84167in</Height>
+          <Height>0.92444in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -555,7 +623,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
               <Top>0.2in</Top>
               <Left>0.46333in</Left>
               <Height>0.35in</Height>
-              <Width>10.33333in</Width>
+              <Width>9.75in</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -566,43 +634,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox3">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Process Date</Value>
-                      <Style>
-                        <FontFamily />
-                        <FontSize>11pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <Color>#666666</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox2</rd:DefaultName>
-              <Top>0.59167in</Top>
-              <Left>0.455in</Left>
-              <Height>0.25in</Height>
-              <Width>2.2in</Width>
-              <ZIndex>1</ZIndex>
-              <Style>
-                <Border>
-                  <Color>LightGrey</Color>
-                  <Style>Solid</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox7">
+            <Textbox Name="Textbox45">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -621,12 +653,12 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <rd:DefaultName>Textbox4</rd:DefaultName>
-              <Top>0.59167in</Top>
-              <Left>2.64667in</Left>
+              <rd:DefaultName>Textbox44</rd:DefaultName>
+              <Top>0.67444in</Top>
+              <Left>0.46333in</Left>
               <Height>0.25in</Height>
-              <Width>1.90833in</Width>
-              <ZIndex>2</ZIndex>
+              <Width>1.76428in</Width>
+              <ZIndex>1</ZIndex>
               <Style>
                 <Border>
                   <Color>LightGrey</Color>
@@ -638,7 +670,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox6">
+            <Textbox Name="Textbox47">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -657,12 +689,12 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <rd:DefaultName>Textbox6</rd:DefaultName>
-              <Top>0.59111in</Top>
-              <Left>4.555in</Left>
+              <rd:DefaultName>Textbox46</rd:DefaultName>
+              <Top>0.67444in</Top>
+              <Left>2.22762in</Left>
               <Height>0.25in</Height>
-              <Width>1.55833in</Width>
-              <ZIndex>3</ZIndex>
+              <Width>1.15595in</Width>
+              <ZIndex>2</ZIndex>
               <Style>
                 <Border>
                   <Color>LightGrey</Color>
@@ -674,7 +706,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox8">
+            <Textbox Name="Textbox49">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -693,12 +725,12 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <rd:DefaultName>Textbox8</rd:DefaultName>
-              <Top>0.59111in</Top>
-              <Left>6.11333in</Left>
+              <rd:DefaultName>Textbox48</rd:DefaultName>
+              <Top>0.67444in</Top>
+              <Left>3.38357in</Left>
               <Height>0.25in</Height>
-              <Width>1in</Width>
-              <ZIndex>4</ZIndex>
+              <Width>1.15595in</Width>
+              <ZIndex>3</ZIndex>
               <Style>
                 <Border>
                   <Color>LightGrey</Color>
@@ -710,43 +742,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox12">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Account Currency</Value>
-                      <Style>
-                        <FontFamily />
-                        <FontSize>11pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <Color>#666666</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox12</rd:DefaultName>
-              <Top>0.59111in</Top>
-              <Left>8.11333in</Left>
-              <Height>0.25in</Height>
-              <Width>1.50833in</Width>
-              <ZIndex>5</ZIndex>
-              <Style>
-                <Border>
-                  <Color>LightGrey</Color>
-                  <Style>Solid</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox17">
+            <Textbox Name="Textbox53">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -765,12 +761,12 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <rd:DefaultName>Textbox10</rd:DefaultName>
-              <Top>0.59167in</Top>
-              <Left>7.11333in</Left>
+              <rd:DefaultName>Textbox52</rd:DefaultName>
+              <Top>0.67444in</Top>
+              <Left>4.53952in</Left>
               <Height>0.25in</Height>
-              <Width>1in</Width>
-              <ZIndex>6</ZIndex>
+              <Width>1.15595in</Width>
+              <ZIndex>4</ZIndex>
               <Style>
                 <Border>
                   <Color>LightGrey</Color>
@@ -782,14 +778,14 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox19">
+            <Textbox Name="Textbox55">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Account Open Date</Value>
+                      <Value>Account Currency</Value>
                       <Style>
                         <FontFamily />
                         <FontSize>11pt</FontSize>
@@ -801,12 +797,12 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <rd:DefaultName>Textbox14</rd:DefaultName>
-              <Top>0.59111in</Top>
-              <Left>9.61332in</Left>
+              <rd:DefaultName>Textbox54</rd:DefaultName>
+              <Top>0.67444in</Top>
+              <Left>5.69547in</Left>
               <Height>0.25in</Height>
-              <Width>2.33333in</Width>
-              <ZIndex>7</ZIndex>
+              <Width>2.20595in</Width>
+              <ZIndex>5</ZIndex>
               <Style>
                 <Border>
                   <Color>LightGrey</Color>
@@ -818,7 +814,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox20">
+            <Textbox Name="Textbox57">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -837,12 +833,12 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <rd:DefaultName>Textbox16</rd:DefaultName>
-              <Top>0.59167in</Top>
-              <Left>11.94665in</Left>
+              <rd:DefaultName>Textbox56</rd:DefaultName>
+              <Top>0.67444in</Top>
+              <Left>7.90142in</Left>
               <Height>0.25in</Height>
-              <Width>1.175in</Width>
-              <ZIndex>8</ZIndex>
+              <Width>1.15595in</Width>
+              <ZIndex>6</ZIndex>
               <Style>
                 <Border>
                   <Color>LightGrey</Color>
@@ -854,7 +850,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="Textbox21">
+            <Textbox Name="Textbox59">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -873,12 +869,12 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                   <Style />
                 </Paragraph>
               </Paragraphs>
-              <rd:DefaultName>Textbox18</rd:DefaultName>
-              <Top>0.59167in</Top>
-              <Left>13.12165in</Left>
+              <rd:DefaultName>Textbox58</rd:DefaultName>
+              <Top>0.67444in</Top>
+              <Left>9.05737in</Left>
               <Height>0.25in</Height>
-              <Width>1in</Width>
-              <ZIndex>9</ZIndex>
+              <Width>1.15595in</Width>
+              <ZIndex>7</ZIndex>
               <Style>
                 <Border>
                   <Color>LightGrey</Color>
@@ -898,7 +894,7 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>1in</Height>
+          <Height>0.65in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -920,10 +916,10 @@ AND a.Client_Residence_Region = 'QC'</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox3</rd:DefaultName>
-              <Top>0.24167in</Top>
-              <Left>0.455in</Left>
+              <Top>0.11667in</Top>
+              <Left>0.46333in</Left>
               <Height>0.31667in</Height>
-              <Width>7.79166in</Width>
+              <Width>9.74999in</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
