@@ -13,18 +13,30 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>/*ACTIVE ACCOUNTS WITH NON-ZERO MVs*/
+        <QueryParameters>
+          <QueryParameter Name="@Date">
+            <Value>=Parameters!Date.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>DECLARE  @Enddate1 Date = @Date
+DECLARE  @Enddate Date
+--SET  @Enddate1='2022-08-18'
+SELECT  @Enddate=max(processDate) FROM IAVM.position WHERE processDate&lt;= @Enddate1
+--SELECT  @Enddate
+
+
+/*ACTIVE ACCOUNTS WITH NON-ZERO MVs*/
 select --distinct  
-/*
-c.A_C_Representative,
-isnull(r.repName,'') as repName,
-isnull(r.branchCode,'') as branchCode,
+/*c.A_C_Representative,isnull(r.repName,'') as repName,isnull(r.branchCode,'') as branchCode,
 */
 c.A_C_Short_Name,
 c.A_C_ID,
 c.A_C_Client,
-isnull(v.A_C_Summ_Equity,0) as A_C_Summ_Equity,
-isnull(v.A_C_Summ_Mkt_Value,0) as A_C_Summ_Mkt_Value,
+--isnull(v.A_C_Summ_Equity,0) as A_C_Summ_Equity,
+--isnull(v.A_C_Summ_Mkt_Value,0) as A_C_Summ_Mkt_Value,
+SUM(CASE WHEN psn.productCode IN ('EQT') THEN psn.valueCAD else 0 END) as A_C_Summ_Equity,
+SUM(psn.valueCAD)  as A_C_Summ_Mkt_Value,
+
 c.A_C_Open_Date,
 c.A_C_Closing_Date,
 c.A_C_Language,
@@ -64,13 +76,63 @@ isnull(a.Address_Stmt_Sw_61,'') as Address_Stmt_Sw_61,
 isnull(a.Address_Stmt_Sw_62,'') as Address_Stmt_Sw_62
 from
 BACKOFFICE.IAVMACT c
-/*
-left join IAVM.rep r on
-c.A_C_Representative = r.repId
-*/
-left join BACKOFFICE.IAVMADR a on
-a.A_C_ID = c.A_C_ID and
-a.Major_Sort = 1
+/*left join IAVM.rep r on c.A_C_Representative = r.repId*/
+left join BACKOFFICE.IAVMADR a ON a.A_C_ID = c.A_C_ID AND a.Major_Sort = 1
+--v.A_C_Summ_Balance_Bus_Date  = (SELECT Last_Maint_Date FROM BACKOFFICE.IAVMSM WHERE ti_alternate_id = '000009')
+INNER JOIN IAVM.position psn
+       ON psn.accountId = c.A_C_ID
+       AND psn.processDate = @Enddate
+where --(isnull(v.A_C_Summ_Equity,0) + isnull(v.A_C_Summ_Mkt_Value,0)) &gt; 0   --c.A_C_Closing_Date  IS NULL --= '0000-00-00'
+  (c.A_C_Closing_Date IS NULL OR c.A_C_Closing_Date &gt; @Enddate)
+
+GROUP BY c.A_C_Short_Name,
+c.A_C_ID,
+c.A_C_Client,
+c.A_C_Open_Date,
+c.A_C_Closing_Date,
+c.A_C_Language,
+isnull(a.Address_Country,''),
+c.Client_Residence_Region,
+c.Client_Non_Residence_Code,
+c.Client_Residence,
+c.A_C_Options_Trading_Type,
+c.A_C_Account_Class,
+isnull(a.Address_Line_Name,'') ,
+isnull(a.Address_Line_1,''),
+isnull(a.Address_Line_2,'') ,
+isnull(a.Address_Line_3,''),
+isnull(a.Address_Line_4,'') ,
+isnull(a.Address_Line_5,''),
+isnull(a.Address_Line_6,''),
+isnull(a.Address_Line_7,''),
+isnull(a.Address_Confirm_Copies,''),
+isnull(a.Address_Stmt_Copies_1,''),
+isnull(a.Address_Confirm_Type,''),
+isnull(a.Address_Stmt_Hold_Mail_1,''),
+isnull(a.Address_Postal_Code,'') ,
+
+isnull(a.Address_Get_Statement_3,''),
+isnull(a.Address_Get_Statement_1,'') ,
+isnull(a.Address_Get_Statement_2,''),
+isnull(a.Address_stmt_sup_Message1,'') ,
+isnull(a.Address_stmt_sup_Message2,'') ,
+isnull(a.Address_stmt_prt_8_Line_1,''),
+isnull(a.Address_stmt_Hold_Mail_2,'') ,
+isnull(a.Address_Stmt_Copies_2,'') ,
+isnull(a.Address_stmt_prt_8_Line_2,''),
+isnull(a.Address_stmt_prt_8_Line_3,'') ,
+isnull(a.Address_Stmt_Supp_Price_1,'') ,
+isnull(a.Address_Stmt_Supp_Price_2,''),
+isnull(a.Address_Stmt_Sw_61,'') ,
+isnull(a.Address_Stmt_Sw_62,'') 
+HAVING SUM(CASE WHEN psn.productCode IN ('EQT') THEN psn.valueCAD else 0 END) + SUM(psn.valueCAD) &gt; 0
+
+--order by a.A_C_Short_Name, a.A_C_ID
+
+
+
+
+/*-------------OLD SQLOct 11 2022---------------------------
 left join BACKOFFICE.IAVMVAL v on
 v.A_C_ID = c.A_C_ID and 
 --# v.A_C_Summ_Balance_Bus_Date = '2019-12-31'
@@ -81,12 +143,14 @@ v.A_C_Summ_Balance_Bus_Date =
 v.A_C_Summ_Balance_Bus_Date  = (SELECT Last_Maint_Date FROM BACKOFFICE.IAVMSM WHERE ti_alternate_id = '000009')
 
 where (isnull(v.A_C_Summ_Equity,0) + isnull(v.A_C_Summ_Mkt_Value,0)) &gt; 0
- and c.A_C_Open_Date IS NOT NULL--!= '0000-00-00'
-  and c.A_C_Closing_Date  IS NULL --= '0000-00-00'
+
+AND (c.A_C_Closing_Date IS NULL OR c.A_C_Closing_Date &gt; @Enddate)
+
+
+
+ --and c.A_C_Open_Date IS NOT NULL--!= '0000-00-00'  and c.A_C_Closing_Date  IS NULL --= '0000-00-00'
 order by a.A_C_Short_Name, a.A_C_ID
-
-
-;</CommandText>
+-------------OLD SQLOct 11 2022---------------------------*/</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -259,7 +323,21 @@ order by a.A_C_Short_Name, a.A_C_ID
     <DataSet Name="DataSet2">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>/*ACTIVE ACCOUNTS WITH ZERO MVs*/
+        <QueryParameters>
+          <QueryParameter Name="@Date">
+            <Value>=Parameters!Date.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>
+DECLARE  @Enddate1 Date = @Date
+DECLARE  @Enddate Date
+SET  @Enddate1='2022-08-22'
+SELECT  @Enddate=max(processDate) FROM IAVM.position WHERE processDate&lt;= @Enddate1
+--SELECT  @Enddate
+
+
+
+/*ACTIVE ACCOUNTS WITH ZERO MVs*/
 
 select --distinct  
 /*
@@ -270,8 +348,10 @@ isnull(r.branchCode,'') as branchCode,
 c.A_C_Short_Name,
 c.A_C_ID,
 c.A_C_Client,
-isnull(v.A_C_Summ_Equity,0) as A_C_Summ_Equity,
-isnull(v.A_C_Summ_Mkt_Value,0) as A_C_Summ_Mkt_Value,
+--isnull(v.A_C_Summ_Equity,0) as A_C_Summ_Equity,
+--isnull(v.A_C_Summ_Mkt_Value,0) as A_C_Summ_Mkt_Value,
+SUM(CASE WHEN psn.productCode IN ('EQT') THEN psn.valueCAD else 0 END) as A_C_Summ_Equity,
+SUM(psn.valueCAD) as A_C_Summ_Mkt_Value,
 c.A_C_Open_Date,
 c.A_C_Closing_Date,
 c.A_C_Language,
@@ -316,22 +396,69 @@ left join IAVM.rep r on c.A_C_Representative = r.repId
 */
 left join BACKOFFICE.IAVMADR a on
 a.A_C_ID = c.A_C_ID and a.Major_Sort = 1
-left join BACKOFFICE.IAVMVAL v on
-v.A_C_ID = c.A_C_ID and 
+INNER JOIN IAVM.position psn
+       ON psn.accountId = c.A_C_ID
+       AND psn.processDate = @Enddate
+where --(isnull(v.A_C_Summ_Equity,0) + isnull(v.A_C_Summ_Mkt_Value,0)) &gt; 0   --c.A_C_Closing_Date  IS NULL --= '0000-00-00'
+  (c.A_C_Closing_Date IS NULL OR c.A_C_Closing_Date &gt; @Enddate)
 
-/*v.A_C_Summ_Balance_Bus_Date = 
-(SELECT MAX(exchangeDate) FROM IAVM.exchangeRate WHERE exchangeDate &lt; MAKEDATE(YEAR(CURDATE()),1))*/
+GROUP BY c.A_C_Short_Name,
+c.A_C_ID,
+c.A_C_Client,
+c.A_C_Open_Date,
+c.A_C_Closing_Date,
+c.A_C_Language,
+isnull(a.Address_Country,''),
+c.Client_Residence_Region,
+c.Client_Non_Residence_Code,
+c.Client_Residence,
+c.A_C_Options_Trading_Type,
+c.A_C_Account_Class,
+isnull(a.Address_Line_Name,'') ,
+isnull(a.Address_Line_1,''),
+isnull(a.Address_Line_2,'') ,
+isnull(a.Address_Line_3,''),
+isnull(a.Address_Line_4,'') ,
+isnull(a.Address_Line_5,''),
+isnull(a.Address_Line_6,''),
+isnull(a.Address_Line_7,''),
+isnull(a.Address_Confirm_Copies,''),
+isnull(a.Address_Stmt_Copies_1,''),
+isnull(a.Address_Confirm_Type,''),
+isnull(a.Address_Stmt_Hold_Mail_1,''),
+isnull(a.Address_Postal_Code,'') ,
 
+isnull(a.Address_Get_Statement_3,''),
+isnull(a.Address_Get_Statement_1,'') ,
+isnull(a.Address_Get_Statement_2,''),
+isnull(a.Address_stmt_sup_Message1,'') ,
+isnull(a.Address_stmt_sup_Message2,'') ,
+isnull(a.Address_stmt_prt_8_Line_1,''),
+isnull(a.Address_stmt_Hold_Mail_2,'') ,
+isnull(a.Address_Stmt_Copies_2,'') ,
+isnull(a.Address_stmt_prt_8_Line_2,''),
+isnull(a.Address_stmt_prt_8_Line_3,'') ,
+isnull(a.Address_Stmt_Supp_Price_1,'') ,
+isnull(a.Address_Stmt_Supp_Price_2,''),
+isnull(a.Address_Stmt_Sw_61,'') ,
+isnull(a.Address_Stmt_Sw_62,'') 
+HAVING SUM(CASE WHEN psn.productCode IN ('EQT') THEN psn.valueCAD else 0 END)=0 
+AND  SUM(psn.valueCAD) = 0 
+
+
+
+
+/*-------------OLD SQLOct 11 2022---------------------------
+left join BACKOFFICE.IAVMVAL v on v.A_C_ID = c.A_C_ID and 
+/*v.A_C_Summ_Balance_Bus_Date = (SELECT MAX(exchangeDate) FROM IAVM.exchangeRate WHERE exchangeDate &lt; MAKEDATE(YEAR(CURDATE()),1))*/
 v.A_C_Summ_Balance_Bus_Date = (SELECT Last_Maint_Date FROM BACKOFFICE.IAVMSM WHERE ti_alternate_id = '000009')
-
-
   Where c.A_C_Open_Date  IS NOT NULL-- != '0000-00-00'
   and c.A_C_Closing_Date  IS NULL-- = '0000-00-00'
   and isnull(v.A_C_Summ_Mkt_Value,0) = 0
   and isnull(v.A_C_Summ_Equity,0) = 0 
 --order by a.A_C_Short_Name, a.A_C_ID
 order by a.A_C_Short_Name, a.A_C_ID
- </CommandText>
+-------------OLD SQLOct 11 2022---------------------------*/</CommandText>
       </Query>
       <Fields>
         <Field Name="A_C_Short_Name">
@@ -503,7 +630,18 @@ order by a.A_C_Short_Name, a.A_C_ID
     <DataSet Name="DataSet3">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>/*ACCOUNTS CLOSED LAST YEAR*/
+        <QueryParameters>
+          <QueryParameter Name="@Date">
+            <Value>=Parameters!Date.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>DECLARE  @Enddate1 Date =@Date
+--SET  @Enddate1='2023-01-01'
+
+--SELECT  DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 1, 1 ) , DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 12, 31 )
+
+
+/*ACCOUNTS CLOSED LAST YEAR*/
 
 select distinct  
 c.A_C_Short_Name,
@@ -549,15 +687,21 @@ from BACKOFFICE.IAVMACT c
 left join BACKOFFICE.IAVMADR a on
 a.A_C_ID = c.A_C_ID
 
+
+
 where
 c.BROKER_CODE = 'IAVM'
 and c.A_C_Open_Date  IS NOT NULL--!= '0000-00-00'
-and c.A_C_Closing_Date &gt;= DATEFROMPARTS ( DATEPART(yyyy, GETDATE()) - 1, 1, 1 )--MAKEDATE(YEAR(CURDATE())-1,1)
+and c.A_C_Closing_Date Between DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 1, 1 ) AND DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 12, 31 )
+
+
+--and c.A_C_Closing_Date &gt;= DATEFROMPARTS ( DATEPART(yyyy, GETDATE()) - 1, 1, 1 )--MAKEDATE(YEAR(CURDATE())-1,1)
 /*and c.A_C_Closing_Date &lt; MAKEDATE(YEAR(CURDATE()),1)*/
-and c.A_C_Closing_Date &lt;= (SELECT Last_Maint_Date FROM BACKOFFICE.IAVMSM WHERE ti_alternate_id = '000009')
+--and c.A_C_Closing_Date &lt;= (SELECT Last_Maint_Date FROM BACKOFFICE.IAVMSM WHERE ti_alternate_id = '000009')
 
 
-order by c.A_C_Short_Name, c.A_C_ID</CommandText>
+order by c.A_C_Short_Name, c.A_C_ID
+</CommandText>
       </Query>
       <Fields>
         <Field Name="A_C_Short_Name">
@@ -711,6 +855,20 @@ order by c.A_C_Short_Name, c.A_C_ID</CommandText>
         <Field Name="Address_Stmt_Sw_62">
           <DataField>Address_Stmt_Sw_62</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="MaxProcessDate">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>   SELECT  max(processDate) EndDate
+        FROM   IAVM.position
+       </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="EndDate">
+          <DataField>EndDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -4015,6 +4173,14 @@ order by c.A_C_Short_Name, c.A_C_ID</CommandText>
               <BreakLocation>End</BreakLocation>
             </PageBreak>
             <PageName>Active Account with Non-Zero MVs</PageName>
+            <SortExpressions>
+              <SortExpression>
+                <Value>=Fields!A_C_Short_Name.Value</Value>
+              </SortExpression>
+              <SortExpression>
+                <Value>=Fields!A_C_ID.Value</Value>
+              </SortExpression>
+            </SortExpressions>
             <Top>0.63632in</Top>
             <Height>0.68in</Height>
             <Width>48.49517in</Width>
@@ -7315,6 +7481,14 @@ order by c.A_C_Short_Name, c.A_C_ID</CommandText>
               <BreakLocation>End</BreakLocation>
             </PageBreak>
             <PageName>Active Account with Zero MVs</PageName>
+            <SortExpressions>
+              <SortExpression>
+                <Value>=Fields!A_C_Short_Name.Value</Value>
+              </SortExpression>
+              <SortExpression>
+                <Value>=Fields!A_C_ID.Value</Value>
+              </SortExpression>
+            </SortExpressions>
             <Top>1.34062in</Top>
             <Left>0.02324cm</Left>
             <Height>0.68in</Height>
@@ -10397,10 +10571,29 @@ order by c.A_C_Short_Name, c.A_C_ID</CommandText>
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="Date">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>MaxProcessDate</DataSetName>
+          <ValueField>EndDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>EndDate</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Date</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>
