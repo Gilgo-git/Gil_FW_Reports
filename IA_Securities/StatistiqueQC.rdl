@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
-  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
-  <AutoRefresh>0</AutoRefresh>
-  <DataSources>
-    <DataSource Name="iAS_Portal">
-      <DataSourceReference>iAS_Portal</DataSourceReference>
-      <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>03bf3f2d-d423-40d9-b687-fd2c71bd9b48</rd:DataSourceID>
-    </DataSource>
-  </DataSources>
-  <DataSets>
-    <DataSet Name="statistiqueQC">
-      <Query>
-        <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>
+	<df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+	<AutoRefresh>0</AutoRefresh>
+	<DataSources>
+		<DataSource Name="iAS_Portal">
+			<DataSourceReference>iAS_Portal</DataSourceReference>
+			<rd:SecurityType>None</rd:SecurityType>
+			<rd:DataSourceID>03bf3f2d-d423-40d9-b687-fd2c71bd9b48</rd:DataSourceID>
+		</DataSource>
+	</DataSources>
+	<DataSets>
+		<DataSet Name="statistiqueQC">
+			<Query>
+				<DataSourceName>iAS_Portal</DataSourceName>
+				<CommandText>
 					;WITH CTE_Core_Selection AS
 					(
 					SELECT --DISTINCT
@@ -129,828 +129,778 @@
 					WHERE a.A_C_Open_Date IS NOT Null
 					AND a.Client_Residence_Region = 'QC'
 				</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="processDate">
-          <DataField>processDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="branchCode">
-          <DataField>branchCode</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="repId">
-          <DataField>repId</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="clientId">
-          <DataField>clientId</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="accountId">
-          <DataField>accountId</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="accountCurrency">
-          <DataField>accountCurrency</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="accountOpenDate">
-          <DataField>accountOpenDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="productCode">
-          <DataField>productCode</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="value">
-          <DataField>value</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="DataSet1">
-      <Query>
-        <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>					;WITH CTE_Core_Selection AS
-					(
-					SELECT --DISTINCT
-					p.Tran_Summ_Business_Date AS processDate,
-					r.repId AS R_repId,
-					a.A_C_Representative,
-					a.A_C_ID AS A_A_C_ID,
-					p.A_C_ID AS P_A_C_ID,
-					p.Tran_Summ_Business_Date,
-					pc.typeCode,
-					RTRIM(p.TI_Alternate_TI_Type) AS TI_Alternate_TI_Type,
-					RTRIM(p.TI_Type) AS TI_Type,
-					pc.classCode,
-					p.TI_Alternate_TI_Class,
-					a.A_C_Open_Date,
-					a.Client_Residence_Region,
-					p.Tran_Summ_Curr_Mkt_Value,
-					r.branchCode,
-					r.repId,
-					a.A_C_Client AS clientId,
-					a.A_C_ID AS accountId,
-					a.A_C_Currency AS accountCurrency,
-					a.A_C_Open_Date AS accountOpenDate,
-					pc.productCode,
-					CASE WHEN RTRIM(TI_Type) = 'CD' THEN 'COM'
-					WHEN RTRIM(TI_Type) IN ('BD' , 'AB', 'MM', 'ST') THEN 'FIX'
-					WHEN RTRIM(TI_Type) = 'EQ' THEN 'EQT'
-					WHEN RTRIM(TI_Type) IN ('OD') THEN 'GIC'
-					WHEN RTRIM(TI_Type) IN ('MF') THEN 'MUT'
-					WHEN RTRIM(TI_Type) IN ('CR' , 'IX') THEN 'OPT'
-					ELSE 'EQT'
-					END AS Derived_productCode
-					--	Mapping LEN(TI_Type) from 2 to 3 as productCode
-					FROM BACKOFFICE.IAVMACT a
-					LEFT OUTER JOIN IAVM.rep r
-					ON r.repId = a.A_C_Representative
-					INNER JOIN BACKOFFICE.IAVMPSN p
-					ON a.A_C_ID = p.A_C_ID
-					AND p.Tran_Summ_Business_Date IN
-					(
-					SELECT DISTINCT Last_Maint_Date
-					FROM BACKOFFICE.IAVMSM
-					WHERE ti_alternate_id = '000009'
-					)
-					LEFT OUTER JOIN	IAVM.product pc
-					ON pc.typeCode = RTRIM(p.TI_Alternate_TI_Type)
-					AND pc.classCode = p.TI_Alternate_TI_Class
-					WHERE a.A_C_Open_Date IS NOT Null
-					AND a.Client_Residence_Region = 'QC'
-					),
-					CTE_Core_Sum AS
-					(
-					SELECT processDate, R_repId, A_C_Representative, A_A_C_ID, P_A_C_ID, Tran_Summ_Business_Date,
-					typeCode,
-					TI_Alternate_TI_Type,
-					TI_Type, classCode,
-					TI_Alternate_TI_Class,
-					A_C_Open_Date,
-					Client_Residence_Region,
-					Tran_Summ_Curr_Mkt_Value,
-					branchCode,
-					repId,
-					clientId,
-					accountId,
-					accountCurrency,
-					accountOpenDate,
-					productCode,
-					Derived_productCode,
-					ROW_NUMBER()
-					OVER(PARTITION BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode
-					ORDER BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode)
-					AS DeDupCounts,
-					SUM(Tran_Summ_Curr_Mkt_Value)
-					OVER(PARTITION BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode
-					ORDER BY Tran_Summ_Business_Date, branchCode , repId , clientId, accountId, Derived_productCode)
-					AS [value]
-					FROM CTE_Core_Selection
-					)
-					SELECT processDate,
-					branchCode,
-					repId,
-					clientId,
-					accountId,
-					accountCurrency,
-					accountOpenDate,
-					Derived_productCode AS productCode,
-					[value]
-					FROM CTE_Core_Sum
-					WHERE DeDupCounts = 1
-					AND 0 = 1</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="processDate">
-          <DataField>processDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="branchCode">
-          <DataField>branchCode</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="repId">
-          <DataField>repId</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="clientId">
-          <DataField>clientId</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="accountId">
-          <DataField>accountId</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="accountCurrency">
-          <DataField>accountCurrency</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="accountOpenDate">
-          <DataField>accountOpenDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="productCode">
-          <DataField>productCode</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="value">
-          <DataField>value</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-  </DataSets>
-  <ReportSections>
-    <ReportSection>
-      <Body>
-        <ReportItems>
-          <Tablix Name="Tablix5">
-            <TablixBody>
-              <TablixColumns>
-                <TablixColumn>
-                  <Width>1.76428in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.15595in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.15595in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.15595in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>2.20595in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.15595in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.15595in</Width>
-                </TablixColumn>
-              </TablixColumns>
-              <TablixRows>
-                <TablixRow>
-                  <Height>0.25in</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="branchCode1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!branchCode.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>branchCode1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="repId">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!repId.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>repId</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="clientId1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!clientId.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>clientId1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="accountId1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!accountId.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>accountId1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="accountCurrency1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!accountCurrency.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>accountCurrency1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="productCode1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!productCode.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>productCode1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="value1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!value.Value</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>value1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
-              </TablixRows>
-            </TablixBody>
-            <TablixColumnHierarchy>
-              <TablixMembers>
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
-              </TablixMembers>
-            </TablixColumnHierarchy>
-            <TablixRowHierarchy>
-              <TablixMembers>
-                <TablixMember>
-                  <Group Name="Details1" />
-                </TablixMember>
-              </TablixMembers>
-            </TablixRowHierarchy>
-            <FixedRowHeaders>true</FixedRowHeaders>
-            <DataSetName>statistiqueQC</DataSetName>
-            <Left>0.46333in</Left>
-            <Height>0.25in</Height>
-            <Width>9.74999in</Width>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-            </Style>
-          </Tablix>
-        </ReportItems>
-        <Height>0.255in</Height>
-        <Style>
-          <Border>
-            <Style>None</Style>
-          </Border>
-        </Style>
-      </Body>
-      <Width>10.21333in</Width>
-      <Page>
-        <PageHeader>
-          <Height>0.92444in</Height>
-          <PrintOnFirstPage>true</PrintOnFirstPage>
-          <PrintOnLastPage>true</PrintOnLastPage>
-          <ReportItems>
-            <Textbox Name="Textbox37">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>= "Statistique QC Report" + " As Of " + CStr(FORMAT(Now(),"yyyy-MM-dd hh:mm:ss"))</Value>
-                      <Style>
-                        <FontSize>16pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox37</rd:DefaultName>
-              <Top>0.2in</Top>
-              <Left>0.46333in</Left>
-              <Height>0.35in</Height>
-              <Width>9.75in</Width>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox45">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Branch Code</Value>
-                      <Style>
-                        <FontFamily />
-                        <FontSize>11pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <Color>#666666</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox44</rd:DefaultName>
-              <Top>0.67444in</Top>
-              <Left>0.46333in</Left>
-              <Height>0.25in</Height>
-              <Width>1.76428in</Width>
-              <ZIndex>1</ZIndex>
-              <Style>
-                <Border>
-                  <Color>LightGrey</Color>
-                  <Style>Solid</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox47">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Rep ID</Value>
-                      <Style>
-                        <FontFamily />
-                        <FontSize>11pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <Color>#666666</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox46</rd:DefaultName>
-              <Top>0.67444in</Top>
-              <Left>2.22762in</Left>
-              <Height>0.25in</Height>
-              <Width>1.15595in</Width>
-              <ZIndex>2</ZIndex>
-              <Style>
-                <Border>
-                  <Color>LightGrey</Color>
-                  <Style>Solid</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox49">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Client ID</Value>
-                      <Style>
-                        <FontFamily />
-                        <FontSize>11pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <Color>#666666</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox48</rd:DefaultName>
-              <Top>0.67444in</Top>
-              <Left>3.38357in</Left>
-              <Height>0.25in</Height>
-              <Width>1.15595in</Width>
-              <ZIndex>3</ZIndex>
-              <Style>
-                <Border>
-                  <Color>LightGrey</Color>
-                  <Style>Solid</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox53">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Account ID</Value>
-                      <Style>
-                        <FontFamily />
-                        <FontSize>11pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <Color>#666666</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox52</rd:DefaultName>
-              <Top>0.67444in</Top>
-              <Left>4.53952in</Left>
-              <Height>0.25in</Height>
-              <Width>1.15595in</Width>
-              <ZIndex>4</ZIndex>
-              <Style>
-                <Border>
-                  <Color>LightGrey</Color>
-                  <Style>Solid</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox55">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Account Currency</Value>
-                      <Style>
-                        <FontFamily />
-                        <FontSize>11pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <Color>#666666</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox54</rd:DefaultName>
-              <Top>0.67444in</Top>
-              <Left>5.69547in</Left>
-              <Height>0.25in</Height>
-              <Width>2.20595in</Width>
-              <ZIndex>5</ZIndex>
-              <Style>
-                <Border>
-                  <Color>LightGrey</Color>
-                  <Style>Solid</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox57">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Product Code</Value>
-                      <Style>
-                        <FontFamily />
-                        <FontSize>11pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <Color>#666666</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox56</rd:DefaultName>
-              <Top>0.67444in</Top>
-              <Left>7.90142in</Left>
-              <Height>0.25in</Height>
-              <Width>1.15595in</Width>
-              <ZIndex>6</ZIndex>
-              <Style>
-                <Border>
-                  <Color>LightGrey</Color>
-                  <Style>Solid</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="Textbox59">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Value</Value>
-                      <Style>
-                        <FontFamily />
-                        <FontSize>11pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                        <Color>#666666</Color>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox58</rd:DefaultName>
-              <Top>0.67444in</Top>
-              <Left>9.05737in</Left>
-              <Height>0.25in</Height>
-              <Width>1.15595in</Width>
-              <ZIndex>7</ZIndex>
-              <Style>
-                <Border>
-                  <Color>LightGrey</Color>
-                  <Style>Solid</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-          </ReportItems>
-          <Style>
-            <Border>
-              <Style>None</Style>
-            </Border>
-          </Style>
-        </PageHeader>
-        <PageFooter>
-          <Height>0.65in</Height>
-          <PrintOnFirstPage>true</PrintOnFirstPage>
-          <PrintOnLastPage>true</PrintOnLastPage>
-          <ReportItems>
-            <Textbox Name="Textbox5">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>="Total Rows # : " + CStr(CountRows("statistiqueQC")) + ", from source: NBCN"</Value>
-                      <Style>
-                        <FontSize>16pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style />
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>Textbox3</rd:DefaultName>
-              <Top>0.11667in</Top>
-              <Left>0.46333in</Left>
-              <Height>0.31667in</Height>
-              <Width>9.74999in</Width>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-          </ReportItems>
-          <Style>
-            <Border>
-              <Style>None</Style>
-            </Border>
-          </Style>
-        </PageFooter>
-        <LeftMargin>1in</LeftMargin>
-        <RightMargin>1in</RightMargin>
-        <TopMargin>1in</TopMargin>
-        <BottomMargin>1in</BottomMargin>
-        <Style />
-      </Page>
-    </ReportSection>
-  </ReportSections>
-  <ReportParametersLayout>
-    <GridLayoutDefinition>
-      <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
-    </GridLayoutDefinition>
-  </ReportParametersLayout>
-  <rd:ReportUnitType>Inch</rd:ReportUnitType>
-  <rd:ReportID>1dd5f3c6-ab8a-4495-a239-0cbc2725828f</rd:ReportID>
+			</Query>
+			<Fields>
+				<Field Name="processDate">
+					<DataField>processDate</DataField>
+					<rd:TypeName>System.DateTime</rd:TypeName>
+				</Field>
+				<Field Name="branchCode">
+					<DataField>branchCode</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="repId">
+					<DataField>repId</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="clientId">
+					<DataField>clientId</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="accountId">
+					<DataField>accountId</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="accountCurrency">
+					<DataField>accountCurrency</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="accountOpenDate">
+					<DataField>accountOpenDate</DataField>
+					<rd:TypeName>System.DateTime</rd:TypeName>
+				</Field>
+				<Field Name="productCode">
+					<DataField>productCode</DataField>
+					<rd:TypeName>System.String</rd:TypeName>
+				</Field>
+				<Field Name="value">
+					<DataField>value</DataField>
+					<rd:TypeName>System.Decimal</rd:TypeName>
+				</Field>
+			</Fields>
+		</DataSet>
+	</DataSets>
+	<ReportSections>
+		<ReportSection>
+			<Body>
+				<ReportItems>
+					<Tablix Name="Tablix6">
+						<TablixBody>
+							<TablixColumns>
+								<TablixColumn>
+									<Width>1.99167in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1.38333in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1.06667in</Width>
+								</TablixColumn>
+								<TablixColumn>
+									<Width>1.15833in</Width>
+								</TablixColumn>
+							</TablixColumns>
+							<TablixRows>
+								<TablixRow>
+									<Height>0.25in</Height>
+									<TablixCells>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Textbox163">
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>Branch Code</Value>
+																	<Style>
+																		<FontFamily />
+																		<FontSize>11pt</FontSize>
+																		<FontWeight>Bold</FontWeight>
+																		<Color>#666666</Color>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Textbox163</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Textbox165">
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>Rep ID</Value>
+																	<Style>
+																		<FontFamily />
+																		<FontSize>11pt</FontSize>
+																		<FontWeight>Bold</FontWeight>
+																		<Color>#666666</Color>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Textbox165</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Textbox167">
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>Client ID</Value>
+																	<Style>
+																		<FontFamily />
+																		<FontSize>11pt</FontSize>
+																		<FontWeight>Bold</FontWeight>
+																		<Color>#666666</Color>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Textbox167</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Textbox169">
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>Account ID</Value>
+																	<Style>
+																		<FontFamily />
+																		<FontSize>11pt</FontSize>
+																		<FontWeight>Bold</FontWeight>
+																		<Color>#666666</Color>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Textbox169</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Textbox171">
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>Account Currency</Value>
+																	<Style>
+																		<FontFamily />
+																		<FontSize>11pt</FontSize>
+																		<FontWeight>Bold</FontWeight>
+																		<Color>#666666</Color>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Textbox171</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Textbox173">
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>Product Code</Value>
+																	<Style>
+																		<FontFamily />
+																		<FontSize>11pt</FontSize>
+																		<FontWeight>Bold</FontWeight>
+																		<Color>#666666</Color>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Textbox173</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="Textbox175">
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>Value</Value>
+																	<Style>
+																		<FontFamily />
+																		<FontSize>11pt</FontSize>
+																		<FontWeight>Bold</FontWeight>
+																		<Color>#666666</Color>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>Textbox175</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+									</TablixCells>
+								</TablixRow>
+								<TablixRow>
+									<Height>0.25in</Height>
+									<TablixCells>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="branchCode">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!branchCode.Value</Value>
+																	<Style />
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>branchCode</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="repId">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!repId.Value</Value>
+																	<Style />
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>repId</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="clientId">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!clientId.Value</Value>
+																	<Style />
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>clientId</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="accountId">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!accountId.Value</Value>
+																	<Style>
+																		<FontFamily>Arial</FontFamily>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>accountId</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="accountCurrency">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!accountCurrency.Value</Value>
+																	<Style>
+																		<FontFamily>Arial</FontFamily>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>accountCurrency</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="productCode">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!productCode.Value</Value>
+																	<Style>
+																		<FontFamily>Arial</FontFamily>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>productCode</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+										<TablixCell>
+											<CellContents>
+												<Textbox Name="value">
+													<CanGrow>true</CanGrow>
+													<KeepTogether>true</KeepTogether>
+													<Paragraphs>
+														<Paragraph>
+															<TextRuns>
+																<TextRun>
+																	<Value>=Fields!value.Value</Value>
+																	<Style>
+																		<FontFamily>Arial</FontFamily>
+																	</Style>
+																</TextRun>
+															</TextRuns>
+															<Style />
+														</Paragraph>
+													</Paragraphs>
+													<rd:DefaultName>value</rd:DefaultName>
+													<Style>
+														<Border>
+															<Color>LightGrey</Color>
+															<Style>Solid</Style>
+														</Border>
+														<PaddingLeft>2pt</PaddingLeft>
+														<PaddingRight>2pt</PaddingRight>
+														<PaddingTop>2pt</PaddingTop>
+														<PaddingBottom>2pt</PaddingBottom>
+													</Style>
+												</Textbox>
+											</CellContents>
+										</TablixCell>
+									</TablixCells>
+								</TablixRow>
+							</TablixRows>
+						</TablixBody>
+						<TablixColumnHierarchy>
+							<TablixMembers>
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+								<TablixMember />
+							</TablixMembers>
+						</TablixColumnHierarchy>
+						<TablixRowHierarchy>
+							<TablixMembers>
+								<TablixMember>
+									<TablixHeader>
+										<Size>0.37292in</Size>
+										<CellContents>
+											<Textbox Name="Textbox217">
+												<CanGrow>true</CanGrow>
+												<KeepTogether>true</KeepTogether>
+												<Paragraphs>
+													<Paragraph>
+														<TextRuns>
+															<TextRun>
+																<Value />
+																<Style>
+																	<FontFamily>Arial</FontFamily>
+																</Style>
+															</TextRun>
+														</TextRuns>
+														<Style />
+													</Paragraph>
+												</Paragraphs>
+												<rd:DefaultName>Textbox217</rd:DefaultName>
+												<Visibility>
+													<Hidden>true</Hidden>
+												</Visibility>
+												<Style>
+													<Border>
+														<Color>LightGrey</Color>
+														<Style>Solid</Style>
+													</Border>
+													<PaddingLeft>2pt</PaddingLeft>
+													<PaddingRight>2pt</PaddingRight>
+													<PaddingTop>2pt</PaddingTop>
+													<PaddingBottom>2pt</PaddingBottom>
+												</Style>
+											</Textbox>
+										</CellContents>
+									</TablixHeader>
+									<TablixMembers>
+										<TablixMember />
+									</TablixMembers>
+									<KeepWithGroup>After</KeepWithGroup>
+									<RepeatOnNewPage>true</RepeatOnNewPage>
+								</TablixMember>
+								<TablixMember>
+									<Group Name="productCode">
+										<GroupExpressions>
+											<GroupExpression>=Fields!productCode.Value</GroupExpression>
+										</GroupExpressions>
+									</Group>
+									<SortExpressions>
+										<SortExpression>
+											<Value>=Fields!productCode.Value</Value>
+										</SortExpression>
+									</SortExpressions>
+									<TablixHeader>
+										<Size>0.37292in</Size>
+										<CellContents>
+											<Textbox Name="productCode1">
+												<CanGrow>true</CanGrow>
+												<KeepTogether>true</KeepTogether>
+												<Paragraphs>
+													<Paragraph>
+														<TextRuns>
+															<TextRun>
+																<Value />
+																<Style>
+																	<FontFamily>Arial</FontFamily>
+																</Style>
+															</TextRun>
+														</TextRuns>
+														<Style />
+													</Paragraph>
+												</Paragraphs>
+												<rd:DefaultName>productCode1</rd:DefaultName>
+												<Visibility>
+													<Hidden>true</Hidden>
+												</Visibility>
+												<Style>
+													<Border>
+														<Color>LightGrey</Color>
+														<Style>Solid</Style>
+													</Border>
+													<PaddingLeft>2pt</PaddingLeft>
+													<PaddingRight>2pt</PaddingRight>
+													<PaddingTop>2pt</PaddingTop>
+													<PaddingBottom>2pt</PaddingBottom>
+												</Style>
+											</Textbox>
+										</CellContents>
+									</TablixHeader>
+									<TablixMembers>
+										<TablixMember>
+											<Group Name="Details" />
+										</TablixMember>
+									</TablixMembers>
+								</TablixMember>
+							</TablixMembers>
+						</TablixRowHierarchy>
+						<FixedRowHeaders>true</FixedRowHeaders>
+						<DataSetName>statistiqueQC</DataSetName>
+						<Top>0.01389in</Top>
+						<Left>0.455in</Left>
+						<Height>0.5in</Height>
+						<Width>8.97292in</Width>
+						<Style>
+							<Border>
+								<Style>None</Style>
+							</Border>
+						</Style>
+					</Tablix>
+				</ReportItems>
+				<Height>0.51389in</Height>
+				<Style>
+					<Border>
+						<Style>None</Style>
+					</Border>
+				</Style>
+			</Body>
+			<Width>9.42792in</Width>
+			<Page>
+				<PageHeader>
+					<Height>0.35in</Height>
+					<PrintOnFirstPage>true</PrintOnFirstPage>
+					<PrintOnLastPage>true</PrintOnLastPage>
+					<ReportItems>
+						<Textbox Name="Textbox37">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>= "Statistique QC Report" + " As Of " + CStr(FORMAT(Now(),"yyyy-MM-dd hh:mm:ss"))</Value>
+											<Style>
+												<FontSize>16pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox37</rd:DefaultName>
+							<Left>0.82792in</Left>
+							<Height>0.35in</Height>
+							<Width>8.6in</Width>
+							<Style>
+								<Border>
+									<Style>None</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+					</ReportItems>
+					<Style>
+						<Border>
+							<Style>None</Style>
+						</Border>
+					</Style>
+				</PageHeader>
+				<PageFooter>
+					<Height>0.37499in</Height>
+					<PrintOnFirstPage>true</PrintOnFirstPage>
+					<PrintOnLastPage>true</PrintOnLastPage>
+					<ReportItems>
+						<Textbox Name="Textbox5">
+							<CanGrow>true</CanGrow>
+							<KeepTogether>true</KeepTogether>
+							<Paragraphs>
+								<Paragraph>
+									<TextRuns>
+										<TextRun>
+											<Value>="Total Rows # : " + CStr(CountRows("statistiqueQC")) + ", from source: NBCN"</Value>
+											<Style>
+												<FontSize>16pt</FontSize>
+												<FontWeight>Bold</FontWeight>
+											</Style>
+										</TextRun>
+									</TextRuns>
+									<Style />
+								</Paragraph>
+							</Paragraphs>
+							<rd:DefaultName>Textbox3</rd:DefaultName>
+							<Left>0.82792in</Left>
+							<Height>0.31667in</Height>
+							<Width>8.6in</Width>
+							<Style>
+								<Border>
+									<Style>None</Style>
+								</Border>
+								<PaddingLeft>2pt</PaddingLeft>
+								<PaddingRight>2pt</PaddingRight>
+								<PaddingTop>2pt</PaddingTop>
+								<PaddingBottom>2pt</PaddingBottom>
+							</Style>
+						</Textbox>
+					</ReportItems>
+					<Style>
+						<Border>
+							<Style>None</Style>
+						</Border>
+					</Style>
+				</PageFooter>
+				<LeftMargin>1in</LeftMargin>
+				<RightMargin>1in</RightMargin>
+				<TopMargin>1in</TopMargin>
+				<BottomMargin>1in</BottomMargin>
+				<Style />
+			</Page>
+		</ReportSection>
+	</ReportSections>
+	<ReportParametersLayout>
+		<GridLayoutDefinition>
+			<NumberOfColumns>4</NumberOfColumns>
+			<NumberOfRows>2</NumberOfRows>
+		</GridLayoutDefinition>
+	</ReportParametersLayout>
+	<rd:ReportUnitType>Inch</rd:ReportUnitType>
+	<rd:ReportID>1dd5f3c6-ab8a-4495-a239-0cbc2725828f</rd:ReportID>
 </Report>
