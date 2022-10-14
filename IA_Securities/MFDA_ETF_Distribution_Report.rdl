@@ -18,9 +18,7 @@
             <Value>=Parameters!parmDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>-- declare @parmDate as datetime
--- set @parmDate='2022-08-11'
-
+        <CommandText>
 SELECT  TI_Symbol Symbol,
 		TI_Alternate_ID SecurityNumber,
 		TI_Short_Desc SecurityName,
@@ -40,17 +38,11 @@ SELECT  TI_Symbol Symbol,
 		TI_Income_Amt,Distribution_Source,
 		Tax_Class_Code,TI_CUSIP
 
-FROM BACKOFFICE.IAVMSM   
+FROM BACKOFFICE.IAVMSM   m
 
-WHERE TI_Symbol IN  (
-'BTCX.B','CGAA','CGL',	'CGL.C','CSAV',	'DXC',	'DXG',	'DXP',	'ESGA',	'ESGE',	'FBTC',	'FCGB',	'FCSW',	'FGRO',	'FIG',	'FLCI','FSB',	'FSF',	
-'HBAL',	 'HBB',	'HCON',	'HGRO',	'HLIT',	'HMMJ-','HMMJ', 'HSH',	'HXCN',	'HXDM',	'HXEM',	'HXS',	'HYI',	'IFRF',	'IGAF',	
-'MBAL',	 'MCON','MFT',	'MGRW',	'MHYB',	'NUBF',	'PMIF',	'PSA',	'QEBH',	'QEBL',	'QIF',	'QINF',	'RIRA',	'RIT',	'SVR',	'SVR.C','TEC',	
-'VA ',	 'VAB', 'VALT',	'VBAL',	'VCIP',	'VCN',  'VCNS', 'VE',	'VEE',	'VEQT',	'VFV',	'VGG',  'VGRO',	'VIU',	'VRIF',	'VUN',	'VVL',	'VXC',	
-'XBAL',	 'XBB',	'XCB',	'XCS',	'XEC',	'XEF',	'XEG',	'XEH',	'XEU',  'XFN',	'XGD',	'XIC',	'XIT',	'XIU',	'XMA',	'XMD',	'XMW',	'XQQ',	
-'XRB',	 'XRE',	'XSB',	'XSH',	'XSP',	'XSU ',	'XSUS',	'XUS',	'XUU',	'ZAG',	'ZBK',	'ZCH',	'ZCM',	'ZCN',	'ZCON',	'ZDV',	'ZDY',
-'ZEA',	 'ZEB',	'ZEM',	'ZEO',	'ZEQ',	'ZFH',	'ZFL',	'ZGD',	'ZGI',	'ZGQ',	'ZLB',	'ZLU',	'ZMID',	'ZMU',	'ZPR',	'ZRE',	'ZRR',	
-'ZSML',	 'ZSP',	'ZUB',	'ZUE',	'ZUH',	'ZUT',	'ZZZD',			'RCD','CDIV','UDIV' --SCTASK0172410									--add new symbol here
+WHERE TI_Symbol IN  (select t1.user_req_symbol from [REPORTS].[RPT_MFDA_ETF_Distribution_Report_SYMBOLS] t1 where m.TI_Symbol=t1.user_req_symbol
+				--SCTASK0176827	
+--add new symbol here
 )
  
 AND  TI_Income_Record_Date &gt;=  CASE WHEN Income_Frequency = 12 THEN cast(cast(DATEADD(m,-12,@parmDate) as date) as datetime)
@@ -59,7 +51,7 @@ AND  TI_Income_Record_Date &gt;=  CASE WHEN Income_Frequency = 12 THEN cast(cast
 								END
 AND  TI_Income_Record_Date &lt;=@parmDate
 AND @parmDate &lt; getdate()
--- order by Symbol,securityNumber,recordDate desc</CommandText>
+</CommandText>
       </Query>
       <Fields>
         <Field Name="Symbol">
