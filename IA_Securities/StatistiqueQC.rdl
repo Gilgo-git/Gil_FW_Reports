@@ -122,9 +122,9 @@
 			<Query>
 				<DataSourceName>iAS_Portal</DataSourceName>
 				<CommandText>
-					SELECT MIN([processDate]) AS [MonthStart]
+					SELECT DateAdd(day, 0, MAX([processDate])) AS [MonthStart]
 					FROM [IAVM].[position] (nolock)
-					WHERE [processDate] &gt;= DateAdd(month, DateDiff(month, 0, GetDate()), 0)
+					WHERE [processDate] &lt;= CAST(GetDate() AS Date)
 				</CommandText>
 			</Query>
 			<Fields>
@@ -138,9 +138,9 @@
 			<Query>
 				<DataSourceName>iAS_Portal</DataSourceName>
 				<CommandText>
-					SELECT MAX([processDate]) AS [MonthEnd]
+					SELECT DateAdd(day, 1, MAX([processDate])) AS [MonthEnd]
 					FROM [IAVM].[position] (nolock)
-					WHERE [processDate]&lt; DateAdd(month, DateDiff(month, 0, GetDate()) + 1, 0)
+					WHERE [processDate] &lt;= CAST(GetDate() AS Date)
 				</CommandText>
 			</Query>
 			<Fields>
@@ -512,7 +512,7 @@
 														<Paragraph>
 															<TextRuns>
 																<TextRun>
-																	<Value>=FormatDateTime(First(Fields!processDate.Value, "statistiqueQC"))</Value>
+																	<Value>=FormatDateTime(Fields!processDate.Value)</Value>
 																	<Style />
 																</TextRun>
 															</TextRuns>
