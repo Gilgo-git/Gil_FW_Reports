@@ -1019,7 +1019,7 @@ order by c.A_C_Short_Name, c.A_C_ID</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>="ACTIVE ACCOUNTS WITH NON-ZERO MVs [" &amp; FormatDateTime(today(),dateformat.ShortDate) &amp; "]"</Value>
+                                  <Value>="ACTIVE ACCOUNTS WITH NON-ZERO MVs [" &amp; FormatDateTime(Parameters!Date.Value,dateformat.ShortDate) &amp; "]"</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontWeight>Bold</FontWeight>
@@ -4328,7 +4328,7 @@ order by c.A_C_Short_Name, c.A_C_ID</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>="ACTIVE ACCOUNTS WITH ZERO MVs [" &amp; FormatDateTime(today(),dateformat.ShortDate) &amp; "]"</Value>
+                                  <Value>="ACTIVE ACCOUNTS WITH ZERO MVs [" &amp; FormatDateTime(Parameters!Date.Value,dateformat.ShortDate) &amp; "]"</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -4353,6 +4353,7 @@ order by c.A_C_Short_Name, c.A_C_ID</CommandText>
                           </Style>
                         </Textbox>
                         <ColSpan>41</ColSpan>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell />
@@ -7629,7 +7630,7 @@ order by c.A_C_Short_Name, c.A_C_ID</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>="ACCOUNTS CLOSED LAST YEAR [" &amp; FormatDateTime(today(),dateformat.ShortDate) &amp; "]"</Value>
+                                  <Value>="ACCOUNTS CLOSED LAST YEAR [" &amp; FormatDateTime(Parameters!Date.Value,dateformat.ShortDate) &amp; "]"</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontWeight>Bold</FontWeight>
