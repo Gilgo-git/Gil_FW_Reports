@@ -635,10 +635,11 @@ order by a.A_C_Short_Name, a.A_C_ID
             <Value>=Parameters!Date.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE  @Enddate1 Date =@Date
---SET  @Enddate1='2023-01-01'
-
---SELECT  DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 1, 1 ) , DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 12, 31 )
+        <CommandText>DECLARE  @Enddate1 Date = @Date
+DECLARE  @Enddate Date
+--SET  @Enddate1='2022-08-18'
+SELECT  @Enddate=max(processDate) FROM IAVM.position WHERE processDate&lt;= @Enddate1
+--SELECT  @Enddate,CAST(dateadd(year, -1,  @Enddate) as date)
 
 
 /*ACCOUNTS CLOSED LAST YEAR*/
@@ -692,7 +693,9 @@ a.A_C_ID = c.A_C_ID
 where
 c.BROKER_CODE = 'IAVM'
 and c.A_C_Open_Date  IS NOT NULL--!= '0000-00-00'
-and c.A_C_Closing_Date Between DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 1, 1 ) AND DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 12, 31 )
+and c.A_C_Closing_Date Between CAST(dateadd(year, -1,  @Enddate) as date) and @Enddate
+
+--and c.A_C_Closing_Date Between DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, --1, 1 ) AND DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 12, 31 )
 
 
 --and c.A_C_Closing_Date &gt;= DATEFROMPARTS ( DATEPART(yyyy, GETDATE()) - 1, 1, 1 )--MAKEDATE(YEAR(CURDATE())-1,1)
@@ -700,8 +703,7 @@ and c.A_C_Closing_Date Between DATEFROMPARTS ( DATEPART(yyyy, @Enddate1) - 1, 1,
 --and c.A_C_Closing_Date &lt;= (SELECT Last_Maint_Date FROM BACKOFFICE.IAVMSM WHERE ti_alternate_id = '000009')
 
 
-order by c.A_C_Short_Name, c.A_C_ID
-</CommandText>
+order by c.A_C_Short_Name, c.A_C_ID</CommandText>
       </Query>
       <Fields>
         <Field Name="A_C_Short_Name">
@@ -1017,7 +1019,7 @@ order by c.A_C_Short_Name, c.A_C_ID
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>="ACTIVE ACCOUNTS WITH NON-ZERO MVs [" &amp; FormatDateTime(today(),dateformat.ShortDate) &amp; "]"</Value>
+                                  <Value>="ACTIVE ACCOUNTS WITH NON-ZERO MVs [" &amp; FormatDateTime(Parameters!Date.Value,dateformat.ShortDate) &amp; "]"</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontWeight>Bold</FontWeight>
@@ -4326,7 +4328,7 @@ order by c.A_C_Short_Name, c.A_C_ID
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>="ACTIVE ACCOUNTS WITH ZERO MVs [" &amp; FormatDateTime(today(),dateformat.ShortDate) &amp; "]"</Value>
+                                  <Value>="ACTIVE ACCOUNTS WITH ZERO MVs [" &amp; FormatDateTime(Parameters!Date.Value,dateformat.ShortDate) &amp; "]"</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -4351,6 +4353,7 @@ order by c.A_C_Short_Name, c.A_C_ID
                           </Style>
                         </Textbox>
                         <ColSpan>41</ColSpan>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell />
@@ -7627,7 +7630,7 @@ order by c.A_C_Short_Name, c.A_C_ID
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>="ACCOUNTS CLOSED LAST YEAR [" &amp; FormatDateTime(today(),dateformat.ShortDate) &amp; "]"</Value>
+                                  <Value>="ACCOUNTS CLOSED LAST YEAR [" &amp; FormatDateTime(Parameters!Date.Value,dateformat.ShortDate) &amp; "]"</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontWeight>Bold</FontWeight>
