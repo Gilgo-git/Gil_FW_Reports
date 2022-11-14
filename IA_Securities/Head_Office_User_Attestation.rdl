@@ -1364,7 +1364,7 @@ ATTESTATION NOTES
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="Head Office User Attestation for "+MAX(IIF(Fields!ManagerEmail.Value=Parameters!Employer.Value, Fields!Manager.Value, Nothing), "Employer_List")</Value>
+                    <Value>="Head Office User Attestation for " + First(Fields!Manager.Value, "DataSet1")</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                       <FontSize>20pt</FontSize>
