@@ -13,7 +13,7 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>select * 
+        <CommandText>select * ,'x' as x
  from REPORTS.ATTESTATION_IAS_ADVISOR_RPT_ORPHAN_NBIN_USERS
    order by name</CommandText>
       </Query>
@@ -92,6 +92,10 @@
         </Field>
         <Field Name="NBIN_CROESUS_EMAIL">
           <DataField>NBIN_CROESUS_EMAIL</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="x">
+          <DataField>x</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
