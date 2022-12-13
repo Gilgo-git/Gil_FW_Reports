@@ -18,7 +18,7 @@
             <Value>=Parameters!processDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT 
+        <CommandText>SELECT  
    a.A_C_ID,
    a.A_C_Name,
    a.A_C_Representative,
@@ -51,7 +51,7 @@ WHERE (
     )
 	--AND (d.Tran_Process_Date = (SELECT MAX(Mkt_Price_Date) FROM BACKOFFICE.IAVMPSN (nolock)) OR d.Tran_Process_Date IS NULL)
 	and d.Tran_Process_Date=@processDate
-and LEN(a.A_C_ID) &gt; 2 ;</CommandText>
+and LEN(a.A_C_ID) &gt; 2 </CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
