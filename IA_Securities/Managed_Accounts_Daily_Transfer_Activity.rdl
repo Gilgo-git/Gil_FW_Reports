@@ -13,8 +13,12 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>
-SELECT 
+        <QueryParameters>
+          <QueryParameter Name="@processDate">
+            <Value>=Parameters!processDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT 
    a.A_C_ID,
    a.A_C_Name,
    a.A_C_Representative,
@@ -37,16 +41,16 @@ LEFT JOIN IAVM.rep b (nolock) ON
 inner JOIN BACKOFFICE.IAVMVAL c (nolock) ON
    c.A_C_ID = a.A_C_ID
 inner JOIN BACKOFFICE.IAVMBK d (nolock) ON
-   d.A_C_ID = a.A_C_ID AND 
-   d.Tran_Process_Date = c.A_C_Summ_Balance_Bus_Date
+   d.A_C_ID = a.A_C_ID 
+   --d.Tran_Process_Date = c.A_C_Summ_Balance_Bus_Date
    AND LEFT(d.Tran_Entry_Description,3) = 'TFR'
 WHERE (
 		(a.ASC_3_Managed_Type IN ( 'L','M','N','Q','R','S','V','X' )
 		AND a.A_C_Account_Class = '038') OR 
 		LEFT(a.A_C_Representative,2) IN ('JG','JL')
     )
-	AND (d.Tran_Process_Date = (SELECT MAX(Mkt_Price_Date) FROM BACKOFFICE.IAVMPSN (nolock)) OR d.Tran_Process_Date IS NULL)
-	--AND (d.Tran_Process_Date = (SELECT MAX(Tran_Process_Date) FROM BACKOFFICE.dbo.IAVMBK (nolock)) OR d.Tran_Process_Date IS NULL)
+	--AND (d.Tran_Process_Date = (SELECT MAX(Mkt_Price_Date) FROM BACKOFFICE.IAVMPSN (nolock)) OR d.Tran_Process_Date IS NULL)
+	and d.Tran_Process_Date=@processDate
 and LEN(a.A_C_ID) &gt; 2 ;</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
@@ -1519,10 +1523,28 @@ and LEN(a.A_C_ID) &gt; 2 ;</CommandText>
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="processDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=DateAdd("d",-1,Today)</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Process Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>processDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>
