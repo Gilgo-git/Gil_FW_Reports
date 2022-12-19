@@ -2,8 +2,8 @@
 <Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="ZI_Investia">
-      <DataSourceReference>ZI_Investia</DataSourceReference>
+    <DataSource Name="Univeris">
+      <DataSourceReference>Univeris</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
       <rd:DataSourceID>41fea5e3-2dd4-496d-9a2e-00007f7083d1</rd:DataSourceID>
     </DataSource>
@@ -11,7 +11,7 @@
   <DataSets>
     <DataSet Name="ds_Investia_cash_acct">
       <Query>
-        <DataSourceName>ZI_Investia</DataSourceName>
+        <DataSourceName>Univeris</DataSourceName>
         <CommandText>-----------------------------------------------------
 --     D28 - PAC à l'encaisse (Investia)
 -----------------------------------------------------
@@ -92,7 +92,7 @@ ORDER BY 1</CommandText>
     </DataSet>
     <DataSet Name="ds_client_cash_acct">
       <Query>
-        <DataSourceName>ZI_Investia</DataSourceName>
+        <DataSourceName>Univeris</DataSourceName>
         <CommandText>-----------------------------------------------------
 --              D28 - PAC de l'encaisse
 -----------------------------------------------------
