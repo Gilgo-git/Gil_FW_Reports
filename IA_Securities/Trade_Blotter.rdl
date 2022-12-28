@@ -13,12 +13,12 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>DECLARE @StartDate as date = CONVERT(date, CASE DATEPART(WEEKDAY, GETDATE()) 
-                             WHEN 1 THEN DATEADD(day, -2, GETDATE())
-                             WHEN 2 THEN DATEADD(day , -3, GETDATE()) 
-							 ELSE DATEADD(day, -1, GETDATE()) 
-							 END) 
-exec REPORTS.[usp_SP_GET_BLOTTER_TRADES] @StartDate;</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>exec REPORTS.[usp_SP_GET_BLOTTER_TRADES] @StartDate;</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -231,12 +231,12 @@ exec REPORTS.[usp_SP_GET_BLOTTER_TRADES] @StartDate;</CommandText>
     <DataSet Name="IAVMORD">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>DECLARE @StartDate as date = CONVERT(date, CASE DATEPART(WEEKDAY, GETDATE()) 
-                             WHEN 1 THEN DATEADD(day, -2, GETDATE())
-                             WHEN 2 THEN DATEADD(day , -3, GETDATE()) 
-							 ELSE DATEADD(day, -1, GETDATE()) 
-							 END) 
-exec REPORTS.[usp_SP_GET_BLOTTER_ORDERS] @StartDate;</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>exec REPORTS.[usp_SP_GET_BLOTTER_ORDERS] @StartDate;</CommandText>
       </Query>
       <Fields>
         <Field Name="A_C_Name">
@@ -1186,6 +1186,18 @@ exec REPORTS.[usp_SP_GET_BLOTTER_ORDERS] @StartDate;</CommandText>
         <Field Name="Yield_Value">
           <DataField>Yield_Value</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="GetDate">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>SELECT MAX(processDate) AS PDATE FROM IAVM.position</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="PDATE">
+          <DataField>PDATE</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -23279,10 +23291,29 @@ exec REPORTS.[usp_SP_GET_BLOTTER_ORDERS] @StartDate;</CommandText>
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="StartDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>GetDate</DataSetName>
+          <ValueField>PDATE</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Trade Process Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>StartDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>
