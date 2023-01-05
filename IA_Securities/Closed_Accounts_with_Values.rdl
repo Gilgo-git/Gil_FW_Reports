@@ -1085,7 +1085,7 @@ ORDER BY r.branchCode, r.repName, c.A_C_Representative, c.A_C_ID;
       <DataType>DateTime</DataType>
       <DefaultValue>
         <Values>
-          <Value>=CDate(DatePart(DateInterval.Year, Now).ToString + "-" + iif(DatePart(DateInterval.Day, Now) &gt; 15 , DatePart(DateInterval.Month, Now).ToString, (DatePart(DateInterval.Month, Now) - 1).ToString)  + "-" + "15")</Value>
+          <Value>=CDate(iif(DatePart(DateInterval.Month, Now) = 1, (DatePart(DateInterval.Year, Now) - 1).ToString, DatePart(DateInterval.Year, Now).ToString )+ "-" + iif(DatePart(DateInterval.Day, Now) &gt; 15 , DatePart(DateInterval.Month, Now).ToString, iif(DatePart(DateInterval.Month, Now) = 1, "12", (DatePart(DateInterval.Month, Now) - 1).ToString))  + "-" + "15")</Value>
         </Values>
       </DefaultValue>
       <Prompt>Report Date</Prompt>
