@@ -110,13 +110,12 @@ t3.AdvSupName</CommandText>
     <DataSet Name="DataSet2">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>Select ' ALL' as  usernameBM 
-union all
-
-
-Select distinct usernameBM from REPORTS.ATTESTATION_IAS_ADVISOR_CERTS_DATA
-where usernameBM &lt;&gt; ''
-order by usernameBM</CommandText>
+        <CommandText>SELECT   ' ALL' AS usernameBM
+UNION ALL
+SELECT DISTINCT UserNameBM
+FROM     REPORTS.ATTESTATION_IAS_ADVISOR_CERTS_DATA
+WHERE    ( BMrole like '%Branch Manager%')
+ORDER BY usernameBM</CommandText>
       </Query>
       <Fields>
         <Field Name="usernameBM">

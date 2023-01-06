@@ -131,8 +131,8 @@ or( @BM=' ALL')
         <CommandText>SELECT   ' ALL' AS usernameBM
 UNION ALL
 SELECT DISTINCT UserNameBM
-FROM    REPORTS.ATTESTATION_IAS_ADVISOR_CERTS_DATA
-WHERE   (UserNameBM &lt;&gt; '')
+FROM     REPORTS.ATTESTATION_IAS_ADVISOR_CERTS_DATA
+WHERE    ( BMrole like '%Branch Manager%')
 ORDER BY usernameBM</CommandText>
       </Query>
       <Fields>

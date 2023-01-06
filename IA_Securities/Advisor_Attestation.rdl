@@ -111,7 +111,7 @@ order by t5.UserNameBM,t5.UserNameAdv,
 UNION ALL
 SELECT DISTINCT UserNameBM
 FROM     REPORTS.ATTESTATION_IAS_ADVISOR_CERTS_DATA
-WHERE   (UserNameBM &lt;&gt; '')
+WHERE    ( BMrole like '%Branch Manager%')
 ORDER BY usernameBM</CommandText>
       </Query>
       <Fields>

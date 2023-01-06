@@ -134,7 +134,7 @@ m6.isactive &lt;&gt; 'Y')
 UNION ALL
 SELECT DISTINCT UserNameBM
 FROM     REPORTS.ATTESTATION_IAS_ADVISOR_CERTS_DATA
-WHERE   (UserNameBM &lt;&gt; '')
+WHERE    ( BMrole like '%Branch Manager%')
 ORDER BY usernameBM</CommandText>
       </Query>
       <Fields>
