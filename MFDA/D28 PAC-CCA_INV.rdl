@@ -12,9 +12,21 @@
     <DataSet Name="ds_Investia_cash_acct">
       <Query>
         <DataSourceName>Univeris</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@processDate">
+            <Value>=Parameters!processDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>-----------------------------------------------------
 --     D28 - PAC à l'encaisse (Investia)
 -----------------------------------------------------
+DECLARE @Date Date = @processDate
+--SET @Date=getdate()
+--SELECT dateadd(day,-7,@Date),@Date
+--SELECT MAX(AUTO_START_DT),MAX(AUTO_START_DT)-1 FROM IVR_AUTO (nolock)
+
+--Select top 10 * FROM IVR_AUTO (nolock) order by AUTO_START_DT desc
+
 SELECT IVR.IVR_SYSID, OWNER_ENG, PLN_MNEM, PLN_ADM_ACCT,
        CONVERT(VARCHAR(10),IVR_AUTO.AUTO_START_DT,121) AS 'START_DT',
 	   ISNULL(CONVERT(VARCHAR(10),IVR_AUTO.NEXT_PYMT_DT,121),'') AS 'NEXT_PYMT_DT',
@@ -30,9 +42,12 @@ WHERE ACT_AUTO.IVD_SYSID = 2188264
 	--AND AUTO_STATUS IN ('A','E')
 	AND IVR_AUTO.IVR_SYSID = IVR.IVR_SYSID
 	AND IVR_AUTO.PLN_SYSID = PLN.PLN_SYSID
-	AND ((IVR_AUTO.AUTO_START_DT &gt; GETDATE() - 1) OR (IVR_AUTO.NEXT_PYMT_DT &gt; GETDATE() - 1) OR (IVR_AUTO.AUTO_START_DT &lt; IVR_AUTO.PAC_SETUP_DT))
-	AND ((IVR_AUTO.AUTO_STOP_DT &gt; GETDATE() - 1) OR (IVR_AUTO.AUTO_STOP_DT IS NULL))
-	AND CONVERT(VARCHAR(10),IVR_AUTO.LAST_UPD_DT,121) = CONVERT(VARCHAR(10),GETDATE(),121)
+	AND ((IVR_AUTO.AUTO_START_DT &gt; dateadd(day,-1,@Date))--GETDATE() - 1) 
+	                          OR (IVR_AUTO.NEXT_PYMT_DT &gt; dateadd(day,-1,@Date))--GETDATE() - 1) 
+	                              OR (IVR_AUTO.AUTO_START_DT &lt; IVR_AUTO.PAC_SETUP_DT))
+	AND ((IVR_AUTO.AUTO_STOP_DT &gt; dateadd(day,-1,@Date))--GETDATE() - 1) 
+	             OR (IVR_AUTO.AUTO_STOP_DT IS NULL))
+	AND CONVERT(VARCHAR(10),IVR_AUTO.LAST_UPD_DT,121) = CONVERT(VARCHAR(10),@Date,121)
 	AND IVR_AUTO.LAST_UPD_DT &lt;&gt; IVR_AUTO.LAST_MAINT_DT			-- ADDED ON 2020-08-27 (James)
 	AND IVR_AUTO.PRIOR_PROC_DT IS NOT NULL
 	AND PLN.PLN_CD = S_PLN_CD.PLN_CD
@@ -93,9 +108,16 @@ ORDER BY 1</CommandText>
     <DataSet Name="ds_client_cash_acct">
       <Query>
         <DataSourceName>Univeris</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@processDate">
+            <Value>=Parameters!processDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>-----------------------------------------------------
 --              D28 - PAC de l'encaisse
 -----------------------------------------------------
+DECLARE @Date Date  =@processDate
+--SET @Date=getdate()
 SELECT IVR.IVR_SYSID, OWNER_ENG, PLN_MNEM, PLN_ADM_ACCT, -- IVR_AUTO.AUTO_SYSID,
        CONVERT(VARCHAR(10),IVR_AUTO.AUTO_START_DT,121) AS 'START_DT',
 	   ISNULL(CONVERT(VARCHAR(10),IVR_AUTO.NEXT_PYMT_DT,121),'') AS 'NEXT_PYMT_DT',
@@ -109,9 +131,12 @@ FROM  IVR_AUTO (nolock), IVR (nolock), PLN (nolock), S_PLN_CD (nolock)
 WHERE IVR_AUTO.IVR_SYSID = IVR.IVR_SYSID
 	AND PAC_MONEY_SOURCE = 'G'
 	AND IVR_AUTO.PLN_SYSID = PLN.PLN_SYSID
-	AND ((IVR_AUTO.AUTO_START_DT &gt; GETDATE() - 1) OR (IVR_AUTO.NEXT_PYMT_DT &gt; GETDATE() - 1) OR (IVR_AUTO.AUTO_START_DT &lt; IVR_AUTO.PAC_SETUP_DT))
-	AND ((IVR_AUTO.AUTO_STOP_DT &gt; GETDATE() - 1) OR (IVR_AUTO.AUTO_STOP_DT IS NULL))
-	AND CONVERT(VARCHAR(10),IVR_AUTO.LAST_UPD_DT,121) = CONVERT(VARCHAR(10),GETDATE(),121)
+	AND ((IVR_AUTO.AUTO_START_DT &gt; dateadd(day,-1,@Date))--GETDATE() - 1)
+	OR (IVR_AUTO.NEXT_PYMT_DT &gt; dateadd(day,-1,@Date))--GETDATE() - 1) 
+	OR (IVR_AUTO.AUTO_START_DT &lt; IVR_AUTO.PAC_SETUP_DT))
+	AND ((IVR_AUTO.AUTO_STOP_DT &gt; dateadd(day,-1,@Date))--GETDATE() - 1) 
+	OR (IVR_AUTO.AUTO_STOP_DT IS NULL))
+	AND CONVERT(VARCHAR(10),IVR_AUTO.LAST_UPD_DT,121) = CONVERT(VARCHAR(10),@Date,121)
 	AND IVR_AUTO.LAST_UPD_DT &lt;&gt; IVR_AUTO.LAST_MAINT_DT			-- ADDED ON 2020-08-27 (James)
 	AND IVR_AUTO.PRIOR_PROC_DT IS NOT NULL
 	AND PLN.PLN_CD = S_PLN_CD.PLN_CD
@@ -172,6 +197,18 @@ ORDER BY 1</CommandText>
         </Field>
         <Field Name="LAST_MAINT_DT">
           <DataField>LAST_MAINT_DT</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="processDate">
+      <Query>
+        <DataSourceName>Univeris</DataSourceName>
+        <CommandText>Select CAST(Getdate() as Date) processDate</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="processDate">
+          <DataField>processDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
@@ -2104,10 +2141,29 @@ ORDER BY 1</CommandText>
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="processDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>processDate</DataSetName>
+          <ValueField>processDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>process Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>processDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>

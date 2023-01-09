@@ -13,7 +13,24 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>Univeris</DataSourceName>
-        <CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@processDate">
+            <Value>=Parameters!processDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>------------------------------------------------------------
+-- D25_Audit CET_EFT_INV
+------------------------------------------------------------
+
+DECLARE @Date Date = @processDate
+--SET @Date='2023-01-02'
+
+--SELECT CASE WHEN DATENAME(dw,dateadd(day,-1,@Date)) = 'Sunday' THEN CONVERT(VARCHAR(10),dateadd(day,-3,@Date),121) 
+--           ELSE CONVERT(VARCHAR(10),dateadd(day,-1,@Date),121) END			-- LAST business date
+--   ,CONVERT(VARCHAR(10),@Date,121) 
+   --Select Max(ADT_DATE) from ADT
+ 				
+
 IF OBJECT_ID('tempdb..#ADT') IS NOT NULL              
   BEGIN       
     drop table #ADT         
@@ -41,9 +58,13 @@ FROM ADT (nolock)
 	LEFT JOIN SYS_USER_CD (nolock) ON ADT.USER_SYSID = SYS_USER_CD.USER_SYSID
  WHERE (ADT_TABLE = 'CET_EFT') 
    AND ADT_FIELD in ('INST_CD','CURRENCY_CD','EFT_TRST_NUM','EFT_START_DT','EFT_ACCT_NO','EFT_ACCT_NAME')
-   AND ADT_DATE &gt;= CASE WHEN DATENAME(dw,GETDATE() -1) = 'Sunday' THEN CONVERT(VARCHAR(10),GETDATE()-3,121) ELSE CONVERT(VARCHAR(10),GETDATE()-1,121) END			-- LAST business date
-   AND ADT_DATE &lt; CONVERT(VARCHAR(10),GETDATE(),121) 																												-- Today's date	
-   AND 1 = CASE WHEN ADT_BEFORE IS NULL THEN 1 ELSE CASE WHEN ADT_AFTER IS NULL THEN 1 ELSE CASE WHEN ADT_BEFORE &lt;&gt; ADT_AFTER THEN 1 ELSE 0 END END END
+  
+ -- AND ADT_DATE &gt;= CASE WHEN DATENAME(dw,GETDATE() -1) = 'Sunday' THEN CONVERT(VARCHAR(10),GETDATE()-3,121) ELSE CONVERT(VARCHAR(10),GETDATE()-1,121) END			-- LAST business date
+ --  AND ADT_DATE &lt; CONVERT(VARCHAR(10),GETDATE(),121) 																												-- Today's date	
+  AND ADT_DATE &gt;= dateadd(day,-1,@Date)				
+   AND ADT_DATE &lt; @Date   -- LAST business date
+  
+  AND 1 = CASE WHEN ADT_BEFORE IS NULL THEN 1 ELSE CASE WHEN ADT_AFTER IS NULL THEN 1 ELSE CASE WHEN ADT_BEFORE &lt;&gt; ADT_AFTER THEN 1 ELSE 0 END END END
    AND ADT.IVR_SYSID NOT IN (408940890)
    --AND ADT.IVR_SYSID = 330322919
 -- ORDER BY ADT.IVR_SYSID, ADT.ADT_DATE, ADT_FIELD
@@ -69,9 +90,7 @@ SELECT IVR_SYSID, OWNER_ENG, ADT_TABLE,
 CONVERT( VARCHAR(30), ADT_DATE, 121) AS ADT_DATE
  
 	, USR_NAME
-FROM #FINAL
--- ORDER BY IVR_SYSID, ADT_DATE
-</CommandText>
+FROM #FINAL</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -146,6 +165,18 @@ FROM #FINAL
         <Field Name="EFT_START_DT_AFTER">
           <DataField>EFT_START_DT AFTER</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="processDate">
+      <Query>
+        <DataSourceName>Univeris</DataSourceName>
+        <CommandText>  Select CASE WHEN Max(CAST(ADT_DATE as Date))IS NULL THEN CAST(GETDATE() as Date) ELSE Max(CAST(ADT_DATE as Date)) END  processDate from ADT</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="processDate">
+          <DataField>processDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -1753,10 +1784,29 @@ FROM #FINAL
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="processDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>processDate</DataSetName>
+          <ValueField>processDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>process Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>processDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>
