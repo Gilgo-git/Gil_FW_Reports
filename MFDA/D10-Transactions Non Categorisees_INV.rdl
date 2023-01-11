@@ -12,8 +12,120 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>Univeris</DataSourceName>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>x_usp_SSRS_D10_TRANSACTIONS_NON_CATEGORISEES</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@Date">
+            <Value>=Parameters!Date.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>if OBJECT_ID('tempdb..#DAILY') is not null  
+        drop table #DAILY  
+  
+if OBJECT_ID('tempdb..#TRX') is not null  
+        drop table #TRX  
+
+if OBJECT_ID('tempdb..#FINAL') is not null
+        drop table #FINAL
+  
+declare @bal_dt as date    
+select  @bal_dt = MAX(BAL_DATE) from ACT_BAL (nolock)   
+    
+--delete from D10_TRX_NON_CAT where  cast(ARCHIVE_ON AS DATE) = CAST(GETDATE() AS DATE)    
+    
+SELECT SYS_USER_CD.USR_CD, SYS_USER_CD.USR_NAME, CPL_TIER1_ACTION, CONVERT(varchar(10),CPL_TIER1_DESCN,121) AS CPL_DATE,   
+    c.RGN_CD, c.BRN_CD, BRN.BRN_NAME, BRN_INS_CD,  
+    c.REP_CD, CASE WHEN REP_FNAME &gt; '' THEN REP_FNAME + ' ' + REP_LNAME ELSE REP_LNAME END AS REP_NAME, ISNULL(CONVERT(VARCHAR(10),REP_AGMT_DT,121),'') AS AGMT_DT,  
+	CAST(ISNULL(( SELECT TOP 1 MMO_DATA FROM CET_MMO WHERE MMO_SYSID = BRN.BRN_SYSID AND MMO_SUBJ = 'UJ' AND MMO_COMP_DT IS NULL),'') AS varchar(100) ) AS RBM,
+	CAST(ISNULL(( SELECT TOP 1 MMO_DATA FROM CET_MMO WHERE MMO_SYSID = BRN.BRN_SYSID AND MMO_SUBJ = 'CBM' AND MMO_COMP_DT IS NULL ),'') AS varchar(100) ) AS CBM,
+    c.IVR, OWNER_ENG,   
+    ISNULL(CAST(DATEDIFF( year, IVR.IVR_PRIM_BDT, ORD_TRADE_DT) -   
+    CASE WHEN DATEADD(YY,DATEDIFF(YY,IVR.IVR_PRIM_BDT, ORD_TRADE_DT),IVR.IVR_PRIM_BDT) &gt; ORD_TRADE_DT THEN 1 ELSE 0 END as int),'') AS CLIENT_AGE,  
+    CONVERT(varchar(10),ORD_TRADE_DT,121) AS 'TRADE_DT', TYPE, ORD_AMT, S_PLN_CD.PLN_MNEM, PLN.PLN_SYSID,  
+    CASE WHEN PLN.KYC_PLN_SYSID IS NULL   
+         THEN 'MISSING KYC'   
+         ELSE (SELECT TOP 1 CASE WHEN SUITABLE_TYPE = 'S'   
+         THEN 'OK'   
+         ELSE 'UNSUITABLE'   
+         END FROM x_DB_UNSUITABLE (nolock) WHERE PLN.KYC_PLN_SYSID  = x_DB_UNSUITABLE.KYC_PLN_SYSID AND PLN.PLN_CD = x_DB_UNSUITABLE.PLN_CD)   
+      END AS 'SUITABILITY',  
+    CASE WHEN PLN.KYC_PLN_SYSID IS NULL   
+         THEN '          '   
+         ELSE (SELECT CONVERT(varchar(10),KYC_PLN.CPL_UPD_DT,121) FROM KYC_PLN (nolock) WHERE PLN.KYC_PLN_SYSID  = KYC_PLN.KYC_PLN_SYSID)  
+         END AS 'KYC_UPD_DATE',  
+    CASE WHEN PLN_KYC_TIME IS NULL THEN '' ELSE (SELECT KYC_TH_DESC_ENG FROM S_KYC_TIME_HORIZON (nolock) WHERE PLN_KYC_TIME = S_KYC_TIME_HORIZON.KYC_TH_CD)  
+   END AS 'PLN_TIME_HORIZON',   
+    IVD_LOADS, c.ORD_SYSID, c.PSEUDO_ORD_SRC_ID,  
+    CASE WHEN c.ORD_SYSID IS NULL THEN c.PSEUDO_ORD_SRC_ID ELSE c.ORD_SYSID END AS 'ORD_ID', CPL_ORD_ID,  
+    IVR.IVR_RES_CD,  
+    isnull((SELECT TOP 1 CET_ADR.PROV_CD FROM CET_ADR WHERE CET_ADR.ADR_SYSID = REP.REP_SYSID AND CET_ADR.ADR_NUM = '1'),'') AS REP_PROV,  
+    isnull((SELECT TOP 1 CET_ADR.PROV_CD FROM CET_ADR WHERE CET_ADR.ADR_SYSID = REP.BRN_SYSID AND CET_ADR.ADR_NUM = '1'),'') AS BRN_PROV,  
+    dbo.udf_AF_GET_PROV_LIC(REP.REP_SYSID) AS REP_LICENSE,  
+       dbo.udf_AF_GET_TYPE_LIC(REP.REP_SYSID) AS REP_TYPE_LICENSE,  
+    CASE WHEN PLN.BF_PCTL not in ('128','129','192','1152','1216') THEN 'TW inactive (' ELSE 'TW active (' END + + CAST(PLN.BF_PCTL as varchar(10)) + ')' AS ACTUAL_TRADE_WATCH,  
+    IVR.IVR_INC_ADR INC_ADR_CLIENT,  
+    IVT_TYPES, IVT_RISKS  
+INTO #DAILY      
+FROM SNAPSHOT_CPL_ORD c (nolock)  
+ INNER JOIN SYS_USER_CD (nolock) ON c.CPL_TIER1 = SYS_USER_CD.USER_SYSID  
+ INNER JOIN BRN (nolock) ON c.BRN_CD = BRN.BRN_CD  
+ INNER JOIN REP (nolock) ON c.REP_CD = REP.REP_CD  
+ INNER JOIN RGN (nolock) ON c.RGN_CD = RGN.RGN_CD   
+ INNER JOIN PLN (nolock) ON c.PLN_SYSID = PLN.PLN_SYSID  
+ INNER JOIN S_PLN_CD (nolock) ON PLN.PLN_CD = S_PLN_CD.PLN_CD  
+ INNER JOIN IVR (nolock) ON c.IVR = IVR.IVR_SYSID  
+WHERE CPL_TIER1_DESCN &gt; @Date - 30    
+ -- AND c.RGN_CD IN ('000','001','002')  
+ AND CPL_TIER1_ACTION = 'T1V'  
+ -- AND CPL_TIER1 = 209991392  
+ AND IVR.IVR_RES_CD = 'QC'  
+ AND NOT EXISTS (SELECT TOP 1 'A' FROM D10_TRX_NON_CAT WHERE D10_TRX_NON_CAT.CPL_ORD_ID = c.CPL_ORD_ID)  
+ --AND EXISTS (SELECT TOP 1 'A' FROM D10_TRX_NON_CAT WHERE D10_TRX_NON_CAT.CPL_ORD_ID = c.CPL_ORD_ID AND CONVERT(VARCHAR(10),ARCHIVE_ON,121) = CONVERT(VARCHAR(10),GETDATE(),121))  
+ORDER BY 1, 2, 4, c.RGN_CD, c.BRN_CD, c.REP_CD, c.IVR  
+  
+--SELECT * FROM #DAILY  
+  
+DELETE FROM #DAILY WHERE BRN_INS_CD IN (3025,3299) AND IVT_TYPES IN ('~SEG~','~SEG~SEG~','~SEG~SEG~SEG~')  
+  
+  
+SELECT ORD_ID, TRX_DSC_COMM, TRX_WTH_FED, TRX_WTH_PRV, TRX_WTH_DSC  
+INTO #TRX  -- DROP TABLE #TRX  
+FROM #DAILY (nolock), TRX (nolock)  
+WHERE #DAILY.PSEUDO_ORD_SRC_ID = TRX.TRX_SYSID  
+  
+INSERT INTO #TRX  
+SELECT ORD_ID, SUM (TRX_DSC_COMM), SUM(TRX_WTH_FED), SUM(TRX_WTH_PRV), SUM(TRX_WTH_DSC)  
+FROM #DAILY (nolock), OTX (nolock)  
+WHERE #DAILY.ORD_SYSID = OTX.ORD_SYSID  
+GROUP BY ORD_ID  
+ORDER BY 1  
+  
+SELECT USR_NAME, CASE WHEN CBM &gt; '' THEN CBM ELSE RBM END AS 'CBM_RBM',  
+       CPL_TIER1_ACTION, CPL_DATE,   
+    RGN_CD, BRN_CD, BRN_NAME, BRN_INS_CD,  
+    REP_CD, REP_NAME, AGMT_DT,  
+    IVR, OWNER_ENG, CLIENT_AGE, TRADE_DT, TYPE, ORD_AMT, PLN_MNEM,  
+    SUITABILITY, KYC_UPD_DATE, PLN_TIME_HORIZON, IVD_LOADS, TRX_DSC_COMM AS 'TOT_COMM', TRX_WTH_FED + TRX_WTH_PRV AS 'TOT_TAXES', TRX_WTH_DSC AS 'TOT_FEES',  
+    IVR_RES_CD, CASE WHEN REP_PROV &gt; '' THEN REP_PROV ELSE BRN_PROV END AS 'REP_PROV',  
+    CASE WHEN REP_LICENSE LIKE '%QC%' THEN 'YES' ELSE 'MISSING' END AS 'QC_LICENSE',  
+    ACTUAL_TRADE_WATCH,   
+    CASE WHEN INC_ADR_CLIENT = 1 THEN 'YES' ELSE 'NO' END AS 'INC_ADR_CLIENT',  
+    IVT_TYPES,  
+    CASE WHEN IVT_TYPES LIKE '%HEF%' OR IVT_TYPES LIKE '%LP%' OR IVT_TYPES LIKE '%MTG%' OR IVT_TYPES LIKE '%NMF%' OR IVT_TYPES LIKE '%PLF%' OR IVT_TYPES LIKE '%REI%' OR IVT_TYPES LIKE '%LNK%' THEN 'YES' ELSE 'NO' END AS 'EMD_PRODUCTS',  
+    IVT_RISKS,  
+    CASE WHEN IVT_RISKS LIKE '6' THEN 'YES' ELSE 'NO' END AS 'HIGH_RISK',  
+    ISNULL ((SELECT 'YES' FROM KYC WHERE IVR = KYC.IVR_SYSID AND AML_WATCH = 1),'NO') AS 'AML_WATCH',  
+       ISNULL ((SELECT SUM(MV) FROM ACT_BAL WHERE #DAILY.PLN_SYSID = ACT_BAL.PLN_SYSID    
+             AND BAL_DATE = @bal_dt),0)  AS  'PLN_AUA',  
+       ISNULL ((SELECT SUM(MV) FROM ACT_BAL WHERE #DAILY.IVR = ACT_BAL.IVR_SYSID    
+             AND BAL_DATE = @bal_dt),0)  AS  'IVR_AUA'  
+INTO #FINAL
+FROM #DAILY, #TRX   
+WHERE #DAILY.ORD_ID = #TRX.ORD_ID  
+ORDER BY 1, 4, RGN_CD, BRN_CD, REP_CD, IVR  
+  
+SELECT * 
+FROM #FINAL 
+WHERE UPPER(CBM_RBM) NOT LIKE '%EASTON%' AND UPPER(CBM_RBM) NOT LIKE '%COULTER%' 
+	AND ((ORD_AMT &gt; 500 AND PLN_AUA &lt;= 25000) OR PLN_AUA &gt; 25000)</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -3079,12 +3191,44 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DataSet1</DataSetName>
+            <Top>0.67028cm</Top>
             <Height>0.43in</Height>
             <Width>60.56252in</Width>
             <Style />
           </Tablix>
+          <Textbox Name="Textbox37">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="D10-Transactions Non Categorisees_INV [" &amp; FormatDateTime(Parameters!Date.Value) &amp; "]"</Value>
+                    <Style>
+                      <FontFamily>Segoe UI Black</FontFamily>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox37</rd:DefaultName>
+            <Top>0.01389in</Top>
+            <Height>0.25in</Height>
+            <Width>8.86459in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
         </ReportItems>
-        <Height>0.59667in</Height>
+        <Height>0.69389in</Height>
         <Style />
       </Body>
       <Width>60.56252in</Width>
@@ -3097,10 +3241,28 @@
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="Date">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=DateAdd("d",-1,Today)</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Select a Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Date</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>
