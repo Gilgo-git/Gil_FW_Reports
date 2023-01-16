@@ -14,13 +14,172 @@
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="Date">
-            <Value>=Parameters!Date.Value</Value>
-            <rd:UserDefined>true</rd:UserDefined>
+          <QueryParameter Name="@RptStartDate">
+            <Value>=Parameters!RptStartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@RptEndDate">
+            <Value>=Parameters!RptEndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>REPORTS.usp_SP_Get_TransactionsNotesReport</CommandText>
+        <CommandText>
+					DECLARE @Tran_Currency AS varchar(25) = 'CAD'
+					DECLARE @TRANSACTION_TYPE AS varchar(25) = 'TRD'
+					DECLARE @symbol_CBL AS varchar(25) = 'CBL%'
+					DECLARE @symbol_DSN AS varchar(25) = 'DSN%'
+					DECLARE @symbol_JHN AS varchar(25) = 'JHN%'
+					DECLARE @symbol_JHN10 AS varchar(25) = 'JHN10%'
+					DECLARE @symbol_NBC1 AS varchar(25) = 'NBC1%'
+					DECLARE @symbol_NBC2 AS varchar(25) = 'NBC2%'
+					DECLARE @symbol_NBC3 AS varchar(25) = 'NBC3%'
+					DECLARE @symbol_NBC100 AS varchar(25) = 'NBC100%'
+					DECLARE @symbol_NBC101 AS varchar(25) = 'NBC101%'
+					DECLARE @symbol_NBC200 AS varchar(25) = 'NBC200%'
+					DECLARE @symbol_NBC201 AS varchar(25) = 'NBC201%'
+					DECLARE @symbol_RBC AS varchar(25) = 'RBC%'
+					DECLARE @symbol_RBC999 AS varchar(25) = 'RBC999%'
+					DECLARE @symbol_SSP AS varchar(25) = 'SSP%'
+					DECLARE @symbol_TDN AS varchar(25) = 'TDN%'
+					DECLARE @symbol_TDNT AS varchar(25) = 'TDNT%'
+					DECLARE @symbol_TDNOF AS varchar(25) = 'TDNOF%'
+
+					DECLARE @HDString AS TABLE
+					(
+					ID int IDENTITY(1, 1) NOT Null,
+					[symbol] varchar(25)
+					)
+					INSERT INTO @HDString
+					(
+					[symbol]
+					)
+					SELECT 'CBL' AS [symbol] UNION
+					SELECT 'CBLT' AS [symbol] UNION
+					SELECT 'CBLU' AS [symbol] UNION
+					SELECT 'SSP' AS [symbol] UNION
+					SELECT 'CBLRF' AS [symbol] UNION
+					SELECT 'DSNKY' AS [symbol] UNION
+					SELECT 'DSNY' AS [symbol] UNION
+					SELECT 'SSPC' AS [symbol]
+
+					--	Pickup reporting data based on defined search information
+					SELECT DISTINCT
+					C.[RR_NUMBER] AS [IAcode],
+					C.[FMSL_ACCOUNT_NUMBER] AS [AccountID],
+					C.[ACCOUNT_NAME] AS [AccountName],
+					C.[PROCESS_DATE] AS [Processing],
+					C.[TRADE_DATE] AS [Transaction],
+					C.[BUY_SELL_INDICATOR] AS [Type],
+					C.[SECURITY_SYMBOL] AS [Symbol],
+					C.[SECURITY_DESCRIPTION] AS [SecurityDescription],
+					(C.[TRADE_GROUP_QUANTITY] * (SM.[TI_Basis_Point] / SM.[TI_Face_Value])) AS [Quantity],
+					C.[MIN_TRADED_PRICE] AS [Price],
+					C.[COMMISSION_CURRENCY] AS [Currency],
+					C.[TRAN_TRADING_NET_CURRENCY] AS [exchangeRate],
+					C.[TRANS_TRADING_NET_AMT] AS [Total],
+					CASE WHEN C.[TRAN_TRADING_NET_CURRENCY] = @Tran_Currency
+					THEN C.[TRANS_TRADING_NET_AMT]
+					ELSE ROUND(C.[TRANS_TRADING_NET_AMT] * C.[CONVERSION_RATE], 2)
+					END AS [TotalCAD],
+					CAST(C.[TRADE_GRP_COMM_ENTERED] AS varchar) AS [Commission],
+					CONCAT(C.[TRAILER_1], ' ', C.[TRAILER_2], ' ', C.[TRAILER_3], ' ', C.[TRAILER_4], ' ', C.[TRAILER_5]) AS [Trailer]
+					FROM [BACKOFFICE].[CMSDT] AS C WITH (NOLOCK)
+					INNER JOIN [BACKOFFICE].[IAVMSM] AS SM WITH (NOLOCK)
+					ON SM.[TI_Alternate_ID] = C.[SECURITY_NUMBER]
+					WHERE C.[PROCESS_DATE] BETWEEN @RptStartDate AND @RptEndDate AND
+					C.[TRANSACTION_TYPE] = @TRANSACTION_TYPE AND
+					C.[SECURITY_SYMBOL] NOT IN
+					(
+					SELECT [symbol] FROM @HDString WHERE [symbol] IS NOT Null
+					) AND
+					(
+					C.[SECURITY_SYMBOL] LIKE @symbol_CBL OR
+					C.[SECURITY_SYMBOL] LIKE @symbol_DSN OR
+					(
+					C.[SECURITY_SYMBOL] LIKE @symbol_JHN AND
+					C.[SECURITY_SYMBOL] NOT LIKE @symbol_JHN10
+					) OR
+					(
+					(
+					C.[SECURITY_SYMBOL] LIKE @symbol_NBC1 OR
+					C.[SECURITY_SYMBOL] LIKE @symbol_NBC2 OR
+					C.[SECURITY_SYMBOL] LIKE @symbol_NBC3
+					) AND
+					(
+					C.[SECURITY_SYMBOL] NOT LIKE @symbol_NBC100 AND
+					C.[SECURITY_SYMBOL] NOT LIKE @symbol_NBC101 AND
+					C.[SECURITY_SYMBOL] NOT LIKE @symbol_NBC200 AND
+					C.[SECURITY_SYMBOL] NOT LIKE @symbol_NBC201
+					)
+					) OR
+					(
+					C.[SECURITY_SYMBOL] LIKE @symbol_RBC AND
+					C.[SECURITY_SYMBOL] NOT LIKE @symbol_RBC999
+					) OR C.[SECURITY_SYMBOL] LIKE @symbol_SSP OR
+					(
+					C.[SECURITY_SYMBOL] LIKE @symbol_TDN AND
+					C.[SECURITY_SYMBOL] NOT LIKE @symbol_TDNT AND
+					C.[SECURITY_SYMBOL] NOT LIKE @symbol_TDNOF
+					)
+					)
+					UNION
+					SELECT DISTINCT
+					B.[A_C_Representative] AS [IAcode],
+					B.[A_C_ID] AS [AccountID],
+					B.[A_C_Name] AS [AccountName],
+					B.[Tran_Process_Date] AS [Processing],
+					B.[Tran_Trade_Date] AS [Transaction],
+					B.[Tran_Entry_Description] AS [Type],
+					B.[TI_Symbol] AS [Symbol],
+					B.[Tran_User_Description] AS [SecurityDescription],
+					(B.[Tran_Qty] * (B.[TI_Basis_Point] / B.[TI_Face_Value])) AS [Quantity],
+					B.[TI_Issue_Price] AS [Price],
+					B.[Tran_Currency] AS [Currency],
+					CAST(X.[exchangeRate] AS varchar) AS [exchangeRate],
+					B.[Tran_Gross_Amt] AS [Total],
+					CASE WHEN B.[Tran_Currency] = @Tran_Currency
+					THEN B.[Tran_Gross_Amt]
+					ELSE ROUND(B.[Tran_Gross_Amt] * X.[exchangeRate], 2)
+					END AS [TotalCAD],
+					'' AS [Commission],
+					'' AS [Trailer]
+					FROM BACKOFFICE.IAVMBK AS B WITH (NOLOCK)
+					INNER JOIN IAVM.exchangeRate AS X WITH (NOLOCK)
+					ON X.exchangeDate = B.Tran_Process_Date
+					WHERE B.Tran_Process_Date BETWEEN @RptStartDate AND @RptEndDate AND
+					B.TI_Symbol NOT IN
+					(
+					SELECT [symbol] FROM @HDString WHERE [symbol] IS NOT Null
+					) AND
+					(
+					B.TI_Symbol LIKE @symbol_CBL OR
+					B.TI_Symbol LIKE @symbol_DSN OR
+					(
+					B.TI_Symbol LIKE @symbol_JHN AND
+					B.TI_Symbol NOT LIKE @symbol_JHN10
+					) OR
+					(
+					(
+					B.TI_Symbol LIKE @symbol_NBC1 OR
+					B.TI_Symbol LIKE @symbol_NBC2 OR
+					B.TI_Symbol LIKE @symbol_NBC3
+					) AND
+					(
+					B.TI_Symbol NOT LIKE @symbol_NBC100 AND
+					B.TI_Symbol NOT LIKE @symbol_NBC101 AND
+					B.TI_Symbol NOT LIKE @symbol_NBC200 AND
+					B.TI_Symbol NOT LIKE @symbol_NBC201
+					)
+					) OR
+					(
+					B.TI_Symbol LIKE @symbol_RBC AND
+					B.TI_Symbol NOT LIKE @symbol_RBC999
+					) OR B.TI_Symbol LIKE @symbol_SSP OR
+					(
+					B.TI_Symbol LIKE @symbol_TDN AND
+					B.TI_Symbol NOT LIKE @symbol_TDNT AND
+					B.TI_Symbol NOT LIKE @symbol_TDNOF
+					)
+					)
+				</CommandText>
       </Query>
       <Fields>
         <Field Name="IAcode">
@@ -89,16 +248,34 @@
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="Default_Date">
+    <DataSet Name="RptEnd">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>SELECT MAX(processDate) AS [MonthEnd]
-FROM [IAVM].[position] (nolock)
-WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</CommandText>
+        <CommandText>
+					SELECT MAX(processDate) AS RptEnd
+					FROM [IAVM].[position] (nolock)
+					WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)
+				</CommandText>
       </Query>
       <Fields>
-        <Field Name="MonthEnd">
-          <DataField>MonthEnd</DataField>
+        <Field Name="RptEnd">
+          <DataField>RptEnd</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="RptStart">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>
+					SELECT MIN(processDate) AS RptStart
+					FROM [IAVM].[position] (nolock)
+					WHERE processDate &gt;= DateAdd(year, -1, DateAdd(month, DateDiff(month, 0, GetDate()), 0))
+				</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="RptStart">
+          <DataField>RptStart</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
@@ -121,7 +298,7 @@ WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</Command
                   <Width>2.925in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.49167in</Width>
+                  <Width>1.90834in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.825in</Width>
@@ -1244,7 +1421,7 @@ WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</Command
             <Top>0.17167in</Top>
             <Left>0.33833in</Left>
             <Height>0.525in</Height>
-            <Width>25.5in</Width>
+            <Width>25.91667in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1255,7 +1432,7 @@ WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</Command
         <Height>0.90833in</Height>
         <Style />
       </Body>
-      <Width>26.01333in</Width>
+      <Width>26.255in</Width>
       <Page>
         <PageHeader>
           <Height>0.76667in</Height>
@@ -1354,15 +1531,25 @@ WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</Command
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="Date">
+    <ReportParameter Name="RptStartDate">
       <DataType>DateTime</DataType>
       <DefaultValue>
         <DataSetReference>
-          <DataSetName>Default_Date</DataSetName>
-          <ValueField>MonthEnd</ValueField>
+          <DataSetName>RptStart</DataSetName>
+          <ValueField>RptStart</ValueField>
         </DataSetReference>
       </DefaultValue>
-      <Prompt>Process Date</Prompt>
+      <Prompt>Report Start Date</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="RptEndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>RptEnd</DataSetName>
+          <ValueField>RptEnd</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Report End Date</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
@@ -1373,7 +1560,12 @@ WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</Command
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>Date</ParameterName>
+          <ParameterName>RptStartDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RptEndDate</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
