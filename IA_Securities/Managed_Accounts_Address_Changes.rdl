@@ -10,80 +10,60 @@
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="DataSet1">
+    <DataSet Name="iAS_Portal_DS">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>SELECT 
-   b.A_C_Client,
-   b.A_C_ID,
-   b.A_C_Representative,
-   c.repName,
-   b.ASC_3_Managed_Type,
-   CONVERT(date, b.A_C_Closing_Date) AS A_C_Closing_Date,
-   b.Major_Sort,
-   b.Address_ID,
-   b.Address_Line_Type_1,
-   b.Address_Line_Type_2,
-   b.Address_Line_Type_3,
-   b.Address_Line_Type_4,
-   b.Address_Line_Type_5,
-   b.Address_Line_Type_6,
-   b.Address_Line_Name,
-   b.Address_Line_1,
-   b.Address_Line_2,
-   b.Address_Line_3,
-   b.Address_Line_4,
-   b.Address_Line_5,
-   a.Address_Line_Type_1 AS Address_Line_Type_1_PD,
-   a.Address_Line_Type_2 AS Address_Line_Type_2_PD,
-   a.Address_Line_Type_3 AS Address_Line_Type_3_PD,
-   a.Address_Line_Type_4 AS Address_Line_Type_4_PD,
-   a.Address_Line_Type_5 AS Address_Line_Type_5_PD,
-   a.Address_Line_Type_6 AS Address_Line_Type_6_PD,
-   a.Address_Line_Name AS Address_Line_Name_PD,
-   a.Address_Line_1 AS Address_Line_1_PD,
-   a.Address_Line_2 AS Address_Line_2_PD,
-   a.Address_Line_3 AS Address_Line_3_PD,
-   a.Address_Line_4 AS Address_Line_4_PD,
-   a.Address_Line_5 AS Address_Line_5_PD 
-FROM
-   
- BACKOFFICE.IAVMADR_PREV a
-JOIN
-   BACKOFFICE.IAVMADR b
-ON
-   b.Address_ID = a.Address_ID
-LEFT JOIN
-   IAVM.rep c
-ON
-   c.repId = b.A_C_Representative
-WHERE --#b.A_C_ID IN ('37ML11A','37MFRGB','37F30DE','37F207W','37F3G8S','37F5QLS','37F8LNA','37G1DVW','37A5PUA') AND  
---#b.A_C_Client IN ('38D4T2','38G0SD','38GWY4','38FCRD','38F1BW') AND 
-(
-   b.Address_Line_Type_1 != a.Address_Line_Type_1 OR
-   b.Address_Line_Type_2 != a.Address_Line_Type_2 OR
-   b.Address_Line_Type_3 != a.Address_Line_Type_3 OR
-   b.Address_Line_Type_4 != a.Address_Line_Type_4 OR
-   b.Address_Line_Type_5 != a.Address_Line_Type_5 OR
-   b.Address_Line_Type_6 != a.Address_Line_Type_6 OR
-   b.Address_Line_Name != a.Address_Line_Name OR
-   b.Address_Line_1 != a.Address_Line_1 OR
-   b.Address_Line_2 != a.Address_Line_2 OR
-   b.Address_Line_3 != a.Address_Line_3 OR
-   b.Address_Line_4 != a.Address_Line_4 OR
-   b.Address_Line_5 != a.Address_Line_5 )
-AND a.Address_ID &gt; 0
-AND a.ASC_3_Managed_Type IN ( 'M','N','Q','V')
-
-
-ORDER BY
-   b.A_C_ID,
-   b.Major_Sort
-
-</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@ReportDate">
+            <Value>=Parameters!ReportDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>select
+    exec_date
+   ,A_C_Client
+   ,A_C_ID
+   ,A_C_Representative
+   ,repName
+   ,ASC_3_Managed_Type
+   ,A_C_Closing_Date
+   ,Major_Sort
+   ,A_C_Address_ID Address_ID
+   ,Address_Line_Type_1
+   ,Address_Line_Type_2
+   ,Address_Line_Type_3
+   ,Address_Line_Type_4
+   ,Address_Line_Type_5
+   ,Address_Line_Type_6
+   ,Address_Line_Name
+   ,Address_Line_1
+   ,Address_Line_2
+   ,Address_Line_3
+   ,Address_Line_4
+   ,Address_Line_5
+   ,Address_Line_Type_1_PD
+   ,Address_Line_Type_2_PD
+   ,Address_Line_Type_3_PD
+   ,Address_Line_Type_4_PD
+   ,Address_Line_Type_5_PD
+   ,Address_Line_Type_6_PD
+   ,Address_Line_Name_PD
+   ,Address_Line_1_PD
+   ,Address_Line_2_PD
+   ,Address_Line_3_PD
+   ,Address_Line_4_PD
+   ,Address_Line_5_PD 
+from IAVM.managedAccountsAddressChanges
+where exec_date = @ReportDate
+order by
+    A_C_ID
+   ,Major_Sort</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
+        <Field Name="exec_date">
+          <DataField>exec_date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
         <Field Name="A_C_Client">
           <DataField>A_C_Client</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -211,6 +191,18 @@ ORDER BY
         <Field Name="Address_Line_5_PD">
           <DataField>Address_Line_5_PD</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="iAS_Portal_MaxReportDate_DS">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>select max(exec_date) max_exec_date from IAVM.managedAccountsAddressChanges</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="max_exec_date">
+          <DataField>max_exec_date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -1493,7 +1485,7 @@ iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value =
               </TablixMembers>
             </TablixRowHierarchy>
             <FixedRowHeaders>true</FixedRowHeaders>
-            <DataSetName>DataSet1</DataSetName>
+            <DataSetName>iAS_Portal_DS</DataSetName>
             <PageName>managed accounts</PageName>
             <Height>0.43in</Height>
             <Width>35.625in</Width>
@@ -1513,10 +1505,29 @@ iif(Fields!Address_Line_Type_4.Value = "A" Or Fields!Address_Line_Type_4.Value =
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="ReportDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>iAS_Portal_MaxReportDate_DS</DataSetName>
+          <ValueField>max_exec_date</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Report Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>ReportDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>
