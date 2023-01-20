@@ -22,19 +22,23 @@
 	WHEN aa.Symbol IN ('CCM9330', 'CCM9332') THEN 'iA Clarington' 
 	/*WHEN aa.Symbol IN ('ZCN', 'GGF12217') THEN 'BMO' */       
 WHEN aa.Symbol IN ('ZCN', 'BMO12217') THEN 'BMO'                  
-	WHEN aa.Symbol IN ('MFC5400') THEN 'Mackenzie' 
+	WHEN aa.Symbol IN ('MFC5400','MFC8667') THEN 'Mackenzie' 
 	WHEN aa.Symbol IN ('VIU', 'VAB') THEN 'Vanguard' 
 	WHEN aa.Symbol IN ('CCL876') THEN 'CC&amp;L' 
-	WHEN aa.Symbol IN ('PIC512') THEN 'Picton Mahoney' END AS PARTNER
+	WHEN aa.Symbol IN ('PIC512') THEN 'Picton Mahoney' 
+	--WHEN aa.Symbol IN ('MFC8667') THEN 'MACKENZIE US SM-MID CAP GRW SR UM' 
+	END AS PARTNER
     ,CASE 
 	WHEN aa.Symbol IN ('DYN1651', 'DYN3801') THEN 'DYN1651,DYN3801' 
 	WHEN aa.Symbol IN ('CCM9330', 'CCM9332') THEN 'CCM9330,CCM9332' 
 	/*WHEN aa.Symbol IN ('ZCN', 'GGF12217') THEN 'ZCN,GGF12217' */
 WHEN aa.Symbol IN ('ZCN', 'BMO12217') THEN 'ZCN,BMO12217' 
-	WHEN aa.Symbol IN ('MFC5400') THEN 'MFC5400' 
+	WHEN aa.Symbol IN ('MFC5400','MFC8667') THEN 'MFC5400,MFC8667' 
 	WHEN aa.Symbol IN ('VIU', 'VAB') THEN 'VIU,VAB' 
 	WHEN aa.Symbol IN ('CCL876') THEN 'CCL876' 
-	WHEN aa.Symbol IN ('PIC512') THEN 'PIC512' END AS PARTNER_Symbols, 
+	WHEN aa.Symbol IN ('PIC512') THEN 'PIC512' 
+	--WHEN aa.Symbol IN ('MFC8667') THEN 'MFC8667' 
+	END AS PARTNER_Symbols, 
 	aa.Symbol, 
 	aa.RR_Name AS RR_Name, 
 	aa.RR_Code AS RR_Code, 
@@ -65,7 +69,7 @@ WHERE   LEN(act.A_C_ID) &gt; 2
 	AND LEFT(act.A_C_Representative, 2) IN ('JL', 'JG') 
         AND pos.processDate = (SELECT max(processDate) 
 		FROM IAVM.position WHERE processDate &lt;= '2022-08-18') 
-        AND pos.Symbol IN ('DYN1651', 'DYN3801', 'CCM9330', 'CCM9332', 'ZCN', 'BMO12217', 'MFC5400', 'VIU', 'VAB', 'CCL876', 'PIC512')
+        AND pos.Symbol IN ('DYN1651', 'DYN3801', 'CCM9330', 'CCM9332', 'ZCN', 'BMO12217', 'MFC5400', 'VIU', 'VAB', 'CCL876', 'PIC512','MFC8667')
 /*'GGF12217',  replaced with 'BMO12217' June 24*/
 GROUP BY pos.Symbol, act.A_C_Representative, rep.Repname
 ) aa 
@@ -85,13 +89,11 @@ WHERE   LEN(act.A_C_ID) &gt; 2 AND act.A_C_CLOSING_DATE  IS NULL --='0000-00-00'
 	AND LEFT(act.A_C_Representative, 2) IN ('JL', 'JG') 
         AND pos.processDate = (SELECT max(processDate) 
 		FROM IAVM.position WHERE processDate &lt;= '2022-08-18')      
-	AND pos.Symbol IN ('DYN1651', 'DYN3801', 'CCM9330', 'CCM9332', 'ZCN', 'BMO12217', 'MFC5400', 'VIU', 'VAB', 'CCL876', 'PIC512')
+	AND pos.Symbol IN ('DYN1651', 'DYN3801', 'CCM9330', 'CCM9332', 'ZCN', 'BMO12217', 'MFC5400', 'VIU', 'VAB', 'CCL876', 'PIC512','MFC8667')
   /*'GGF12217',  replaced with 'BMO12217' June 24*/
 GROUP BY pos.Symbol, act.A_C_Representative, rep.Repname
 
-) bb ON aa.Symbol = bb.Symbol AND aa.RR_Code = bb.RR_Code
-
-</CommandText>
+) bb ON aa.Symbol = bb.Symbol AND aa.RR_Code = bb.RR_Code</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -2990,7 +2992,6 @@ as currentDate</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
