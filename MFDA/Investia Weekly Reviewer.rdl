@@ -1,0 +1,2632 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="Univeris">
+      <DataSourceReference>Univeris</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>c179ac7d-f8ab-4c0b-8206-128328ca30cd</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>Univeris</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@ReportStartDate">
+            <Value>=Parameters!ReportStartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ReportEndDate">
+            <Value>=Parameters!ReportEndDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>
+DECLARE @StartDate as date = @ReportStartDate--'2019-12-01'
+DECLARE @EndDate as date = @ReportEndDate--'2019-12-31'
+
+
+IF OBJECT_ID('tempdb..#S_CPL_PLN') IS NOT NULL              
+	BEGIN       
+		drop table #S_CPL_PLN         
+	END 
+
+IF OBJECT_ID('tempdb..#S_CPL_ORD') IS NOT NULL              
+	BEGIN       
+		drop table #S_CPL_ORD         
+	END 
+
+IF OBJECT_ID('tempdb..#S_CPL_KYC') IS NOT NULL              
+	BEGIN       
+		drop table #S_CPL_KYC         
+	END 
+
+
+SELECT * 
+INTO #S_CPL_PLN
+FROM (
+		SELECT S_CPL_PLN.USER_SYSID, S_CPL_PLN.REVIEWER 
+		 	,COUNT(CASE WHEN S_CPL_PLN.CPL_TIER1_ACTION = 'T1A' AND S_CPL_PLN.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_PLN.CPL_TIER1_DESCN &lt;@EndDate THEN S_CPL_PLN.CPL_PLN_ID ELSE NULL END) AS REVIEWED_PLANS
+			,COUNT(CASE WHEN S_CPL_PLN.CPL_TIER1_ACTION = 'T1A' AND S_CPL_PLN.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_PLN.CPL_TIER1_DESCN &lt;@EndDate AND S_CPL_PLN.CPL_TIER1_LATE = '1' THEN 1 END) AS TIER1_LATE  
+			,COUNT(DISTINCT CASE WHEN S_CPL_PLN.CPL_TIER1_ACTION = 'T1P' AND S_CPL_PLN.T_TYPE = 'CPL' THEN S_CPL_PLN.CPL_PLN_ID ELSE NULL END) AS PENDING_PLNS
+			,COUNT(CASE WHEN S_CPL_PLN.CPL_TIER1_ACTION = 'T1A' AND S_CPL_PLN.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_PLN.CPL_TIER1_DESCN &lt;@EndDate AND S_CPL_PLN.CPL_TIER1 = S_CPL_PLN.USER_SYSID then S_CPL_PLN.CPL_PLN_ID ELSE NULL END) AS REVIEWED_PLNS_BY_PRIMARY_REVIEWER
+			,COUNT(CASE WHEN S_CPL_PLN.CPL_TIER1_ACTION = 'T1A' AND S_CPL_PLN.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_PLN.CPL_TIER1_DESCN &lt;@EndDate  AND S_CPL_PLN.CPL_TIER1 &lt;&gt; S_CPL_PLN.USER_SYSID THEN S_CPL_PLN.CPL_PLN_ID ELSE NULL END) AS REVIEWED_PLNS_BY_OTHER
+			
+			,COUNT(CASE WHEN S_CPL_PLN.CPL_TIER1_ACTION = 'T1A' AND S_CPL_PLN.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_PLN.CPL_TIER1_DESCN &lt;@EndDate AND S_CPL_PLN.CPL_TIER1_PND_DESCN &lt; @StartDate THEN S_CPL_PLN.CPL_PLN_ID ELSE NULL END) AS PENDING_CLOSED_PLANS
+		FROM (
+					SELECT 'CPL' AS T_TYPE, CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME AS REVIEWER, SNAPSHOT_CPL_PLN.[CPL_PLN_ID], CPL_TIER1_DESCN, CPL_TIER1_ACTION, CPL_TIER1_LATE, CPL_TIER1, CPL_TIER1_PND_DESCN --,COUNT(*) AS REVIEWED_PLANS,  COUNT(CASE WHEN CPL_TIER1_LATE = '1'THEN 1 END) AS TIER1_LATE  
+					FROM SNAPSHOT_CPL_PLN	(nolock)
+							INNER JOIN REP 	(nolock)
+								ON REP.REP_CD = SNAPSHOT_CPL_PLN.REP_CD
+							INNER JOIN CPL_REVIEWERS_PRIMARY 	(nolock)
+								ON CPL_REVIEWERS_PRIMARY.REP_SYSID = REP.REP_SYSID			
+							INNER JOIN SYS_USER_CD 	(nolock)
+								ON SYS_USER_CD.USER_SYSID = CPL_REVIEWERS_PRIMARY.USER_SYSID	
+					WHERE CPL_TIER1_ACTION IN ('T1A', 'T1P')  --AND CPL_TIER1_DESCN &gt; @StartDate AND CPL_TIER1_DESCN &lt;@EndDate
+					--GROUP BY CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME
+
+					UNION ALL
+
+					SELECT 'ARC' AS T_TYPE, CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME AS REVIEWER, ARC_SNAPSHOT_CPL_PLN.[CPL_PLN_ID], CPL_TIER1_DESCN, CPL_TIER1_ACTION, CPL_TIER1_LATE, CPL_TIER1, CPL_TIER1_PND_DESCN--, COUNT(*) AS REVIEWED_PLANS, COUNT(CASE WHEN CPL_TIER1_LATE = '1'THEN 1 END) AS TIER1_LATE 
+					FROM ARC_SNAPSHOT_CPL_PLN	(nolock)
+						INNER JOIN REP 	(nolock)
+							ON REP.REP_CD = ARC_SNAPSHOT_CPL_PLN.REP_CD
+						INNER JOIN CPL_REVIEWERS_PRIMARY 	(nolock)
+							ON CPL_REVIEWERS_PRIMARY.REP_SYSID = REP.REP_SYSID			
+						INNER JOIN SYS_USER_CD 	(nolock)
+							ON SYS_USER_CD.USER_SYSID = CPL_REVIEWERS_PRIMARY.USER_SYSID	
+					WHERE CPL_TIER1_ACTION = 'T1A'  AND CPL_TIER1_DESCN &gt; @StartDate AND CPL_TIER1_DESCN &lt;@EndDate
+					--GROUP BY CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME 
+			) AS S_CPL_PLN
+			GROUP BY S_CPL_PLN.USER_SYSID, S_CPL_PLN.REVIEWER 
+) AS A;
+
+CREATE NONCLUSTERED INDEX IX_S_CPL_PLN  
+    ON #S_CPL_PLN (USER_SYSID, REVIEWER);   
+
+
+SELECT * 
+INTO #S_CPL_ORD
+FROM (
+					
+						SELECT S_CPL_ORD.USER_SYSID, S_CPL_ORD.REVIEWER	
+							,COUNT(DISTINCT CASE WHEN S_CPL_ORD.CPL_TIER1_ACTION = 'T1RV' AND S_CPL_ORD.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_ORD.CPL_TIER1_DESCN &lt;@EndDate THEN S_CPL_ORD.CPL_ORD_ID ELSE NULL END) AS REVIEWED_ORDERS
+							,COUNT(CASE WHEN S_CPL_ORD.CPL_TIER1_ACTION = 'T1RV' AND S_CPL_ORD.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_ORD.CPL_TIER1_DESCN &lt;@EndDate AND S_CPL_ORD.CPL_TIER1_LATE = '1' THEN 1 END) AS TIER1_LATE_ORDERS  
+							,COUNT( CASE WHEN S_CPL_ORD.CPL_TIER1_ACTION = 'T1P' AND S_CPL_ORD.T_TYPE = 'CPL' THEN S_CPL_ORD.CPL_TIER1_ACTION ELSE NULL END) AS PENDING_ORDERS
+
+							,COUNT(CASE WHEN S_CPL_ORD.CPL_TIER1_ACTION = 'T1RV' AND S_CPL_ORD.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_ORD.CPL_TIER1_DESCN &lt;@EndDate AND S_CPL_ORD.CPL_TIER1 = S_CPL_ORD.USER_SYSID then S_CPL_ORD.CPL_ORD_ID ELSE NULL END) AS REVIEWED_ORDERS_BY_PRIMARY_REVIEWER
+							,COUNT(CASE WHEN S_CPL_ORD.CPL_TIER1_ACTION = 'T1RV' AND S_CPL_ORD.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_ORD.CPL_TIER1_DESCN &lt;@EndDate  AND S_CPL_ORD.CPL_TIER1 &lt;&gt; S_CPL_ORD.USER_SYSID THEN S_CPL_ORD.CPL_ORD_ID ELSE NULL END) AS REVIEWED_ORDERS_BY_OTHER
+							,COUNT(CASE WHEN S_CPL_ORD.CPL_TIER1_ACTION = 'T1RV' AND S_CPL_ORD.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_ORD.CPL_TIER1_DESCN &lt;@EndDate AND S_CPL_ORD.CPL_TIER1_PND_DESCN &lt; @StartDate THEN S_CPL_ORD.CPL_ORD_ID ELSE NULL END) AS PENDING_CLOSED_ORDERS
+						FROM 
+						(
+							SELECT 'CPL' AS T_TYPE, CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME AS REVIEWER, [CPL_ORD_ID], CPL_TIER1_ACTION, CPL_TIER1_DESCN, CPL_TIER1_LATE, CPL_TIER1, CPL_TIER1_PND_DESCN  --, COUNT(*) AS REVIEWED_ORDERS, COUNT(CASE WHEN CPL_TIER1_LATE = '1' THEN 1 END) AS TIER1_LATE   
+							FROM SNAPSHOT_CPL_ORD	(nolock)
+							INNER JOIN REP	(nolock) ON REP.REP_CD = SNAPSHOT_CPL_ORD.REP_CD
+							INNER JOIN CPL_REVIEWERS_PRIMARY	(nolock) ON CPL_REVIEWERS_PRIMARY.REP_SYSID = REP.REP_SYSID			
+							INNER JOIN SYS_USER_CD	(nolock) ON SYS_USER_CD.USER_SYSID = CPL_REVIEWERS_PRIMARY.USER_SYSID	
+							WHERE CPL_TIER1_ACTION IN ('T1RV','T1P') --AND CPL_TIER1_DESCN &gt; @StartDate AND CPL_TIER1_DESCN &lt;@EndDate
+							--GROUP BY CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME
+
+							UNION ALL
+
+							SELECT 'ARC' AS T_TYPE, CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME AS REVIEWER, [CPL_ORD_ID], CPL_TIER1_ACTION, CPL_TIER1_DESCN, CPL_TIER1_LATE, CPL_TIER1, CPL_TIER1_PND_DESCN --, COUNT(*) AS REVIEWED_ORDERS, COUNT(CASE WHEN CPL_TIER1_LATE = '1' THEN 1 END) AS TIER1_LATE  
+							FROM ARC_SNAPSHOT_CPL_ORD	(nolock)
+							INNER JOIN REP	(nolock) ON REP.REP_CD = ARC_SNAPSHOT_CPL_ORD.REP_CD
+							INNER JOIN CPL_REVIEWERS_PRIMARY	(nolock) ON CPL_REVIEWERS_PRIMARY.REP_SYSID = REP.REP_SYSID			
+							INNER JOIN SYS_USER_CD	(nolock) ON SYS_USER_CD.USER_SYSID = CPL_REVIEWERS_PRIMARY.USER_SYSID	
+							WHERE CPL_TIER1_ACTION = 'T1RV' AND CPL_TIER1_DESCN &gt; @StartDate AND CPL_TIER1_DESCN &lt;@EndDate
+						) AS S_CPL_ORD
+						GROUP BY S_CPL_ORD.USER_SYSID, S_CPL_ORD.REVIEWER
+			
+) AS A;
+
+CREATE NONCLUSTERED INDEX IX_S_CPL_ORD  
+    ON #S_CPL_ORD (USER_SYSID, REVIEWER);   
+
+
+
+--SELECT CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME AS REVIEWER, [CPL_KYC_ID], CPL_TIER1_ACC_ACTION, CPL_TIER1_ACC_DESCN, CPL_TIER1_PND_ACTION, CPL_TIER1_PENDING --, COUNT(*) AS REVIEWED_KYC  
+SELECT CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME AS REVIEWER
+	,COUNT(DISTINCT CASE WHEN CPL_TIER1_ACC_ACTION = 'T1A' AND CPL_TIER1_ACC_DESCN &gt; @StartDate AND CPL_TIER1_ACC_DESCN &lt;@EndDate THEN CPL_KYC_ID ELSE NULL END) AS REVIEWED_KYC
+	,COUNT(DISTINCT CASE WHEN CPL_TIER1_PND_ACTION = 'T1P' AND CPL_TIER1_PENDING = '1' THEN CPL_KYC_ID ELSE NULL END) AS PENDING_KYCS  
+	,COUNT(CASE WHEN CPL_TIER1_PND_ACTION = 'T1A' AND CPL_TIER1_ACC_DESCN &gt; @StartDate AND CPL_TIER1_ACC_DESCN &lt;@EndDate AND CPL_TIER1_LATE = '1' THEN 1 END) AS LATE_REVIEWED_KYC  
+							
+	,COUNT(CASE WHEN CPL_TIER1_ACC_ACTION = 'T1A' AND CPL_TIER1_ACC_DESCN &gt; @StartDate AND CPL_TIER1_ACC_DESCN &lt;@EndDate AND CPL_TIER1_ACC = CPL_REVIEWERS_PRIMARY.USER_SYSID then CPL_KYC_ID ELSE NULL END) AS REVIEWED_KYC_BY_PRIMARY_REVIEWER
+	,COUNT(CASE WHEN CPL_TIER1_ACC_ACTION = 'T1A' AND CPL_TIER1_ACC_DESCN &gt; @StartDate AND CPL_TIER1_ACC_DESCN &lt;@EndDate  AND CPL_TIER1_ACC &lt;&gt; CPL_REVIEWERS_PRIMARY.USER_SYSID THEN CPL_KYC_ID ELSE NULL END) AS REVIEWED_KYC_BY_OTHER
+	,COUNT(CASE WHEN CPL_TIER1_ACC_ACTION = 'T1A' AND CPL_TIER1_ACC_DESCN &gt; @StartDate AND CPL_TIER1_ACC_DESCN &lt;@EndDate AND CPL_TIER1_PND_DESCN &lt; @StartDate THEN CPL_KYC_ID ELSE NULL END) AS PENDING_CLOSED_KYC
+INTO #S_CPL_KYC
+FROM SNAPSHOT_CPL_KYC	(nolock)
+INNER JOIN CPL_REVIEWERS_PRIMARY	(nolock) ON CPL_REVIEWERS_PRIMARY.REP_SYSID = SNAPSHOT_CPL_KYC.REP_SYSID			
+INNER JOIN SYS_USER_CD	(nolock) ON SYS_USER_CD.USER_SYSID = CPL_REVIEWERS_PRIMARY.USER_SYSID	
+WHERE CPL_TIER1_ACC_ACTION = 'T1A' OR CPL_TIER1_PND_ACTION = 'T1P' --AND CPL_TIER1_ACC_DESCN &gt; @StartDate AND CPL_TIER1_ACC_DESCN &lt;@EndDate
+GROUP BY CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME	
+
+CREATE NONCLUSTERED INDEX IX_S_CPL_KYC  
+    ON #S_CPL_KYC (USER_SYSID, REVIEWER);   
+
+
+-- AUA BY REVIEWER
+SELECT  
+	--CPL_REVIEWERS_PRIMARY.USER_SYSID
+	SYS_USER_CD.USR_NAME AS REVIEWER
+	,SUM(ISNULL(A.MV,0)) AS AUA 
+	,ISNULL((SELECT COUNT(REP_NRD_NUM) FROM CPL_REVIEWERS_PRIMARY as C INNER JOIN REP ON C.REP_SYSID = REP.REP_SYSID WHERE C.USER_SYSID =  CPL_REVIEWERS_PRIMARY.USER_SYSID AND ISNULL(LTRIM(RTRIM(REP.REP_NRD_NUM)),'') &lt;&gt; ''  AND REP.REP_STATUS = 'A'),0) AS REP_COUNT 
+	,MAX(ISNULL(S_CPL_PLN.PENDING_PLNS,0)) AS PENDING_PLNS
+	,MAX(ISNULL(S_CPL_ORD.PENDING_ORDERS,0)) AS PENDING_ORDERS
+	,MAX(ISNULL(S_CPL_KYC.PENDING_KYCS,0)) AS PENDING_KYCS
+	,MAX(ISNULL(S_CPL_PLN.REVIEWED_PLNS_BY_PRIMARY_REVIEWER,0)) AS REVIEWED_PLNS_BY_PRIMARY_REVIEWER
+	,MAX(ISNULL(S_CPL_PLN.REVIEWED_PLNS_BY_OTHER,0)) AS REVIEWED_PLNS_BY_OTHER
+	,MAX(ISNULL(S_CPL_PLN.REVIEWED_PLANS,0)) AS REVIEWED_PLANS
+	,MAX(ISNULL(S_CPL_PLN.PENDING_CLOSED_PLANS,0)) AS PENDING_CLOSED_PLANS
+	,MAX(ISNULL(S_CPL_ORD.REVIEWED_ORDERS_BY_PRIMARY_REVIEWER,0)) AS REVIEWED_ORDERS_BY_PRIMARY_REVIEWER
+	,MAX(ISNULL(S_CPL_ORD.REVIEWED_ORDERS_BY_OTHER,0)) AS REVIEWED_ORDERS_BY_OTHER
+	,MAX(ISNULL(S_CPL_ORD.REVIEWED_ORDERS,0)) AS REVIEWED_ORDERS
+	,MAX(ISNULL(S_CPL_ORD.PENDING_CLOSED_ORDERS,0)) AS PENDING_CLOSED_ORDERS
+	,MAX(ISNULL(S_CPL_KYC.REVIEWED_KYC_BY_PRIMARY_REVIEWER,0)) AS REVIEWED_KYC_BY_PRIMARY_REVIEWER
+	,MAX(ISNULL(S_CPL_KYC.REVIEWED_KYC_BY_OTHER,0)) AS REVIEWED_KYC_BY_OTHER
+	,MAX(ISNULL(S_CPL_KYC.REVIEWED_KYC,0)) AS REVIEWED_KYC
+	,MAX(ISNULL(S_CPL_KYC.PENDING_CLOSED_KYC,0)) AS PENDING_CLOSED_KYC
+	
+
+	--,MAX(S_CPL_PLN.TIER1_LATE) AS TIER1_LATE
+	--,MAX(S_CPL_ORD.TIER1_LATE_ORDERS) AS TIER1_LATE_ORDERS
+	--,MAX(S_CPL_KYC.LATE_REVIEWED_KYC) AS LATE_REVIEWED_KYC	
+	--,COUNT(DISTINCT CASE WHEN S_CPL_PLN.CPL_TIER1_ACTION = 'T1A' AND S_CPL_PLN.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_PLN.CPL_TIER1_DESCN &lt;@EndDate THEN S_CPL_PLN.CPL_PLN_ID ELSE NULL END) AS REVIEWED_PLANS
+	--,COUNT(CASE WHEN S_CPL_PLN.CPL_TIER1_ACTION = 'T1A' AND S_CPL_PLN.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_PLN.CPL_TIER1_DESCN &lt;@EndDate AND S_CPL_PLN.CPL_TIER1_LATE = '1' THEN 1 END) AS TIER1_LATE  
+	--,COUNT(DISTINCT CASE WHEN S_CPL_PLN.CPL_TIER1_ACTION = 'T1P' AND S_CPL_PLN.T_TYPE = 'CPL' THEN S_CPL_PLN.CPL_PLN_ID ELSE NULL END) AS PENDING_PLNS
+	
+	--,COUNT(DISTINCT CASE WHEN S_CPL_ORD.CPL_TIER1_ACTION = 'T1A' AND S_CPL_ORD.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_ORD.CPL_TIER1_DESCN &lt;@EndDate THEN S_CPL_ORD.CPL_ORD_ID ELSE NULL END) AS REVIEWED_ORDERS
+	--,COUNT(CASE WHEN S_CPL_ORD.CPL_TIER1_ACTION = 'T1A' AND S_CPL_ORD.CPL_TIER1_DESCN &gt; @StartDate AND S_CPL_ORD.CPL_TIER1_DESCN &lt;@EndDate AND S_CPL_ORD.CPL_TIER1_LATE = '1' THEN 1 END) AS TIER1_LATE_ORDERS  
+	--,COUNT(DISTINCT CASE WHEN S_CPL_ORD.CPL_TIER1_ACTION = 'T1P' AND S_CPL_ORD.T_TYPE = 'CPL' THEN S_CPL_ORD.CPL_TIER1_ACTION ELSE NULL END) AS PENDING_ORDERS
+
+	--,COUNT(DISTINCT CASE WHEN S_CPL_KYC.CPL_TIER1_ACC_ACTION = 'T1A' AND S_CPL_KYC.CPL_TIER1_ACC_DESCN &gt; @StartDate AND S_CPL_KYC.CPL_TIER1_ACC_DESCN &lt;@EndDate THEN S_CPL_KYC.CPL_KYC_ID ELSE NULL END) AS REVIEWED_KYC
+	--,COUNT(DISTINCT CASE WHEN S_CPL_KYC.CPL_TIER1_PND_ACTION = 'T1P' AND S_CPL_KYC.CPL_TIER1_PENDING = '1' THEN S_CPL_KYC.CPL_KYC_ID ELSE NULL END) AS PENDING_KYCS  
+
+	
+FROM [ia_DB_IVR_REP] AS A (nolock)	
+INNER JOIN CPL_REVIEWERS_PRIMARY 	(nolock)
+	ON CPL_REVIEWERS_PRIMARY.REP_SYSID = A.REP_SYSID			
+INNER JOIN SYS_USER_CD 	(nolock)
+	ON SYS_USER_CD.USER_SYSID = CPL_REVIEWERS_PRIMARY.USER_SYSID	
+LEFT OUTER JOIN #S_CPL_PLN AS S_CPL_PLN	
+	ON 	S_CPL_PLN.USER_SYSID = CPL_REVIEWERS_PRIMARY.USER_SYSID
+		AND S_CPL_PLN.REVIEWER = SYS_USER_CD.USR_NAME
+LEFT OUTER JOIN #S_CPL_ORD AS S_CPL_ORD
+	ON 	S_CPL_ORD.USER_SYSID = CPL_REVIEWERS_PRIMARY.USER_SYSID
+		AND S_CPL_ORD.REVIEWER = SYS_USER_CD.USR_NAME
+	LEFT OUTER JOIN #S_CPL_KYC AS S_CPL_KYC
+	ON 	S_CPL_KYC.USER_SYSID = CPL_REVIEWERS_PRIMARY.USER_SYSID
+		AND S_CPL_KYC.REVIEWER = SYS_USER_CD.USR_NAME		
+
+GROUP BY CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME
+ORDER BY CPL_REVIEWERS_PRIMARY.USER_SYSID, SYS_USER_CD.USR_NAME			
+
+</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="REVIEWER">
+          <DataField>REVIEWER</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="AUA">
+          <DataField>AUA</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="REP_COUNT">
+          <DataField>REP_COUNT</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PENDING_PLNS">
+          <DataField>PENDING_PLNS</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PENDING_ORDERS">
+          <DataField>PENDING_ORDERS</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PENDING_KYCS">
+          <DataField>PENDING_KYCS</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="REVIEWED_PLNS_BY_PRIMARY_REVIEWER">
+          <DataField>REVIEWED_PLNS_BY_PRIMARY_REVIEWER</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="REVIEWED_PLNS_BY_OTHER">
+          <DataField>REVIEWED_PLNS_BY_OTHER</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="REVIEWED_PLANS">
+          <DataField>REVIEWED_PLANS</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PENDING_CLOSED_PLANS">
+          <DataField>PENDING_CLOSED_PLANS</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="REVIEWED_ORDERS_BY_PRIMARY_REVIEWER">
+          <DataField>REVIEWED_ORDERS_BY_PRIMARY_REVIEWER</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="REVIEWED_ORDERS_BY_OTHER">
+          <DataField>REVIEWED_ORDERS_BY_OTHER</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="REVIEWED_ORDERS">
+          <DataField>REVIEWED_ORDERS</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PENDING_CLOSED_ORDERS">
+          <DataField>PENDING_CLOSED_ORDERS</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="REVIEWED_KYC_BY_PRIMARY_REVIEWER">
+          <DataField>REVIEWED_KYC_BY_PRIMARY_REVIEWER</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="REVIEWED_KYC_BY_OTHER">
+          <DataField>REVIEWED_KYC_BY_OTHER</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="REVIEWED_KYC">
+          <DataField>REVIEWED_KYC</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="PENDING_CLOSED_KYC">
+          <DataField>PENDING_CLOSED_KYC</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Image Name="Logo2">
+            <Source>Embedded</Source>
+            <Value>Investia_logo</Value>
+            <Sizing>FitProportional</Sizing>
+            <Height>0.65917in</Height>
+            <Width>2.34375in</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Image>
+          <Textbox Name="textbox14">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=CStr(Globals!ReportName) + " for Period: " + CStr(FORMAT(Parameters!ReportStartDate.Value , "yyyy-MM-dd")) +" - "+ CStr(FORMAT(Parameters!ReportEndDate.Value , "yyyy-MM-dd"))</Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>15pt</FontSize>
+                      <FontWeight>ExtraBold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>textbox1</rd:DefaultName>
+            <Left>2.34375in</Left>
+            <Height>0.65917in</Height>
+            <Width>46in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Tablix Name="table1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>2.34375in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox13">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox13</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>3</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox20">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>PENDING INFORMATION</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox20</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>4</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox23">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED PLN INFO</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>5</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox40">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED ORDERS INFO</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox40</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>5</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox55">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED KYC INFO</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox55</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>5</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox70">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVEIWED TOTALS</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox70</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>2</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.22in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Primary Reviewer Name</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox3">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>AUA ($)</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox3</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REP_COUNT</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox5">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>PENDING_PLNS</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox5</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox7">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>PENDING_ORDERS</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox7</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox9">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>PENDING_KYCS</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox9</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox37">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>PENDING TOTAL</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox37</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox11">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED_PLNS_BY_PRIMARY_REVIEWER</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox11</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox25">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED_PLNS_BY_OTHER</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox25</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox28">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>TOTAL REVIEWED PLANS</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox28</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox31">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>PENDING CLOSED PLANS</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox31</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox34">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED PLNS BY PRIMARY</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox34</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox41">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED_ORDERS_BY_PRIMARY_REVIEWER</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox41</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox44">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED_ORDERS_BY_OTHER</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox44</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox47">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>TOTAL ORDERS REVIEWED</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox47</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox50">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>PENDING_CLOSED_ORDERS</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox50</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox53">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED ORDERS BY PRIMARY</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox53</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox56">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED_KYC_BY_PRIMARY_REVIEWER</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox56</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox59">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED_KYC_BY_OTHER</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox59</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox62">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>TOTAL KYCS REVIEWED</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox62</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox65">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>PENDING CLOSED KYC</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox65</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox68">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>REVIEWED KYC BY PRIMARY</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox68</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox71">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>TOTAL REVIEWED IN REGION</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox71</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>DarkBlue</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox74">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>TOTAL REVIEWED IN REGION BY PRIMARY ONLY</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox74</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>DarkRed</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.21in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="REVIEWER">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>REVIEWER</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="AUA">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!AUA.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                    <Format>'$'#,0.00;('$'#,0.00)</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>AUA</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <rd:FormatSymbolCulture>en-US</rd:FormatSymbolCulture>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="REP_COUNT">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REP_COUNT.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>REP_COUNT</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="PENDING_PLNS">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PENDING_PLNS.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>PENDING_PLNS</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="PENDING_ORDERS">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PENDING_ORDERS.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>PENDING_ORDERS</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="PENDING_KYCS">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PENDING_KYCS.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>PENDING_KYCS</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox38">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PENDING_PLNS.Value+Fields!PENDING_ORDERS.Value+Fields!PENDING_KYCS.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox38</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="REVIEWED_PLNS_BY_PRIMARY_REVIEWER">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_PLNS_BY_PRIMARY_REVIEWER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>REVIEWED_PLNS_BY_PRIMARY_REVIEWER</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="REVIEWED_PLNS_BY_OTHER">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_PLNS_BY_OTHER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>REVIEWED_PLNS_BY_OTHER</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox39">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_PLNS_BY_PRIMARY_REVIEWER.Value+Fields!REVIEWED_PLNS_BY_OTHER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox39</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="PENDING_CLOSED_PLANS">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PENDING_CLOSED_PLANS.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>PENDING_CLOSED_PLANS</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox35">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_PLNS_BY_PRIMARY_REVIEWER.Value-Fields!PENDING_CLOSED_PLANS.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox35</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="REVIEWED_ORDERS_BY_PRIMARY_REVIEWER">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_ORDERS_BY_PRIMARY_REVIEWER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>REVIEWED_ORDERS_BY_PRIMARY_REVIEWER</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="REVIEWED_ORDERS_BY_OTHER">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_ORDERS_BY_OTHER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>REVIEWED_ORDERS_BY_OTHER</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox48">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_ORDERS_BY_PRIMARY_REVIEWER.Value+Fields!REVIEWED_ORDERS_BY_OTHER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox48</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="PENDING_CLOSED_ORDERS">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PENDING_CLOSED_ORDERS.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>PENDING_CLOSED_ORDERS</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox54">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_ORDERS_BY_PRIMARY_REVIEWER.Value-Fields!PENDING_CLOSED_ORDERS.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox54</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="REVIEWED_KYC_BY_PRIMARY_REVIEWER">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_KYC_BY_PRIMARY_REVIEWER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>REVIEWED_KYC_BY_PRIMARY_REVIEWER</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="REVIEWED_KYC_BY_OTHER">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_KYC_BY_OTHER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>REVIEWED_KYC_BY_OTHER</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox63">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_KYC_BY_PRIMARY_REVIEWER.Value+Fields!REVIEWED_KYC_BY_OTHER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox63</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="PENDING_CLOSED_KYC">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PENDING_CLOSED_KYC.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>PENDING_CLOSED_KYC</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox69">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_KYC_BY_PRIMARY_REVIEWER.Value-Fields!PENDING_CLOSED_KYC.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox69</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox72">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!REVIEWED_PLNS_BY_PRIMARY_REVIEWER.Value+Fields!REVIEWED_PLNS_BY_OTHER.Value+Fields!REVIEWED_ORDERS_BY_PRIMARY_REVIEWER.Value+Fields!REVIEWED_ORDERS_BY_OTHER.Value+Fields!REVIEWED_KYC_BY_PRIMARY_REVIEWER.Value+Fields!REVIEWED_KYC_BY_OTHER.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox72</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox75">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=(Fields!REVIEWED_PLNS_BY_PRIMARY_REVIEWER.Value-Fields!PENDING_CLOSED_PLANS.Value)+(Fields!REVIEWED_ORDERS_BY_PRIMARY_REVIEWER.Value-Fields!PENDING_CLOSED_ORDERS.Value)+(Fields!REVIEWED_KYC_BY_PRIMARY_REVIEWER.Value-Fields!PENDING_CLOSED_KYC.Value)</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox75</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                </TablixMember>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="table1_Details_Group">
+                    <DataElementName>Detail</DataElementName>
+                  </Group>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                  <DataElementName>Detail_Collection</DataElementName>
+                  <DataElementOutput>Output</DataElementOutput>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DataSet1</DataSetName>
+            <Top>0.74625in</Top>
+            <Height>0.68in</Height>
+            <Width>48.34375in</Width>
+            <ZIndex>2</ZIndex>
+            <Style />
+          </Tablix>
+        </ReportItems>
+        <Height>1.51626in</Height>
+        <Style />
+      </Body>
+      <Width>48.34375in</Width>
+      <Page>
+        <PageFooter>
+          <Height>0.90625in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Line Name="Line1">
+              <Top>0.06944in</Top>
+              <Left>0.125in</Left>
+              <Height>0in</Height>
+              <Width>48.11459in</Width>
+              <Style>
+                <Border>
+                  <Style>Solid</Style>
+                  <Width>2pt</Width>
+                </Border>
+              </Style>
+            </Line>
+            <Textbox Name="Textbox16">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>="Page "+CStr(Globals!PageNumber)+" | "+CStr(Globals!TotalPages)</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox11</rd:DefaultName>
+              <Top>0.13889in</Top>
+              <Left>46.20834in</Left>
+              <Height>0.25in</Height>
+              <Width>2.03125in</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox17">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=Globals!ExecutionTime</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox11</rd:DefaultName>
+              <Top>0.13889in</Top>
+              <Left>0.125in</Left>
+              <Height>0.25in</Height>
+              <Width>2.03125in</Width>
+              <ZIndex>2</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="Textbox18">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Source: Investia</Value>
+                      <Style />
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Left</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>Textbox11</rd:DefaultName>
+              <Top>0.45833in</Top>
+              <Left>0.125in</Left>
+              <Height>0.25in</Height>
+              <Width>2.03125in</Width>
+              <ZIndex>3</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
+        <TopMargin>1in</TopMargin>
+        <BottomMargin>1in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="ReportStartDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=DateAdd(DateInterval.Day, 2-WeekDay(Today), DateAdd(DateInterval.Day, -10, Today()))</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Start Date</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ReportEndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=DateAdd(DateInterval.Day, 2-WeekDay(Today), DateAdd(DateInterval.Day, -3, Today()))</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>End Date</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>ReportStartDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>ReportEndDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <EmbeddedImages>
+    <EmbeddedImage Name="Univeris_logo">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="Investia_logo">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <Language>en-US</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>79f8a45a-27d1-4f69-b1c7-bdae93a027fe</rd:ReportID>
+</Report>
