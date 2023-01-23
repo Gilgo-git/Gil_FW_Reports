@@ -291,8 +291,7 @@ ORDER BY COUNT(act.Client) DESC</CommandText>
 DECLARE @Process_Date Date
 DECLARE @SummbyAcct_Process_Date Date
 
-
-SET @Process_Date1='2022-08-19'
+--SET @Process_Date1='2023-01-20'
 SELECT @Process_Date=max(processDate) FROM IAVM.position WHERE processDate&lt;=@Process_Date1
 SELECT @SummbyAcct_Process_Date=MAX(processDate) FROM IAVM.positionSummaryByAccount WHERE processDate&lt;=@Process_Date1
 SELECT 
@@ -395,7 +394,9 @@ SELECT pos.processDate
 				LEN(act.A_C_ID) &gt; 2
 				AND act.A_C_Inventory_Account_Sw = 'N'
 					AND act.A_C_CLOSING_DATE IS NULL--= '0000-00-00'
-					AND act.ASC_3_Managed_Type in('X','L')
+				--	AND act.ASC_3_Managed_Type in('X','L') before Jan 23
+				AND act.ASC_3_Managed_Type = 'J' --#Change to J account later
+					AND LEFT(act.A_C_Representative,2) IN ('JL', 'JG')
 					AND pos.processDate = @Process_Date--(SELECT MAX(processDate) FROM IAVM.position)
 																			
 UNION ALL      
@@ -415,7 +416,9 @@ UNION ALL
 			LEN(act.A_C_ID) &gt; 2
 			AND act.A_C_Inventory_Account_Sw = 'N'
 				AND act.A_C_CLOSING_DATE IS NULL--= '0000-00-00'
-				AND act.ASC_3_Managed_Type in('X','L')
+				--AND act.ASC_3_Managed_Type in('X','L') before Jan 23
+				AND act.ASC_3_Managed_Type = 'J' -- #Change to J account later
+		AND LEFT(act.A_C_Representative,2) IN ('JL', 'JG') 
 				AND pos.processDate =DATEADD(DAY, -7, @SummbyAcct_Process_Date)
 				        -- (SELECT MAX(processDate) FROM IAVM.positionSummaryByAccount) - INTERVAL 7 DAY 		
 		
