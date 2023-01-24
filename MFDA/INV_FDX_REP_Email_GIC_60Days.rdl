@@ -3,8 +3,8 @@
   <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="zi_inv_i">
-      <DataSourceReference>zi_inv_i</DataSourceReference>
+    <DataSource Name="Investia">
+      <DataSourceReference>Investia</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
       <rd:DataSourceID>cd030f6b-9ff1-42b8-bda8-3f9e55683879</rd:DataSourceID>
     </DataSource>
@@ -12,7 +12,7 @@
   <DataSets>
     <DataSet Name="DataSet1">
       <Query>
-        <DataSourceName>zi_inv_i</DataSourceName>
+        <DataSourceName>Investia</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@processDate">
             <Value>=Parameters!processDate.Value</Value>
@@ -59,7 +59,7 @@ select * from IAW_REP_EMAIL_GIC60DAYS_LOG where cast(DATE_EMAILED as DATE)=@Date
     </DataSet>
     <DataSet Name="processDate">
       <Query>
-        <DataSourceName>zi_inv_i</DataSourceName>
+        <DataSourceName>Investia</DataSourceName>
         <CommandText>SELECT MAX(CAST(DATE_EMAILED AS DATE)) AS processDate
 FROM   IAW_REP_EMAIL_GIC60DAYS_LOG</CommandText>
       </Query>
