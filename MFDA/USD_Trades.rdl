@@ -18,17 +18,14 @@
             <Value>=Parameters!DATE.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>--DECLARE @DATE datetime  
-
-  
-SELECT BRN.BRN_CD,     
+        <CommandText>SELECT BRN.BRN_CD,     
        replace(BRN.BRN_NAME,',',' ') as BRN_NAME,    
        REP.REP_CD,     
        replace(REP.REP_LNAME,',',' ') as REP_LNAME,    
        replace(REP.REP_FNAME,',',' ') as REP_FNAME,     
-       ISNULL(( select top 1 CET_EDR.EDR_ADR from CET_EDR where EDR_SYSID = REP.REP_SYSID AND CET_EDR.EDR_TYPE IN ('O', 'R', 'E','A') ORDER BY (CASE WHEN CET_EDR.EDR_TYPE = 'O' THEN '1' WHEN CET_EDR.EDR_TYPE = 'R' THEN '2' WHEN CET_EDR.EDR_TYPE = 'E' THEN
+   ISNULL(( select top 1 CET_EDR.EDR_ADR from CET_EDR where EDR_SYSID = REP.REP_SYSID AND CET_EDR.EDR_TYPE IN ('O', 'R', 'E','A') ORDER BY (CASE WHEN CET_EDR.EDR_TYPE = 'O' THEN '1' WHEN CET_EDR.EDR_TYPE = 'R' THEN '2' WHEN CET_EDR.EDR_TYPE = 'E' THEN
   
- '3' WHEN CET_EDR.EDR_TYPE = 'A' THEN '4' ELSE '1' END)),'') as 'EMAIL',    
+  '3' WHEN CET_EDR.EDR_TYPE = 'A' THEN '4' ELSE '1' END)),'') as 'EMAIL',    
        IVR.IVR_SYSID,    
        replace(IVR.IVR_PRIM_LNAME,',',' ') as IVR_PRIM_LNAME,    
        replace(IVR.IVR_PRIM_FNAME,',',' ') as IVR_PRIM_FNAME,    
@@ -46,7 +43,10 @@ SELECT BRN.BRN_CD,
        OTX.TRX_NET,    
        OTX.TRX_WO_NUM,     
        OTX.ORD_SYSID,  
-       OTX.TRX_SYSID   
+       OTX.TRX_SYSID ,
+	   OTX.PLN_SYSID as x_PLN_SYSID
+	   --,REP.REP_SYSID
+	     into #t1
   FROM OTX (nolock), ACT (nolock), IVR (nolock), PLN (nolock), S_TRX_CD (nolock), REP (nolock), IVD (nolock), IVT (nolock), S_PLN_CD (nolock), BRN (nolock)    
  WHERE OTX.ACT_SYSID = ACT.ACT_SYSID    
    AND ACT.IVD_SYSID = IVD.IVD_SYSID    
@@ -60,9 +60,15 @@ SELECT BRN.BRN_CD,
    AND OTX.TRX_ENTRY_DT &gt;= @DATE    
    AND S_TRX_CD.TRX_MNEM_ENG in ('TOT','TIN', 'PUR', 'RED' ,'MAT')    
    AND PLN.PLN_ADM_CD = 'INV'    
-   --AND OTX.CURRENCY_CD = 'USD'    
-   AND EXISTS ( SELECT * FROM OTX O WHERE O.CURRENCY_CD = 'USD' AND O.TRX_ENTRY_DT &gt;= @DATE AND O.ORD_SYSID = OTX.ORD_SYSID)    
-ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
+-- AND OTX.CURRENCY_CD = 'USD'    
+--   AND EXISTS ( SELECT * FROM OTX O WHERE O.CURRENCY_CD = 'USD' AND  O.TRX_ENTRY_DT &gt;= @DATE AND O.ORD_SYSID = OTX.ORD_SYSID)    
+ --ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID 
+
+ 
+ select * from #t1 t
+ where EXISTS ( SELECT * FROM OTX O WHERE O.CURRENCY_CD = 'USD' AND  O.TRX_ENTRY_DT &gt;= @DATE AND O.ORD_SYSID = t.ORD_SYSID)    
+ ORDER BY t.IVR_SYSID, t.x_PLN_SYSID
+</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -162,6 +168,10 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
           <DataField>TRX_SYSID</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="x_PLN_SYSID">
+          <DataField>x_PLN_SYSID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
   </DataSets>
@@ -176,10 +186,9 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>USD Trades INV</Value>
+                    <Value>="USD Trades INV [" &amp; FormatDateTime(Today,dateformat.ShortDate) &amp; "]"</Value>
                     <Style>
-                      <FontFamily>Segoe UI Light</FontFamily>
-                      <FontSize>24pt</FontSize>
+                      <FontSize>12pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
@@ -188,8 +197,9 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>textbox1</rd:DefaultName>
-            <Height>0.43in</Height>
-            <Width>19in</Width>
+            <Left>0.08819cm</Left>
+            <Height>0.33625in</Height>
+            <Width>19.71403in</Width>
             <Style>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -288,7 +298,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>BRN CD</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -326,7 +335,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>BRN NAME</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -364,7 +372,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>REP CD</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -402,7 +409,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>REP LNAME</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -440,7 +446,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>REP FNAME</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -478,7 +483,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>EMAIL</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -516,7 +520,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>IVR SYSID</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -557,7 +560,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>IVR PRIM LNAME</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -595,7 +597,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>IVR PRIM FNAME</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -633,7 +634,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>OWNER ENG</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -671,7 +671,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>PLN MNEM</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -709,7 +708,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>PLN ADM CD</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -747,7 +745,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>PLN ADM ACCT</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -785,7 +782,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>ACT MGT NUM</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -823,7 +819,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>SYMBOL</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -861,7 +856,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>CURRENCY CD</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -899,7 +893,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>IVT NAME FRE</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -937,7 +930,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>TRADE DT</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -975,7 +967,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>TRX MNEM ENG</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -1013,7 +1004,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>TRX GROSS</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -1054,7 +1044,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>TRX NET</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -1095,7 +1084,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>TRX WO NUM</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -1133,7 +1121,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>ORD SYSID</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -1174,7 +1161,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>TRX SYSID</Value>
                                   <Style>
-                                    <FontFamily />
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Color>#666666</Color>
@@ -1220,7 +1206,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!BRN_CD.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1257,7 +1242,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!BRN_NAME.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1294,7 +1278,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!REP_CD.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1331,7 +1314,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!REP_LNAME.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1368,7 +1350,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!REP_FNAME.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1405,7 +1386,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!EMAIL.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1442,7 +1422,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!IVR_SYSID.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1481,7 +1460,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!IVR_PRIM_LNAME.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1518,7 +1496,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!IVR_PRIM_FNAME.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1555,7 +1532,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!OWNER_ENG.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1592,7 +1568,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!PLN_MNEM.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1629,7 +1604,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!PLN_ADM_CD.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1666,7 +1640,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!PLN_ADM_ACCT.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1703,7 +1676,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!ACT_MGT_NUM.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1740,7 +1712,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!SYMBOL.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1777,7 +1748,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!CURRENCY_CD.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1814,7 +1784,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!IVT_NAME_FRE.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1851,7 +1820,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!TRADE_DT.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Format>yyyy-MM-dd</Format>
                                     <Color>#333333</Color>
                                   </Style>
@@ -1889,7 +1857,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!TRX_MNEM_ENG.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1926,7 +1893,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!TRX_GROSS.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1963,7 +1929,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!TRX_NET.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -2000,7 +1965,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!TRX_WO_NUM.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -2037,7 +2001,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!ORD_SYSID.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -2074,7 +2037,6 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                                 <TextRun>
                                   <Value>=Fields!TRX_SYSID.Value</Value>
                                   <Style>
-                                    <FontFamily />
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -2153,7 +2115,8 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DataSet1</DataSetName>
-            <Top>0.43in</Top>
+            <Top>0.35014in</Top>
+            <Left>0.05292cm</Left>
             <Height>0.43in</Height>
             <Width>41.85292in</Width>
             <ZIndex>1</ZIndex>
@@ -2167,17 +2130,18 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
                 <TextRuns>
                   <TextRun>
                     <Value>="Printed " &amp; FormatDateTime(Today(),DateFormat.ShortDate)</Value>
-                    <Style />
+                    <Style>
+                      <FontSize>12pt</FontSize>
+                    </Style>
                   </TextRun>
                 </TextRuns>
                 <Style />
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox26</rd:DefaultName>
-            <Top>0.08208in</Top>
-            <Left>20.44667in</Left>
-            <Height>0.25in</Height>
-            <Width>3.4375in</Width>
+            <Left>19.74875in</Left>
+            <Height>0.33625in</Height>
+            <Width>5.14583in</Width>
             <ZIndex>2</ZIndex>
             <Style>
               <Border>
@@ -2190,10 +2154,10 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
             </Style>
           </Textbox>
         </ReportItems>
-        <Height>0.86in</Height>
+        <Height>0.78014in</Height>
         <Style />
       </Body>
-      <Width>41.85292in</Width>
+      <Width>41.87375in</Width>
       <Page>
         <LeftMargin>1in</LeftMargin>
         <RightMargin>1in</RightMargin>
@@ -2208,7 +2172,12 @@ ORDER BY OTX.IVR_SYSID, OTX.PLN_SYSID </CommandText>
   <ReportParameters>
     <ReportParameter Name="DATE">
       <DataType>DateTime</DataType>
-      <Prompt>DATE</Prompt>
+      <DefaultValue>
+        <Values>
+          <Value>=DateAdd("d",-1,Today)</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Select a Date </Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
