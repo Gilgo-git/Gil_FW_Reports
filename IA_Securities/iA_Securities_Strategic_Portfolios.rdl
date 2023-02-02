@@ -23,13 +23,13 @@ DECLARE @Process_Date Date
 
 
 
-SET @Process_Date1='2022-08-18'
+--SET @Process_Date1='2022-08-18'
 SELECT @Process_Date=max(processDate) FROM IAVM.position WHERE processDate&lt;=@Process_Date1
 --SELECT @Process_Date
 SELECT 
 		act.Client as ClientID,
 		act.A_C_ID as ACT_NO,
-	CASE WHEN left(act.A_C_ID,2) = 38 THEN 'HW' ELSE 'IAS' END as Broker,
+	CASE WHEN left(act.A_C_ID,2) = '38' THEN 'HW' ELSE 'IAS' END as Broker,
 		act.A_C_Representative as RR_Code,
 		rep.repName as RR_Name,
 		rep.branchCode as BR_Code,
@@ -69,7 +69,8 @@ BACKOFFICE.IAVMACT act
 					LEN(act.A_C_ID) &gt; 2 AND 
 					act.A_C_Inventory_Account_Sw = 'N'
 					AND act.A_C_CLOSING_DATE IS NULL--= '0000-00-00'
-					and act.ASC_3_Managed_Type in ('X','L')
+					--and act.ASC_3_Managed_Type in ('X','L')
+						AND act.ASC_3_Managed_Type = 'J' AND LEFT(act.A_C_Representative,2) IN ('JL', 'JG')
 					and pos.processDate = @Process_Date--(SELECT max(processDate) FROM IAVM.position)
 				GROUP BY act.A_C_ID) AS MKTACCT ON pos.accountId = MKTACCT.A_C_ID
     left outer join IAVM.rep rep on pos.repId = rep.repId
@@ -80,15 +81,17 @@ BACKOFFICE.IAVMACT act
 					WHERE LEN(psn.A_C_ID) &gt; 2
 						AND act.A_C_Inventory_Account_Sw = 'N'
 						AND act.A_C_CLOSING_DATE IS NULL--= '0000-00-00'
-						and act.ASC_3_Managed_Type in ('X','L')
+						--and act.ASC_3_Managed_Type in ('X','L')
+						AND act.ASC_3_Managed_Type = 'J' AND LEFT(act.A_C_Representative,2) IN ('JL', 'JG')
 					GROUP BY psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID
 					) AS psn on psn.TI_Symbol = pos.symbol  AND psn.A_C_ID = pos.accountId
-
 WHERE  
 	LEN(act.A_C_ID) &gt; 2 AND 
 	act.A_C_Inventory_Account_Sw = 'N'
 	AND act.A_C_CLOSING_DATE IS NULL --= '0000-00-00'
-	and act.ASC_3_Managed_Type in ('X','L')
+	--	AND act.ASC_3_Managed_Type in('X','L') before Jan 23
+				AND act.ASC_3_Managed_Type = 'J' --#Change to J account later
+					AND LEFT(act.A_C_Representative,2) IN ('JL', 'JG')
 	and pos.processDate = @Process_Date--(SELECT max(processDate) FROM IAVM.position)</CommandText>
       </Query>
       <Fields>
@@ -193,7 +196,7 @@ DECLARE @Process_Date Date
 
 
 
-SET @Process_Date1='2022-08-18'
+--SET @Process_Date1='2022-08-18'
 SELECT @Process_Date=max(processDate) FROM IAVM.position WHERE processDate&lt;=@Process_Date1
 
 
@@ -215,7 +218,8 @@ BACKOFFICE.IAVMACT act
 					WHERE LEN(psn.A_C_ID) &gt; 2
 						AND act.A_C_Inventory_Account_Sw = 'N'
 						AND act.A_C_CLOSING_DATE IS NULL--= '0000-00-00'
-						and act.ASC_3_Managed_Type in ('X','L')
+						--and act.ASC_3_Managed_Type in ('X','L')
+						AND act.ASC_3_Managed_Type = 'J' AND LEFT(act.A_C_Representative,2) IN ('JL', 'JG')
 					GROUP BY psn.TI_Symbol, psn.TI_Short_Desc, psn.A_C_ID) psn on psn.TI_Symbol = pos.symbol  AND psn.A_C_ID = pos.accountId
     LEFT OUTER JOIN (SELECT 
 									act.A_C_ID, 
@@ -229,7 +233,8 @@ BACKOFFICE.IAVMACT act
 							LEN(act.A_C_ID) &gt; 2
 							AND act.A_C_Inventory_Account_Sw = 'N'
 								AND act.A_C_CLOSING_DATE IS NULL--= '0000-00-00'
-								AND act.ASC_3_Managed_Type IN ('X' , 'L')
+								--and act.ASC_3_Managed_Type in ('X','L')
+						AND act.ASC_3_Managed_Type = 'J' AND LEFT(act.A_C_Representative,2) IN ('JL', 'JG')
 								AND cmsdt.BUY_SELL_INDICATOR IN ('B' , 'S')
 								AND cmsdt.CANCEL_INDICATOR = 'N'
 								AND YEAR(cmsdt.PROCESS_DATE) = YEAR(getdate())--CURDATE())
@@ -241,7 +246,8 @@ WHERE
 	LEN(act.A_C_ID) &gt; 2 AND 
 	act.A_C_Inventory_Account_Sw = 'N'
 	AND act.A_C_CLOSING_DATE IS NULL--= '0000-00-00'
-	and act.ASC_3_Managed_Type in ('X','L')
+	--and act.ASC_3_Managed_Type in ('X','L')
+						AND act.ASC_3_Managed_Type = 'J' AND LEFT(act.A_C_Representative,2) IN ('JL', 'JG')
 	and pos.processDate = @Process_Date--(SELECT max(processDate) FROM IAVM.position)
 GROUP BY  
 CASE WHEN (pos.Symbol) IS NULL THEN '' ELSE pos.Symbol END, 
