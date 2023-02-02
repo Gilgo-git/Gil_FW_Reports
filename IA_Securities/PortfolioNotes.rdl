@@ -10,17 +10,128 @@
     </DataSource>
   </DataSources>
   <DataSets>
+    <DataSet Name="Default_Date">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>SELECT MAX(processDate) AS [MonthEnd]
+FROM [IAVM].[position] (nolock)
+WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="MonthEnd">
+          <DataField>MonthEnd</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
     <DataSet Name="PortfolioNotes">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="Date">
+          <QueryParameter Name="@Date">
             <Value>=Parameters!Date.Value</Value>
-            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>REPORTS.usp_SP_Get_PortfolioNotesReport</CommandText>
+        <CommandText>DECLARE @CurrProcessDate AS Date = 
+	(
+		SELECT MAX([processDate]) 
+		FROM [IAVM].[position]
+		WHERE [processDate] &lt; DateAdd(month, DateDiff(month, 0, @Date), 0)
+	)
+DECLARE @productCode AS varchar(25) = 'OFF'
+DECLARE @symbol_CBL AS varchar(25) = 'CBL%'
+DECLARE @symbol_DSN AS varchar(25) = 'DSN%'
+DECLARE @symbol_JHN AS varchar(25) = 'JHN%'
+DECLARE @symbol_JHN10 AS varchar(25) = 'JHN10%'
+DECLARE @symbol_NBC1 AS varchar(25) = 'NBC1%'
+DECLARE @symbol_NBC2 AS varchar(25) = 'NBC2%'
+DECLARE @symbol_NBC3 AS varchar(25) = 'NBC3%'
+DECLARE @symbol_NBC100 AS varchar(25) = 'NBC100%'
+DECLARE @symbol_NBC101 AS varchar(25) = 'NBC101%'
+DECLARE @symbol_NBC200 AS varchar(25) = 'NBC200%'
+DECLARE @symbol_NBC201 AS varchar(25) = 'NBC201%'
+DECLARE @symbol_RBC AS varchar(25) = 'RBC%'
+DECLARE @symbol_RBC999 AS varchar(25) = 'RBC999%'
+DECLARE @symbol_SSP AS varchar(25) = 'SSP%'
+DECLARE @symbol_TDN AS varchar(25) = 'TDN%'
+DECLARE @symbol_TDNT AS varchar(25) = 'TDNT%'
+DECLARE @symbol_TDNOF AS varchar(25) = 'TDNOF%'
+DECLARE @HDString AS TABLE 
+(
+	ID int IDENTITY(1, 1) NOT Null,
+	[symbol] varchar(25)
+)
+INSERT INTO @HDString
+(
+	[symbol]
+)
+SELECT 'CBL' AS [symbol] UNION
+SELECT 'CBLT' AS [symbol] UNION
+SELECT 'CBLU' AS [symbol] UNION
+SELECT 'SSP' AS [symbol] UNION
+SELECT 'CBLRF' AS [symbol] UNION
+SELECT 'DSNKY' AS [symbol] UNION
+SELECT 'DSNY' AS [symbol] UNION
+SELECT 'SSPC' AS [symbol] 
+
+--	Pickup reporting data based on defined search information
+SELECT 	[processDate],
+	[branchCode],
+	[repId],
+	[clientId],
+	[accountId],
+	[accountCurrency],
+	[productCode],
+	[market],
+	[symbol],
+	[qty],
+	[unitOfMeasure],
+	[priceCurrency],
+	[bidPrice],
+	[askPrice],
+	[closePrice],
+	[bidValue],
+	[bidValueCAD],
+	[askValue],
+	[askValueCAD],
+	[closeValue],
+	[closeValueCAD],
+	[price],
+	[value],
+	[valueCAD]
+FROM [IAVM].[position] AS P WITH (NOLOCK)
+WHERE P.[processDate] = @CurrProcessDate
+AND P.[productCode] != @productCode
+AND P.[symbol] NOT IN 
+	(
+		SELECT [symbol] FROM @HDString
+	)  
+AND (
+		P.[symbol] LIKE @symbol_CBL OR 
+		P.[symbol] LIKE @symbol_DSN OR 
+		(
+			P.[symbol] LIKE @symbol_JHN	AND 
+			P.[symbol] NOT LIKE @symbol_JHN10
+		) OR 
+		(
+			(	P.[symbol] LIKE @symbol_NBC1 OR  
+				P.[symbol] LIKE @symbol_NBC2 OR 
+				P.[symbol] LIKE @symbol_NBC3
+			) AND
+			(	P.[symbol] NOT LIKE @symbol_NBC100 AND 
+				P.[symbol] NOT LIKE @symbol_NBC101 AND 
+				P.[symbol] NOT LIKE @symbol_NBC200 AND 
+				P.[symbol] NOT LIKE @symbol_NBC201
+			)
+		) OR 
+		(	P.[symbol] LIKE @symbol_RBC AND 
+			P.[symbol] NOT LIKE @symbol_RBC999
+		) OR P.[symbol] LIKE @symbol_SSP OR 
+		(	P.[symbol] LIKE @symbol_TDN AND 
+			P.[symbol] NOT LIKE @symbol_TDNT AND 
+			P.[symbol] NOT LIKE @symbol_TDNOF
+		)
+	);</CommandText>
       </Query>
       <Fields>
         <Field Name="processDate">
@@ -118,20 +229,6 @@
         <Field Name="valueCAD">
           <DataField>valueCAD</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="Default_Date">
-      <Query>
-        <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>SELECT MAX(processDate) AS [MonthEnd]
-FROM [IAVM].[position] (nolock)
-WHERE processDate &lt; DateAdd(month, DateDiff(month, 0, GetDate()), 0)</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="MonthEnd">
-          <DataField>MonthEnd</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>

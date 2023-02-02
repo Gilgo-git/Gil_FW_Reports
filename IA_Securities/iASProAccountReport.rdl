@@ -14,8 +14,8 @@
       <Query>
         <DataSourceName>FW_qtrade</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@DATE">
-            <Value>=Parameters!DATE.Value</Value>
+          <QueryParameter Name="@TradeDate">
+            <Value>=Parameters!TradeDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandText>--DECLARE @DATE as date = '2020-12-15'
@@ -57,8 +57,8 @@ FROM CLIENTS (nolock)
 		ON SECURITY_DETAILS.cusip = TRADES.cusip
 		AND SECURITY_DETAILS.[language] = 'E'
 		AND CONVERT(date,SECURITY_DETAILS.loadstamp) = CONVERT(date,TRADES.loadstamp)
-WHERE CONVERT(date,CLIENTS.loadstamp) = DATEADD(DAY, 1, @DATE)		
-AND CONVERT(date, TRADES.loadstamp) &lt;= DATEADD(DAY, 1, @DATE)		</CommandText>
+WHERE CONVERT(date,CLIENTS.loadstamp) = @TradeDate --DATEADD(DAY, 1, @DATE)		
+AND CONVERT(date, TRADES.loadstamp) &lt;= @TradeDate--DATEADD(DAY, 1, @DATE)			</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -136,16 +136,34 @@ AND CONVERT(date, TRADES.loadstamp) &lt;= DATEADD(DAY, 1, @DATE)		</CommandText>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="Parameter_Date">
+    <DataSet Name="Parameter_TradeDate">
       <Query>
         <DataSourceName>FW_qtrade</DataSourceName>
-        <CommandText>SELECT CAST(loadstamp AS Date) AS Date
+        <CommandText>SELECT CAST(loadstamp AS Date) AS TD
+      ,CAST(CAST(loadstamp AS Date) AS VARCHAR) TradeDate
 FROM   TRADES
-GROUP BY CAST(loadstamp AS Date) </CommandText>
+GROUP BY CAST(loadstamp AS Date) ,CAST(CAST(loadstamp AS Date) AS VARCHAR)
+ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
       </Query>
       <Fields>
-        <Field Name="Date">
-          <DataField>Date</DataField>
+        <Field Name="TradeDate">
+          <DataField>TradeDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TD">
+          <DataField>TD</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DefaultDateForParameter">
+      <Query>
+        <DataSourceName>FW_qtrade</DataSourceName>
+        <CommandText>SELECT CAST(DATEADD(DAY, - 1, GETDATE()) AS DATE) AS TD</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="TD">
+          <DataField>TD</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
@@ -162,10 +180,10 @@ GROUP BY CAST(loadstamp AS Date) </CommandText>
                   <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.91667in</Width>
+                  <Width>1.96528in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.48611in</Width>
+                  <Width>2.15278in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.24306in</Width>
@@ -1135,15 +1153,21 @@ GROUP BY CAST(loadstamp AS Date) </CommandText>
             </TablixRowHierarchy>
             <DataSetName>DataSet1</DataSetName>
             <PageName>iASProAccountReport</PageName>
+            <SortExpressions>
+              <SortExpression>
+                <Value>=Fields!Order_Executed.Value</Value>
+                <Direction>Descending</Direction>
+              </SortExpression>
+            </SortExpressions>
             <Height>0.43in</Height>
-            <Width>18.18055in</Width>
+            <Width>18.89583in</Width>
             <Style />
           </Tablix>
         </ReportItems>
-        <Height>2.08972in</Height>
+        <Height>0.44389in</Height>
         <Style />
       </Body>
-      <Width>18.18055in</Width>
+      <Width>18.89583in</Width>
       <Page>
         <LeftMargin>1in</LeftMargin>
         <RightMargin>1in</RightMargin>
@@ -1154,20 +1178,33 @@ GROUP BY CAST(loadstamp AS Date) </CommandText>
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="DATE">
-      <DataType>DateTime</DataType>
+    <ReportParameter Name="TradeDate">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>Parameter_TradeDate</DataSetName>
+          <ValueField>TradeDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
       <Prompt>Select Date</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Parameter_TradeDate</DataSetName>
+          <ValueField>TradeDate</ValueField>
+          <LabelField>TradeDate</LabelField>
+        </DataSetReference>
+      </ValidValues>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>DATE</ParameterName>
+          <ParameterName>TradeDate</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
