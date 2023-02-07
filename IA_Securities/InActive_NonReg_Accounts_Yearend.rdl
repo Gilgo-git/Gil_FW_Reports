@@ -28,90 +28,21 @@
 DECLARE @Date Date  =@PrvYearEndDate
 --SET @Date='2021-12-31'
 
-
-
-
+--To Fetch Non Reg accounts
 Select 
-x.clientId,
- x.AccountId,
- x.Account_Rap_Code,
- x.[Plan],
- x.Account_Type,
- x.Account_Service_Code,
- x.Account_Name,
- x.Account_Short_Name,
- x.Date_Opened,
- x.Rep_Id,
- x.Rep_Name,
- x.Branch_Code,
- x.Cr_Code,
- x.Dr_Code,
- x.Currency,
- x.TD_Bal,
- x.SD_Bal,
- x.TD_Mkt_Val,
- x.SD_Mkt_Val,
- x.TD_Equity,
- x.SD_Equity,
- --ISNULL(x.Date_Last_Traded,' ') Date_Last_Traded,
- CASE WHEN x.Date_Last_Traded IS NULL THEN ' ' ELSE   x.Date_Last_Traded END as 'Date_Last_Traded',
- x.SIN,
- x.A_C_Closing_Date,
- count(distinct vSin.A_C_ID) as 'Other_Accounts_with_same_SIN',
- --group_concat(distinct vSin.A_C_ID) as 'List Accounts with same SIN',
- STUFF((
-          SELECT',' + vSin.A_C_ID
-          FROM BACKOFFICE.IAVMACT aSin
-		  Left Join BACKOFFICE.IAVMVAL vSin on  vSin.A_C_ID = aSin.A_C_ID
-          WHERE  aSin.A_C_Closing_Date IS NULL and
-										aSin.Client_SIN = x.SIN and 
-							(aSin.Client_SIN != 0 or aSin.A_C_Client = x.clientId) and 	aSin.A_C_ID != x.AccountId
-          FOR XML PATH('')), 1, 1, '') as 'List_Accounts_with_same_SIN',
- ISNULL(sum(vSin.A_C_Summ_Equity),0) as 'Value_of_Other_Accounts', 
- count(distinct (CASE WHEN aSin.A_C_Account_Class = '038' THEN  vSin.A_C_ID ELSE null END)) as 'Registered_Accounts_with_same_SIN',
- --group_concat(distinct if(aSin.A_C_Account_Class = '038', vSin.A_C_ID, null)) as 'List Registered Accounts with same SIN',
-  STUFF((
-          SELECT CASE WHEN aSin.A_C_Account_Class = '038' THEN ',' + vSin.A_C_ID ELSE NULL END
-          FROM BACKOFFICE.IAVMACT aSin
-		  Left Join BACKOFFICE.IAVMVAL vSin on  vSin.A_C_ID = aSin.A_C_ID
-          WHERE  aSin.A_C_Closing_Date IS NULL and
-										aSin.Client_SIN = x.SIN and 
-							(aSin.Client_SIN != 0 or aSin.A_C_Client = x.clientId) and 	aSin.A_C_ID != x.AccountId
-          FOR XML PATH('')), 1, 1, '') as 'List_Registered_Accounts_with_same_SIN',
- ISNULL(sum(    ( CASE WHEN aSin.A_C_Account_Class = '038'THEN vSin.A_C_Summ_Equity ELSE 0 END) )   ,0) as 'Value_of_Registered_Accounts',
- count(distinct ( CASE WHEN (x.clientId = vSin.A_C_Client and vSin.Account_Rap_Code in ('A', 'E')) THEN  vSin.A_C_ID ELSE null END)) as 'AE_Accounts_with_same_SIN',
- --group_concat(distinct if(x.clientId = vSin.A_C_Client and vSin.Account_Rap_Code in ('A', 'E'), vSin.A_C_ID, null)) as 'List AE Accounts with same SIN',
- STUFF((
-          SELECT CASE WHEN (x.clientId = vSin.A_C_Client and vSin.Account_Rap_Code in ('A', 'E')) THEN ',' + vSin.A_C_ID ELSE NULL END
-          FROM BACKOFFICE.IAVMACT aSin
-		  Left Join BACKOFFICE.IAVMVAL vSin on  vSin.A_C_ID = aSin.A_C_ID
-          WHERE  aSin.A_C_Closing_Date IS NULL and
-										aSin.Client_SIN = x.SIN and 
-							(aSin.Client_SIN != 0 or aSin.A_C_Client = x.clientId) and 	aSin.A_C_ID != x.AccountId
-          FOR XML PATH('')), 1, 1, '')  as 'List_AE_Accounts_with_same_SIN',
- ISNULL(sum(    ( CASE WHEN (x.clientId = vSin.A_C_Client and vSin.Account_Rap_Code in ('A', 'E')) THEN vSin.A_C_Summ_Equity ELSE 0 END)),0) as 'Value_of_AE_Accounts'
-
- INTO #inactiveAccount20211231
-From (
-
-			Select 
 						 v.A_C_ID as 'AccountId',
 						 v.A_C_Client as clientId,
 						-- at.[Description] as 'Plan',
-						CASE  WHEN v.Account_Rap_Code = '0' THEN 'RDSP / REEI' 
-							  WHEN v.Account_Rap_Code = '4' THEN 'RRIF / FERR (USD)'  
-							  WHEN v.Account_Rap_Code = '6' THEN 'TFSA / CELI  (USD)' 
-							  WHEN v.Account_Rap_Code = '7' THEN 'RRSP / REER (USD)' 
-							  WHEN v.Account_Rap_Code = '8' THEN 'RRSP / REER (Joint / Spouse) (USD)' 
-							  WHEN v.Account_Rap_Code = '9' THEN 'LIRA / CRI (USD)'  
-							  WHEN v.Account_Rap_Code = 'N' THEN 'LIRA / CRI (CAD)' 
-							  WHEN v.Account_Rap_Code = 'P' THEN 'LIF / FRV' 
-							  WHEN v.Account_Rap_Code = 'R' THEN 'RRSP / REER (Joint / Spouse) (CAD)' 
-							  WHEN v.Account_Rap_Code = 'S' THEN 'RRSP / REER (CAD)'  
-							  WHEN v.Account_Rap_Code = 'T' THEN 'RRIF / FERR' 
-							  WHEN v.Account_Rap_Code = 'W' THEN 'TFSA / CELI (CAD)' 
-							  WHEN v.Account_Rap_Code = 'Y' THEN 'RRIF / FERR (Joint / Spouse)' 
-							  WHEN v.Account_Rap_Code = 'Z' THEN 'RESP / REEE'  
+						CASE  WHEN v.Account_Rap_Code = 'A' THEN 'Cash / Espèces  (CAD)' 
+							  WHEN v.Account_Rap_Code = 'B' THEN 'Cash / Espèces (USD)'  
+							  WHEN v.Account_Rap_Code = 'C' THEN 'DAP / PCL (CAD)' 
+							  WHEN v.Account_Rap_Code = 'D' THEN 'DAP / PCL (USD)' 
+							  WHEN v.Account_Rap_Code = 'E' THEN 'Margin / Marge (CAD)' 
+							  WHEN v.Account_Rap_Code = 'F' THEN 'Margin / Marge (USD)'  
+							  WHEN v.Account_Rap_Code = 'G' THEN 'Margin Short / marge à découvert (CAD)' 
+							  WHEN v.Account_Rap_Code = 'H' THEN 'Margin Short / marge à découvert (USD)' 
+							  WHEN v.Account_Rap_Code = 'J' THEN 'Income / Revenu (CAD)' 
+							  WHEN v.Account_Rap_Code = 'X' THEN 'Pledge Accounts'  
 							 ELSE v.Account_Rap_Code 
 						END as 'Plan',
 						 v.A_C_Type as 'Account_Type',
@@ -135,8 +66,14 @@ From (
 
 						CASE WHEN v.A_C_Date_Last_Traded IS NULL THEN ' ' ELSE   v.A_C_Date_Last_Traded END as 'Date_Last_Traded',
 						 a.Client_SIN as 'SIN'
-						,v.Account_Rap_Code
-						,v.A_C_Closing_Date
+						 ,a.Client_Spouses_SIN as 'Spouses_SIN'
+						,v.Account_Rap_Code,
+						a.A_C_Special_Tag,
+						v.A_C_Closing_Date
+						
+
+INTO #x
+
 
 
 	From BACKOFFICE.IAVMVAL v
@@ -151,7 +88,8 @@ From (
 																										   ELSE  GETDATE() 	END
 		Left Join BACKOFFICE.IAVMBK b on  b.A_C_ID = v.A_C_ID and  b.Tran_Process_Date &gt; @Date
 		--b.Tran_Process_Date &gt; '2019-12-31' - Dominic SQL where doc has &lt; symbol
-	Where
+
+Where
 		p.A_C_ID is null and
 		b.A_C_ID is null and
 		v.A_C_Summ_Equity = 0 and
@@ -161,20 +99,85 @@ From (
 		(v.A_C_Closing_Date IS NULL ) AND 
 		v.A_C_Inventory_Account_Sw != 'Y' and
 		len(v.A_C_ID) &gt; 2 and
-		--Non Reg:
-		--v.Account_Rap_Code in ('A', 'B', 'E', 'F', 'J', 'X', 'C', 'D', 'G', 'H','T')
-		--Reg:
-		v.Account_Rap_Code in ('0', '4', '6', '7', '8', '9', 'N', 'P', 'R', 'S', 'T', 'W', 'Y', 'Z')
+	--#Non Reg:
+v.Account_Rap_Code in ('A', 'B','C', 'D', 'E', 'F', 'J', 'G', 'H', 'X')
+--#Reg:A-B-C-D-E-F-G-H-X
+--#v.Account_Rap_Code in ('0', '4', '6', '7', '8', '9', 'N', 'P', 'R', 'S', 'T', 'W', 'Y', 'Z')
+
+--SELECT COUNT(*) FROM  #x --96378
 
 
-) AS  x
+
+--
+--Adding all Non Reg accounts with same client multiple accounts
+SELECT 
+					x.clientId,
+					 x.AccountId,
+					 x.Account_Rap_Code,
+					 x.[Plan],
+					 x.Account_Type,
+					 x.Account_Service_Code,
+					 x.Account_Name,
+					 x.Account_Short_Name,
+					 x.Date_Opened,
+					 x.Rep_Id,
+					 x.Rep_Name,
+					 x.Branch_Code,
+					 x.Cr_Code,
+					 x.Dr_Code,
+					 x.Currency,
+					 x.TD_Bal,
+					 x.SD_Bal,
+					 x.TD_Mkt_Val,
+					 x.SD_Mkt_Val,
+					 x.TD_Equity,
+					 x.SD_Equity,
+					  CASE WHEN x.Date_Last_Traded IS NULL THEN ' ' ELSE   x.Date_Last_Traded END as 'Date_Last_Traded',
+					 x.SIN,
+					  x.Spouses_SIN,
+					 x.A_C_Closing_Date
+					  ,count(distinct vSin.A_C_ID) as 'Other_Accounts_with_same_SIN',
+					  STUFF((
+							  SELECT',' + vSin.A_C_ID
+							  FROM BACKOFFICE.IAVMACT aSin
+							  Left Join BACKOFFICE.IAVMVAL vSin on  vSin.A_C_ID = aSin.A_C_ID
+							  WHERE  aSin.A_C_Closing_Date IS NULL and
+															aSin.Client_SIN = x.SIN and 
+												(aSin.Client_SIN != 0 or aSin.A_C_Client = x.clientId) and 	aSin.A_C_ID != x.AccountId
+							  FOR XML PATH('')), 1, 1, '') as 'List_Accounts_with_same_SIN',
+					 ISNULL(sum(vSin.A_C_Summ_Equity),0) as 'Value_of_Other_Accounts', 
+					 count(distinct (CASE WHEN aSin.A_C_Account_Class = '038' THEN  vSin.A_C_ID ELSE null END)) as 'Registered_Accounts_with_same_SIN',
+					 --group_concat(distinct if(aSin.A_C_Account_Class = '038', vSin.A_C_ID, null)) as 'List Registered Accounts with same SIN',
+					  STUFF((
+							  SELECT CASE WHEN aSin.A_C_Account_Class = '038' THEN ',' + vSin.A_C_ID ELSE NULL END
+							  FROM BACKOFFICE.IAVMACT aSin
+							  Left Join BACKOFFICE.IAVMVAL vSin on  vSin.A_C_ID = aSin.A_C_ID
+							  WHERE  aSin.A_C_Closing_Date IS NULL and
+															aSin.Client_SIN = x.SIN and 
+												(aSin.Client_SIN != 0 or aSin.A_C_Client = x.clientId) and 	aSin.A_C_ID != x.AccountId
+							  FOR XML PATH('')), 1, 1, '') as 'List_Registered_Accounts_with_same_SIN',
+					 ISNULL(sum(    ( CASE WHEN aSin.A_C_Account_Class = '038'THEN vSin.A_C_Summ_Equity ELSE 0 END) )   ,0) as 'Value_of_Registered_Accounts',
+					 count(distinct ( CASE WHEN (x.clientId = vSin.A_C_Client and vSin.Account_Rap_Code in ('A', 'E')) THEN  vSin.A_C_ID ELSE null END)) as 'AE_Accounts_with_same_SIN',
+					 --group_concat(distinct if(x.clientId = vSin.A_C_Client and vSin.Account_Rap_Code in ('A', 'E'), vSin.A_C_ID, null)) as 'List AE Accounts with same SIN',
+					 STUFF((
+							  SELECT CASE WHEN (x.clientId = vSin.A_C_Client and vSin.Account_Rap_Code in ('A', 'E')) THEN ',' + vSin.A_C_ID ELSE NULL END
+							  FROM BACKOFFICE.IAVMACT aSin
+							  Left Join BACKOFFICE.IAVMVAL vSin on  vSin.A_C_ID = aSin.A_C_ID
+							  WHERE  aSin.A_C_Closing_Date IS NULL and
+															aSin.Client_SIN = x.SIN and 
+												(aSin.Client_SIN != 0 or aSin.A_C_Client = x.clientId) and 	aSin.A_C_ID != x.AccountId
+							  FOR XML PATH('')), 1, 1, '')  as 'List_AE_Accounts_with_same_SIN',
+					 ISNULL(sum(    ( CASE WHEN (x.clientId = vSin.A_C_Client and vSin.Account_Rap_Code in ('A', 'E')) THEN vSin.A_C_Summ_Equity ELSE 0 END)),0) as 'Value_of_AE_Accounts'
+  
+					   , x.A_C_Special_Tag
+   INTO #A
+FROM #x x
 Left Join BACKOFFICE.IAVMACT aSin on  aSin.A_C_Closing_Date IS NULL and
 										aSin.Client_SIN = x.SIN and 
 							(aSin.Client_SIN != 0 or aSin.A_C_Client = x.clientId) and
 							aSin.A_C_ID != x.AccountId
 Left Join BACKOFFICE.IAVMVAL vSin on  vSin.A_C_ID = aSin.A_C_ID
 
---WHERE x.AccountId='37A581P'
 Group By 
 	x.clientId,
 	x.AccountId,
@@ -199,122 +202,194 @@ Group By
 	x.SD_Equity,
 	x.Date_Last_Traded,
 	x.SIN,
+	  x.Spouses_SIN,
 	x.A_C_Closing_Date
+	 ,x.A_C_Special_Tag
+--Order By x.[Plan]
 
-Order By x.[Plan];
 
 
+--Capturing J accounts with 0 values
 
---Select * from #inactiveAccount20211231
+SELECT clientId,
+ AccountId,
+ Account_Rap_Code,
+ [Plan],
+ Account_Type,
+ Account_Service_Code,
+ Account_Name,
+ Account_Short_Name,
+ Date_Opened,
+ Rep_Id,
+ Rep_Name,
+ Branch_Code,
+ Cr_Code,
+ Dr_Code,
+ Currency,
+ TD_Bal,
+ SD_Bal,
+ TD_Mkt_Val,
+ SD_Mkt_Val,
+ TD_Equity,
+ SD_Equity,
+ Date_Last_Traded,
+ SIN,
+  Spouses_SIN,
+ A_C_Closing_Date
+  ,Other_Accounts_with_same_SIN,
+   List_Accounts_with_same_SIN,
+   Value_of_Other_Accounts,
+ Registered_Accounts_with_same_SIN,
 
---SELECT top 10  Client_SIN FROM  BACKOFFICE.IAVMACT WHERE Client_SIN != 0
---################## T and 4 Rapcodes
- /*2022 New thing to add this year: If we have rap code 4 and T open under the same SIN and  rap code 4 account is active 
-but rap code T is inactive, then want to keep T account open and we don’t want to include that T account 
-on our list. Rap code 4 need to be open with T account. We can include both account on our list only
- if the 4 and T are inactive.*/
+ List_Registered_Accounts_with_same_SIN,
+ Value_of_Registered_Accounts,
+ AE_Accounts_with_same_SIN,
  
- 
- --DROP TEMPORARY TABLE  if exists REPORTING.T4_RapCodes_Activeaccounts;
---CREATE TEMPORARY TABLE REPORTING.T4_RapCodes_Activeaccounts
-SELECT x.AccountID ,  x.Account_Rap_Code AS xAccount_Rap_Code,
-		 x.List_Accounts_with_same_SIN,
-		 x.Date_Last_Traded  AS xDateLastTraded ,
-		 aSin.A_C_ID  SameSinA_C_ID,
-		 aSin.Account_Rap_Code,
-		 aSin.A_C_Closing_Date,
-		 aSin.A_C_Open_Date,
-		 v.A_C_Date_Last_Traded
- INTO #T4_RapCodes_Activeaccounts
-FROM #inactiveAccount20211231 x
-INNER join BACKOFFICE.IAVMACT aSin on  aSin.A_C_Closing_Date IS NULL and
-										aSin.Client_SIN = x.SIN and 
-							--#(aSin.Client_SIN != "0" or aSin.A_C_Client = x.A_C_Client) and
-							aSin.A_C_ID != x.AccountId
-INNER Join	BACKOFFICE.IAVMVAL v on  aSin.A_C_ID = v.A_C_ID
-WHERE  x.Account_Rap_Code IN ('T') AND aSin.Account_Rap_Code IN ('4');
-
---SELECT * FROM #T4_RapCodes_Activeaccounts
+ List_AE_Accounts_with_same_SIN,
+Value_of_AE_Accounts
+  
+   , A_C_Special_Tag
 
 
--- ################## T and 4 Rapcodes accounts
---DROP TEMPORARY TABLE  if exists REPORTING.inactiveAccounts;
---CREATE TEMPORARY TABLE REPORTING.inactiveAccounts
 
-SELECT * 
-INTO #inactiveAccounts
-FROM #inactiveAccount20211231 
-WHERE AccountID NOT IN (SELECT AccountID FROM #T4_RapCodes_Activeaccounts WHERE A_C_Date_Last_Traded &gt;  @Date );
---#WHERE AccountID NOT IN ('37014FT','37014WT','4EAAA0T');
+INTO #inactiveAccountNG20211231  FROM  #A
+where
+Value_of_Other_Accounts = 0 or
+(right(AccountId, 1) = 'J' and AE_Accounts_with_same_SIN &gt; 0) or
+(right(AccountId, 1) = 'J' and Value_of_Other_Accounts = 0 and Registered_Accounts_with_same_SIN = 0);
 
 
---SELECT * FROM #inactiveAccounts
+--SELECT * FROM #inactiveAccountNG20211231
 
---#Checking Postion Value for above accounts to remove accounts has Postion value after 2020-12-31 above accounts
 
-SELECT p.accountID,p.clientID,p.processDate,p.repID,p.accountCurrency,
-p.nbPositions,p.MarketValue,p.marketValueCAD,p.cashBalance,p.cashBalanceCAD
+--#Checking Postion Value for above accounts to remove accounts has Postion process date &gt; 2019-12-31value equal to zero in above accounts
+
+SELECT p.accountID,p.clientID,p.processDate,p.repID,p.accountCurrency,p.nbPositions,p.MarketValue,p.marketValueCAD,p.cashBalance,p.cashBalanceCAD
 INTO #Positionvalue
 FROM IAVM.positionSummaryByAccount p
-WHERE accountID  
-IN (  SELECT Distinct AccountID FROM #inactiveAccounts)
-and processDate &gt; @Date ;
+WHERE accountID --#='4EG026S' 
+IN (  SELECT Distinct AccountID FROM #inactiveAccountNG20211231)
+and processDate &gt;  @Date--'2020-12-31' 
 
---SELECT * from #Positionvalue
+--SELECT * from #Positionvalue WHERE MarketValueCAD=0 and cashBalance=0
 
+--to get max process date for above accounts
 
-SELECT A_C_ID AccountID, MAX(Tran_Process_Date) Tran_Process_Date INTO #BKMaxPDate FROM  BACKOFFICE.IAVMBK  
-WHERE A_C_ID IN (  SELECT Distinct AccountID FROM #inactiveAccounts)
-GROUP BY A_C_ID;
+SELECT A_C_ID AccountID, MAX(Tran_Process_Date) Tran_Process_Date 
+INTO #MaxPDate
+FROM  BACKOFFICE.IAVMBK  
+WHERE A_C_ID IN (  SELECT Distinct AccountID FROM #inactiveAccountNG20211231)
+GROUP BY A_C_ID
 
-
---SELECT * FROM #BKMaxPDate 
-
-
-SELECT --inactiveAccounts.*
-		inactiveAccounts.clientId,
-		inactiveAccounts.AccountId,
-		inactiveAccounts.Account_Rap_Code,
-		inactiveAccounts.[Plan],
-		inactiveAccounts.Account_Type,
-		inactiveAccounts.Account_Service_Code,
-		inactiveAccounts.Account_Name,
-		inactiveAccounts.Account_Short_Name,
-		inactiveAccounts.Date_Opened,
-		inactiveAccounts.Rep_Id,
-		inactiveAccounts.Rep_Name,
-		inactiveAccounts.Branch_Code,
-		inactiveAccounts.Cr_Code,
-		inactiveAccounts.Dr_Code,
-		inactiveAccounts.Currency,
-		inactiveAccounts.TD_Bal,
-		inactiveAccounts.SD_Bal,
-		inactiveAccounts.TD_Mkt_Val,
-		inactiveAccounts.SD_Mkt_Val,
-		inactiveAccounts.TD_Equity,
-		inactiveAccounts.SD_Equity,
-		inactiveAccounts.Date_Last_Traded,
+--SELECT * FROM #MaxPDate
 
 
-		inactiveAccounts.SIN,
-		inactiveAccounts.A_C_Closing_Date,
-		inactiveAccounts.Other_Accounts_with_same_SIN,
+--#################FINAL REPORT##############################
 
-		inactiveAccounts.List_Accounts_with_same_SIN,
-		inactiveAccounts.Value_of_Other_Accounts, 
-		inactiveAccounts.Registered_Accounts_with_same_SIN,
 
-		inactiveAccounts.List_Registered_Accounts_with_same_SIN,
-		inactiveAccounts.Value_of_Registered_Accounts,
-		inactiveAccounts.AE_Accounts_with_same_SIN,
+--DROP TEMPORARY TABLE  if exists REPORTING.FinalReport;
+--CREATE TEMPORARY TABLE REPORTING.FinalReport
+SELECT inactiveAccountNG20211231.*, MaxPDate.Tran_Process_Date Last_Transaction_Date 
+INTO #FinalReport
+FROM #inactiveAccountNG20211231 inactiveAccountNG20211231 
+LEFT JOIN  #MaxPDate MaxPDate ON inactiveAccountNG20211231.AccountId=MaxPDate.AccountID
 
-		inactiveAccounts.List_AE_Accounts_with_same_SIN,
-		inactiveAccounts.Value_of_AE_Accounts
-		, #BKMaxPDate.Tran_Process_Date Last_Transaction_Date 
-FROM #inactiveAccounts inactiveAccounts
-LEFT JOIN  #BKMaxPDate ON inactiveAccounts.AccountId=#BKMaxPDate.AccountID
-where inactiveAccounts.AccountId NOT IN 
-(  SELECT Distinct AccountID FROM #Positionvalue )</CommandText>
+--#where inactiveAccountNG20201231.AccountId NOT IN (  SELECT Distinct AccountID FROM REPORTING.Positionvalue)#  WHERE MarketValueCAD=0 and cashBalance=0)
+--create index XRAccountId on REPORTING.FinalReport (`AccountId`);
+
+
+--SELECT * FROM #FinalReport
+
+--JointAccounts
+
+SELECT * INTO #JointAccounts 
+FROM #FinalReport
+WHERE A_C_Special_TAG IN ('JTWROS','JTIC') 
+
+--SELECT * FROM #JointAccounts 
+
+--#Identify SIN 1 might have active registered accounts and remove them from final list
+
+SELECT JointAccounts.AccountID JointAccountIDMain,A_C_Client,Client_SIN,Client_Spouses_SIN,A_C_ID,a.Account_Rap_Code,a.A_C_Open_Date,a.A_C_Closing_Date
+INTO #SIN1RegAccounts
+FROM  BACKOFFICE.IAVMACT a
+INNER JOIN #JointAccounts JointAccounts ON a.Client_SIN=JointAccounts.SIN AND JointAccounts.SIN&lt;&gt;0
+
+--#WHERE Client_SIN  IN (SELECT DISTINCT SIN FROM REPORTING.JointAccounts WHERE SIN &lt;&gt;0 ) and 
+WHERE a.Account_Rap_Code  in  ('0', '4', '6', '7', '8', '9', 'N', 'P', 'R', 'S', 'T', 'W', 'Y', 'Z')
+and (a.A_C_Closing_Date IS NULL )
+
+
+
+--SELECT * FROM #SIN1RegAccounts
+
+
+--SIN1NoRegAccounts
+SELECT *
+INTO #SIN1NoRegAccounts
+FROM #JointAccounts 
+WHERE SIN NOT IN (SELECT DISTINCT Client_SIN  FROM #SIN1RegAccounts)
+
+--SELECT * FROM #SIN1NoRegAccounts
+
+--#Identify Spousal SIN might have active registered accounts and remove them from final list
+
+SELECT SIN1NoRegAccounts.AccountID MainAccount, A_C_Client,Client_SIN,Client_Spouses_SIN,A_C_ID,a.Account_Rap_Code,a.A_C_Open_Date,a.A_C_Closing_Date
+INTO #SpousalRegAccounts
+FROM  BACKOFFICE.IAVMACT a
+INNER JOIN #SIN1NoRegAccounts SIN1NoRegAccounts ON a.Client_SIN = SIN1NoRegAccounts.Spouses_SIN and SIN1NoRegAccounts.Spouses_SIN &lt;&gt; 0
+
+--#WHERE Client_SIN  IN (SELECT Distinct Spouses_SIN FROM REPORTING.SIN1NoRegAccounts WHERE Spouses_SIN&lt;&gt;0)
+WHERE a.Account_Rap_Code  in  ('0', '4', '6', '7', '8', '9', 'N', 'P', 'R', 'S', 'T', 'W', 'Y', 'Z')
+and  (a.A_C_Closing_Date IS NULL )
+
+
+--SELECT * FROM #SpousalRegAccounts
+
+SELECT clientId,
+ AccountId,
+ Account_Rap_Code,
+ [Plan],
+ Account_Type,
+ Account_Service_Code,
+ Account_Name,
+ Account_Short_Name,
+ Date_Opened,
+ Rep_Id,
+ Rep_Name,
+ Branch_Code,
+ Cr_Code,
+ Dr_Code,
+ Currency,
+ TD_Bal,
+ SD_Bal,
+ TD_Mkt_Val,
+ SD_Mkt_Val,
+ TD_Equity,
+ SD_Equity,
+ Date_Last_Traded,
+ SIN,
+  Spouses_SIN,
+ A_C_Closing_Date
+  ,Other_Accounts_with_same_SIN,
+   List_Accounts_with_same_SIN,
+   Value_of_Other_Accounts,
+ Registered_Accounts_with_same_SIN,
+
+ List_Registered_Accounts_with_same_SIN,
+ Value_of_Registered_Accounts,
+ AE_Accounts_with_same_SIN,
+ 
+ List_AE_Accounts_with_same_SIN,
+Value_of_AE_Accounts
+  
+   , A_C_Special_Tag
+   ,Last_Transaction_Date
+   FROM #FinalReport 
+WHERE SIN NOT IN (
+SELECT DISTINCT Client_SIN  FROM #SIN1RegAccounts
+UNION
+SELECT Distinct Client_SIN FROM #SpousalRegAccounts)</CommandText>
       </Query>
       <Fields>
         <Field Name="clientId">
@@ -409,6 +484,10 @@ where inactiveAccounts.AccountId NOT IN
           <DataField>SIN</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="Spouses_SIN">
+          <DataField>Spouses_SIN</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="A_C_Closing_Date">
           <DataField>A_C_Closing_Date</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
@@ -448,6 +527,10 @@ where inactiveAccounts.AccountId NOT IN
         <Field Name="Value_of_AE_Accounts">
           <DataField>Value_of_AE_Accounts</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="A_C_Special_Tag">
+          <DataField>A_C_Special_Tag</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Last_Transaction_Date">
           <DataField>Last_Transaction_Date</DataField>
