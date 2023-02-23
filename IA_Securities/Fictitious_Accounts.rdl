@@ -59,6 +59,7 @@
   ON [IAVM_11].[A_C_ID]=MaxDate.[A_C_ID] AND  [IAVM_11].[Last_Maint_Date]=MaxDate.[Last_Maint_Date]
    AND  [IAVM_11].[Gen_Pymt_Effective_Date]=MaxDate.[Gen_Pymt_Effective_Date]) AS IAVM_11
   ON [IAVMACT].[A_C_ID]=[IAVM_11].[A_C_ID]
+  WHERE 	[IAVMACT].A_C_Closing_Date IS NULL 
    --WHERE Client='37BRG5'</CommandText>
       </Query>
       <Fields>
