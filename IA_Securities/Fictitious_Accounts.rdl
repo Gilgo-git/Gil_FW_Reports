@@ -13,12 +13,11 @@
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
         <CommandText>SELECT [IAVMACT].[Client]
-,Client_Short_Name
  ,[IAVMACT].[A_C_ID]
  ,[IAVMACT].Account_Rap_Code,
 	   [IAVMACT].[A_C_Name]
-      ,[A_C_Short_Name]
-    
+      ,[A_C_Short_Name],
+     [IAVMACT].[Client_Short_Name]
       ,[A_C_Middle_Name]
       ,[A_C_Preferred_Name]
       ,[IAVMACT].[A_C_Open_Date]
@@ -54,14 +53,12 @@
 	  ,[IAVM_11].[Last_Maint_User]
       ,[IAVM_11].[Last_Maint_Date]
   FROM [iAS_Portal].[BACKOFFICE].[IAVM_11]
-  INNER JOIN (
-  SELECT [A_C_ID], MAX([Last_Maint_Date])  Last_Maint_Date  FROM [BACKOFFICE].[IAVM_11]  GROUP BY  [A_C_ID])  AS MaxDate 
+   INNER JOIN (
+  SELECT [A_C_ID], MAX([Last_Maint_Date])  Last_Maint_Date,Max(Gen_Pymt_Effective_Date) Gen_Pymt_Effective_Date 
+  FROM [BACKOFFICE].[IAVM_11]  GROUP BY  [A_C_ID])  AS MaxDate 
   ON [IAVM_11].[A_C_ID]=MaxDate.[A_C_ID] AND  [IAVM_11].[Last_Maint_Date]=MaxDate.[Last_Maint_Date]
-
-  ) AS IAVM_11
+   AND  [IAVM_11].[Gen_Pymt_Effective_Date]=MaxDate.[Gen_Pymt_Effective_Date]) AS IAVM_11
   ON [IAVMACT].[A_C_ID]=[IAVM_11].[A_C_ID]
-
-
    --WHERE Client='37BRG5'</CommandText>
       </Query>
       <Fields>
