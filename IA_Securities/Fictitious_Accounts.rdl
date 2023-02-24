@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="iAS_Portal">
@@ -12,6 +12,11 @@
     <DataSet Name="DataSet2">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@PaymentID">
+            <Value>=Parameters!PaymentID.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
         <CommandText>SELECT [IAVMACT].[Client]
  ,[IAVMACT].[A_C_ID]
  ,[IAVMACT].Account_Rap_Code,
@@ -45,6 +50,7 @@
   INNER JOIN [BACKOFFICE].[IAVM_11] ON  [IAVMACT].[A_C_ID]=[IAVM_11].[A_C_ID] 
 
 WHERE 	[IAVMACT].A_C_Closing_Date IS NULL 
+ AND [IAVM_11].Gen_pymt_payment_id IN (@PaymentID)
 ORDER BY [IAVMACT].[Client]
  ,[IAVMACT].[A_C_ID],[IAVM_11].[Gen_Pymt_Effective_Date]</CommandText>
       </Query>
@@ -152,6 +158,18 @@ ORDER BY [IAVMACT].[Client]
         <Field Name="Last_Maint_Date">
           <DataField>Last_Maint_Date</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="PaymentID">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>   Select Distinct Gen_pymt_payment_id  AS PaymentID FROM [iAS_Portal].[BACKOFFICE].[IAVM_11]</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="PaymentID">
+          <DataField>PaymentID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -946,7 +964,6 @@ ORDER BY [IAVMACT].[Client]
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1198,6 +1215,33 @@ ORDER BY [IAVMACT].[Client]
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="PaymentID">
+      <DataType>String</DataType>
+      <Prompt>Payment ID</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>PaymentID</DataSetName>
+          <ValueField>PaymentID</ValueField>
+          <LabelField>PaymentID</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>PaymentID</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
   <rd:ReportID>3976b62a-4d03-4309-9433-3530ab1f2d27</rd:ReportID>
 </Report>
