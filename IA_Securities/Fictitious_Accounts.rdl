@@ -12,11 +12,6 @@
     <DataSet Name="DataSet2">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <QueryParameters>
-          <QueryParameter Name="@PaymentID">
-            <Value>=Parameters!PaymentID.Value</Value>
-          </QueryParameter>
-        </QueryParameters>
         <CommandText>SELECT [IAVMACT].[Client]
  ,[IAVMACT].[A_C_ID]
  ,[IAVMACT].Account_Rap_Code,
@@ -47,12 +42,18 @@
       ,[IAVM_11].[Last_Maint_Date]
   FROM [BACKOFFICE].[IAVMACT]
    LEFT JOIN [IAVM].[rep] IAVM_Rep ON [IAVMACT].[A_C_Representative]= IAVM_Rep.repId
-  INNER JOIN [BACKOFFICE].[IAVM_11] ON  [IAVMACT].[A_C_ID]=[IAVM_11].[A_C_ID] 
+LEFT JOIN [BACKOFFICE].[IAVM_11] 
+ 
+ 
+ ON  [IAVMACT].[A_C_ID]=[IAVM_11].[A_C_ID] AND  [IAVM_11].[Gen_pymt_payment_id] IN ('E1','E2','E3')
 
 WHERE 	[IAVMACT].A_C_Closing_Date IS NULL 
- AND [IAVM_11].Gen_pymt_payment_id IN (@PaymentID)
-ORDER BY [IAVMACT].[Client]
- ,[IAVMACT].[A_C_ID],[IAVM_11].[Gen_Pymt_Effective_Date]</CommandText>
+AND [IAVMACT].[Client] IN (
+	 SELECT  Distinct [Client] FROM [BACKOFFICE].[IAVMACT] WHERE  [A_C_ID] IN (
+							 Select Distinct [A_C_ID]   FROM [iAS_Portal].[BACKOFFICE].[IAVM_11] WHERE  [IAVM_11].[Gen_pymt_payment_id] IN ('E1','E2','E3')
+ )
+)
+ORDER BY [IAVMACT].[Client] ,[IAVMACT].[A_C_ID],[IAVM_11].[Gen_Pymt_Effective_Date]</CommandText>
       </Query>
       <Fields>
         <Field Name="Client">
@@ -964,6 +965,7 @@ ORDER BY [IAVMACT].[Client]
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1215,31 +1217,10 @@ ORDER BY [IAVMACT].[Client]
       </Page>
     </ReportSection>
   </ReportSections>
-  <ReportParameters>
-    <ReportParameter Name="PaymentID">
-      <DataType>String</DataType>
-      <Prompt>Payment ID</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>PaymentID</DataSetName>
-          <ValueField>PaymentID</ValueField>
-          <LabelField>PaymentID</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
-    </ReportParameter>
-  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
-      <CellDefinitions>
-        <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>PaymentID</ParameterName>
-        </CellDefinition>
-      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
