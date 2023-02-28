@@ -253,7 +253,7 @@ INTO #inactiveAccounts
 FROM #inactiveAccount20211231 
 WHERE AccountID NOT IN (
 SELECT AccountID FROM #T4_RapCodes_Activeaccounts 
-WHERE A_C_Date_Last_Traded WHERE A_C_Date_Last_Traded &gt;   @LastActivityDate  --&gt; @Date  2023 Fanny rule changed no activity last 2 years
+WHERE A_C_Date_Last_Traded  &gt;   @LastActivityDate  --&gt; @Date  2023 Fanny rule changed no activity last 2 years
 );
 --#WHERE AccountID NOT IN ('37014FT','37014WT','4EAAA0T');
 
