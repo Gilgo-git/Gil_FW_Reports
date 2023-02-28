@@ -26,7 +26,9 @@
 
 
 DECLARE @Date Date  =@PrvYearEndDate
+DECLARE @LastActivityDate Date 
 --SET @Date='2021-12-31'
+SET @LastActivityDate=dateadd(year, -1, @Date)
 
 
 
@@ -145,7 +147,7 @@ From (
 		Inner Join BACKOFFICE.IAVMACT a on  a.A_C_ID = v.A_C_ID
 		Left Join BACKOFFICE.IAVMPSN p on  p.A_C_ID = v.A_C_ID and  p.Tran_Summ_Business_Date = --'2021-03-19'
 																					
-																							CASE WHEN DATEPART(WEEKDAY, GETDATE()) = 2 THEN DATEADD(d,-3,'2023-01-30') 
+																							CASE WHEN DATEPART(WEEKDAY, GETDATE()) = 2 THEN DATEADD(d,-3,GETDATE()) 
 																								 WHEN DATEPART(WEEKDAY, GETDATE()) = 1 THEN DATEADD(d,-2,GETDATE()) 
 																										   WHEN DATEPART(WEEKDAY, GETDATE()) = 0 THEN DATEADD(d,-1,GETDATE()) 
 																										   ELSE  GETDATE() 	END
@@ -155,7 +157,9 @@ From (
 		p.A_C_ID is null and
 		b.A_C_ID is null and
 		v.A_C_Summ_Equity = 0 and
-		(v.A_C_Date_Last_Traded &lt; @Date OR v.A_C_Date_Last_Traded IS NULL)and
+		(v.A_C_Date_Last_Traded  &lt; @LastActivityDate  
+		--@Date  2023 Fanny rule changed no activity last 2 years 
+		OR v.A_C_Date_Last_Traded IS NULL)and
 		((v.A_C_Representative = 'SE73' and v.A_C_Open_Date &lt; '2015-06-01') or v.A_C_Open_Date &lt; @Date) and
 
 		(v.A_C_Closing_Date IS NULL ) AND 
