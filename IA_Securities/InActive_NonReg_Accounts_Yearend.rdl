@@ -99,7 +99,9 @@ Where
 		         --@Date  2023 Fanny rule changed no activity last 2 years 
 		
 		OR v.A_C_Date_Last_Traded IS NULL)and
-		((v.A_C_Representative = 'SE73' and v.A_C_Open_Date &lt; '2015-06-01') or v.A_C_Open_Date &lt; @Date) and
+		((v.A_C_Representative = 'SE73' and v.A_C_Open_Date &lt; '2015-06-01') 
+		or v.A_C_Open_Date &lt;= @LastActivityDate  --&lt; @Date  2023 Fanny rule changed no activity last 2 years
+		) and
 
 		(v.A_C_Closing_Date IS NULL ) AND 
 		v.A_C_Inventory_Account_Sw != 'Y' and
@@ -394,7 +396,8 @@ Value_of_AE_Accounts
 WHERE SIN NOT IN (
 SELECT DISTINCT Client_SIN  FROM #SIN1RegAccounts
 UNION
-SELECT Distinct Client_SIN FROM #SpousalRegAccounts)</CommandText>
+SELECT Distinct Client_SIN FROM #SpousalRegAccounts)
+AND  (Last_Transaction_Date IS NULL OR Last_Transaction_Date  &lt;= @LastActivityDate)</CommandText>
       </Query>
       <Fields>
         <Field Name="clientId">

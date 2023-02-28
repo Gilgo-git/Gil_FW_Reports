@@ -160,7 +160,10 @@ From (
 		(v.A_C_Date_Last_Traded  &lt; @LastActivityDate  
 		--@Date  2023 Fanny rule changed no activity last 2 years 
 		OR v.A_C_Date_Last_Traded IS NULL)and
-		((v.A_C_Representative = 'SE73' and v.A_C_Open_Date &lt; '2015-06-01') or v.A_C_Open_Date &lt; @Date) and
+		((v.A_C_Representative = 'SE73' and v.A_C_Open_Date &lt; '2015-06-01') 
+		or v.A_C_Open_Date &lt;= @LastActivityDate  --&lt; @Date  2023 Fanny rule changed no activity last 2 years
+		
+		) and
 
 		(v.A_C_Closing_Date IS NULL ) AND 
 		v.A_C_Inventory_Account_Sw != 'Y' and
@@ -248,7 +251,10 @@ WHERE  x.Account_Rap_Code IN ('T') AND aSin.Account_Rap_Code IN ('4');
 SELECT * 
 INTO #inactiveAccounts
 FROM #inactiveAccount20211231 
-WHERE AccountID NOT IN (SELECT AccountID FROM #T4_RapCodes_Activeaccounts WHERE A_C_Date_Last_Traded &gt;  @Date );
+WHERE AccountID NOT IN (
+SELECT AccountID FROM #T4_RapCodes_Activeaccounts 
+WHERE A_C_Date_Last_Traded WHERE A_C_Date_Last_Traded &gt;   @LastActivityDate  --&gt; @Date  2023 Fanny rule changed no activity last 2 years
+);
 --#WHERE AccountID NOT IN ('37014FT','37014WT','4EAAA0T');
 
 
@@ -262,12 +268,13 @@ INTO #Positionvalue
 FROM IAVM.positionSummaryByAccount p
 WHERE accountID  
 IN (  SELECT Distinct AccountID FROM #inactiveAccounts)
-and processDate &gt; @Date ;
+and processDate   &gt; @LastActivityDate --&gt; @Date 2023 Fanny rule changed no activity last 2 years; ;
 
 --SELECT * from #Positionvalue
 
 
-SELECT A_C_ID AccountID, MAX(Tran_Process_Date) Tran_Process_Date INTO #BKMaxPDate FROM  BACKOFFICE.IAVMBK  
+SELECT A_C_ID AccountID, MAX(Tran_Process_Date) Tran_Process_Date INTO #BKMaxPDate 
+FROM  BACKOFFICE.IAVMBK  
 WHERE A_C_ID IN (  SELECT Distinct AccountID FROM #inactiveAccounts)
 GROUP BY A_C_ID;
 
@@ -318,7 +325,10 @@ SELECT --inactiveAccounts.*
 FROM #inactiveAccounts inactiveAccounts
 LEFT JOIN  #BKMaxPDate ON inactiveAccounts.AccountId=#BKMaxPDate.AccountID
 where inactiveAccounts.AccountId NOT IN 
-(  SELECT Distinct AccountID FROM #Positionvalue )</CommandText>
+(  SELECT Distinct AccountID FROM #Positionvalue )
+AND 
+ inactiveAccounts.AccountId NOT IN 
+(  SELECT Distinct AccountID FROM #BKMaxPDate WHERE Tran_Process_Date  &gt;= @LastActivityDate  )</CommandText>
       </Query>
       <Fields>
         <Field Name="clientId">
