@@ -12,48 +12,67 @@
     <DataSet Name="DataSet2">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>SELECT [IAVMACT].[Client]
- ,[IAVMACT].[A_C_ID]
- ,[IAVMACT].Account_Rap_Code,
-	   [IAVMACT].[A_C_Name]
-      ,[A_C_Short_Name],
-     [IAVMACT].[Client_Short_Name]
-      ,[A_C_Middle_Name]
-      ,[A_C_Preferred_Name]
-      ,[IAVMACT].[A_C_Open_Date]
-      ,[A_C_Title]
-      ,[A_C_Date_Last_Traded]
-      ,[IAVMACT].[A_C_Closing_Date]
- ,[IAVMACT].[A_C_LAST_UPDATE_DATE]
-      ,[IAVMACT].[A_C_Representative]
-	  , IAVM_Rep.repName
-	  ,Client_Bank
-	  ,Client_Bank_Branch
-	--  , [IAVM_11].[A_C_ID]
-	 ,[IAVM_11].Gen_pymt_payment_id
-	  ,[IAVM_11].[Gen_Pymt_Effective_Date]
-      ,[IAVM_11].[Gen_Pymt_Bank_Account_Num]
-	   ,[IAVM_11].[Gen_Pymt_Inst_Num]
-      ,[IAVM_11].[Gen_Pymt_Bank_Branch_Num]
-      ,[IAVM_11].[Gen_Pymt_DADGP_Desc_1]
-      ,[IAVM_11].[Gen_Pymt_DADGP_Desc_2]
+        <CommandText>--DROP TABLE #IAVM_11
+SELECT
+	
+		[IAVM_11].[A_C_ID], 
+		[IAVM_11].Gen_pymt_payment_id , 
+		[IAVM_11].Last_Maint_Date,
+		[IAVM_11].Gen_Pymt_Effective_Date ,
+		RANK () OVER ( 
+						PARTITION BY  [IAVM_11].[A_C_ID], [IAVM_11].Gen_pymt_payment_id , [IAVM_11].Last_Maint_Date
+						ORDER BY  [IAVM_11].[A_C_ID], [IAVM_11].Gen_pymt_payment_id , [IAVM_11].Last_Maint_Date, [IAVM_11].Gen_Pymt_Effective_Date 		DESC
+		) paymentID_rank 
+		,[IAVM_11].[Gen_Pymt_DADGP_Desc_1]
+		,[IAVM_11].[Gen_Pymt_DADGP_Desc_2]
+		,[IAVM_11].[Gen_Pymt_Bank_Account_Num]
+		,[IAVM_11].[Gen_Pymt_Inst_Num]
+		,[IAVM_11].[Gen_Pymt_Bank_Branch_Num]
+	  INTO #IAVM_11
+FROM
+	[iAS_Portal].[BACKOFFICE].[IAVM_11] 
+	INNER JOIN (   SELECT [A_C_ID], MAX([Last_Maint_Date])  Last_Maint_Date,Gen_pymt_payment_id   FROM [BACKOFFICE].[IAVM_11] 
+					WHERE [IAVM_11].[Gen_pymt_payment_id] IN ('E1','E2','E3')											
+					GROUP BY  [A_C_ID],Gen_pymt_payment_id ) 
+					AS MaxDate 
+  ON [IAVM_11].[A_C_ID]=MaxDate.[A_C_ID] AND  [IAVM_11].[Last_Maint_Date]=MaxDate.[Last_Maint_Date] 
+  AND  [IAVM_11].Gen_pymt_payment_id =MaxDate.Gen_pymt_payment_id 
+ --SELECT * FROM #IAVM_11  ORDER BY   [A_C_ID]
 
-	  ,[IAVM_11].[Last_Maint_User]
-      ,[IAVM_11].[Last_Maint_Date]
-  FROM [BACKOFFICE].[IAVMACT]
-   LEFT JOIN [IAVM].[rep] IAVM_Rep ON [IAVMACT].[A_C_Representative]= IAVM_Rep.repId
-LEFT JOIN [BACKOFFICE].[IAVM_11] 
- 
- 
- ON  [IAVMACT].[A_C_ID]=[IAVM_11].[A_C_ID] AND  [IAVM_11].[Gen_pymt_payment_id] IN ('E1','E2','E3')
+ SELECT 
+		[IAVMACT].[Client]
+		,[IAVMACT].[A_C_ID]
+		,[IAVMACT].Account_Rap_Code,
+		[IAVMACT].[A_C_Name]
+		,[A_C_Short_Name],
+		[IAVMACT].[Client_Short_Name]
+		,[A_C_Middle_Name]
+		,[A_C_Preferred_Name]
+		,[IAVMACT].[A_C_Open_Date]
+		,[A_C_Title]
+		,[A_C_Date_Last_Traded]
+		,[IAVMACT].[A_C_Closing_Date]
+		,[IAVMACT].[A_C_LAST_UPDATE_DATE]
+		,[IAVMACT].[A_C_Representative]
+		, IAVM_Rep.repName
+		,Client_Bank
+		,Client_Bank_Branch
+		,[IAVM_11].Gen_pymt_payment_id
+		,[IAVM_11].[Gen_Pymt_Effective_Date]
+		,[IAVM_11].[Gen_Pymt_Bank_Account_Num]
+		,[IAVM_11].[Gen_Pymt_Inst_Num]
+		,[IAVM_11].[Gen_Pymt_Bank_Branch_Num]
+		,[IAVM_11].[Gen_Pymt_DADGP_Desc_1]
+		,[IAVM_11].[Gen_Pymt_DADGP_Desc_2]
+		,[IAVM_11].[Last_Maint_Date]
+FROM [BACKOFFICE].[IAVMACT]
+		LEFT JOIN [IAVM].[rep] IAVM_Rep ON [IAVMACT].[A_C_Representative]= IAVM_Rep.repId
+		LEFT JOIN #IAVM_11 AS IAVM_11
+		ON  [IAVMACT].[A_C_ID]=[IAVM_11].[A_C_ID]  AND  [IAVM_11].paymentID_rank =1
+		--AND  [IAVM_11].[Gen_pymt_payment_id] IN ('E1','E2','E3')
 
-WHERE 	[IAVMACT].A_C_Closing_Date IS NULL 
-AND [IAVMACT].[Client] IN (
-	 SELECT  Distinct [Client] FROM [BACKOFFICE].[IAVMACT] WHERE  [A_C_ID] IN (
-							 Select Distinct [A_C_ID]   FROM [iAS_Portal].[BACKOFFICE].[IAVM_11] WHERE  [IAVM_11].[Gen_pymt_payment_id] IN ('E1','E2','E3')
- )
-)
-ORDER BY [IAVMACT].[Client] ,[IAVMACT].[A_C_ID],[IAVM_11].[Gen_Pymt_Effective_Date]</CommandText>
+WHERE 	[IAVMACT].A_C_Closing_Date IS NULL -- AND [IAVMACT].[A_C_ID]='37001NT'
+		ORDER BY [IAVMACT].[Client]	,[IAVMACT].[A_C_ID]</CommandText>
       </Query>
       <Fields>
         <Field Name="Client">
@@ -150,10 +169,6 @@ ORDER BY [IAVMACT].[Client] ,[IAVMACT].[A_C_ID],[IAVM_11].[Gen_Pymt_Effective_Da
         </Field>
         <Field Name="Gen_Pymt_DADGP_Desc_2">
           <DataField>Gen_Pymt_DADGP_Desc_2</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Last_Maint_User">
-          <DataField>Last_Maint_User</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Last_Maint_Date">
@@ -965,7 +980,6 @@ ORDER BY [IAVMACT].[Client] ,[IAVMACT].[A_C_ID],[IAVM_11].[Gen_Pymt_Effective_Da
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -1196,7 +1210,7 @@ ORDER BY [IAVMACT].[Client] ,[IAVMACT].[A_C_ID],[IAVM_11].[Gen_Pymt_Effective_Da
             <DataSetName>DataSet2</DataSetName>
             <PageName>managed accounts</PageName>
             <Height>0.5in</Height>
-            <Width>27.96944in</Width>
+            <Width>27.96942in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
