@@ -28,7 +28,7 @@
 DECLARE @Date Date  =@PrvYearEndDate
 DECLARE @LastActivityDate Date 
 --SET @Date='2021-12-31'
-SET @LastActivityDate=dateadd(year, -1, @Date)
+SET @LastActivityDate=dateadd(year, -2, @Date)
 
 --To Fetch Non Reg accounts
 Select 
@@ -88,7 +88,9 @@ INTO #x
 																								 WHEN DATEPART(WEEKDAY, GETDATE()) = 1 THEN DATEADD(d,-2,GETDATE()) 
 																										   WHEN DATEPART(WEEKDAY, GETDATE()) = 0 THEN DATEADD(d,-1,GETDATE()) 
 																										   ELSE  GETDATE() 	END
-		Left Join BACKOFFICE.IAVMBK b on  b.A_C_ID = v.A_C_ID and  b.Tran_Process_Date &gt; @Date
+		Left Join BACKOFFICE.IAVMBK b on  b.A_C_ID = v.A_C_ID 
+		and  b.Tran_Process_Date &gt; @LastActivityDate
+		--&gt; @Date  2023 Fanny rule changed no activity last 2 years
 		--b.Tran_Process_Date &gt; '2019-12-31' - Dominic SQL where doc has &lt; symbol
 
 Where
@@ -276,7 +278,8 @@ INTO #Positionvalue
 FROM IAVM.positionSummaryByAccount p
 WHERE accountID --#='4EG026S' 
 IN (  SELECT Distinct AccountID FROM #inactiveAccountNG20211231)
-and processDate &gt;  @Date--'2020-12-31' 
+and processDate &gt;   @LastActivityDate
+		--&gt; @Date  2023 Fanny rule changed no activity last 2 years--'2020-12-31' 
 
 --SELECT * from #Positionvalue WHERE MarketValueCAD=0 and cashBalance=0
 
@@ -549,7 +552,7 @@ AND  (Last_Transaction_Date IS NULL OR Last_Transaction_Date  &lt;= @LastActivit
     <DataSet Name="ParamDate">
       <Query>
         <DataSourceName>iAS_Portal</DataSourceName>
-        <CommandText>Select CAST(DATEADD(dd,-1, DATEADD(yy,DATEDIFF(yy,0,GETDATE())-1,0)) as date) as date</CommandText>
+        <CommandText>SELECT CAST(DATEADD(DAY,-1,DATEADD(YEAR,DATEDIFF(YEAR,0,GETDATE()),0))as date) as date</CommandText>
       </Query>
       <Fields>
         <Field Name="date">
