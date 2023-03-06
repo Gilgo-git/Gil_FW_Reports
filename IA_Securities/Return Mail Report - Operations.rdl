@@ -37,10 +37,11 @@
 --	#adr.Address_Confirm_Type,
 	doc.Doc_Date 'Return Mail Date',
 	doc.Doc_Status,
-	doc.Doc_Comments_1,
-	doc.Doc_Desc,
-	doc.Doc_Type_2,
-	IAVM_Rep.[branchCode] as advisor_province
+	doc.Doc_Comments_1
+	--doc.Doc_Desc,
+	--doc.Doc_Type_2,
+	--IAVM_Rep.[branchCode] as advisor_province
+	into #t1
 FROM BACKOFFICE.IAVMADR adr
 		left JOIN BACKOFFICE.IAVMDOC doc on adr.A_C_Client = doc.Client
 		left join IAVM.rep IAVM_Rep  on IAVM_Rep.repId = adr.A_C_Representative
@@ -51,8 +52,78 @@ where
 		adr.A_C_Short_Name like '%RST%' or
 			adr.A_C_Short_Name like '%RTM%') and
 		(doc.Doc_Type_2 like '6K' or doc.Doc_Type_2 = '' or doc.Doc_Type_2 is null)
+		and	 adr.A_C_Representative IN (@rep)
 
-	and	 adr.A_C_Representative IN (@rep)</CommandText>
+SELECT DISTINCT
+	act.A_C_Client AS ClientID,
+	act.A_C_ID,
+	--act.Client_Residence_Region,
+	--act.A_C_Closing_Date,
+	doc.Doc_Type_2,
+	doc.Doc_Date,
+	doc.Doc_Eff_Start_Date
+into #t2
+
+FROM BACKOFFICE.IAVMACT act
+LEFT JOIN BACKOFFICE.IAVMDOC doc 
+	ON act.A_C_Client = doc.Client
+
+WHERE
+	--act.A_C_Closing_Date is null and 
+	doc.Doc_Type_2 in(  '31' , '22')
+	and Doc_Date &lt; getdate()
+
+
+Select a.*,c.[31] into #t3 from (
+SELECT distinct A_C_ID,[22]
+FROM 
+(SELECT * FROM #t2) AS S
+PIVOT
+(max(doc_date)
+FOR Doc_Type_2 IN ([22])
+) AS P
+) a
+inner join
+(
+Select b.* from (
+SELECT distinct A_C_ID,[31]
+FROM 
+(SELECT * FROM #t2) AS S
+PIVOT
+(max(doc_date)
+FOR Doc_Type_2 IN ([31])
+) AS P
+) b
+) c
+on a.A_C_ID=c.A_C_ID
+
+select  A_C_ID,max([22]) as doc22,max([31]) as doc31 into #t4
+from #t3
+group by A_C_ID
+
+select t1.*,
+case when act.Client_Residence_Region= 'AB'	 then '14'
+     when act.Client_Residence_Region= 'BC'	 then '15'
+     when act.Client_Residence_Region= 'MB'	 then '18'
+     when act.Client_Residence_Region= 'NB'	 then '9'
+     when act.Client_Residence_Region= 'NL'	 then '8'
+     when act.Client_Residence_Region= 'NS'	 then '11'
+     when act.Client_Residence_Region= 'ON'	 then '13'
+     when act.Client_Residence_Region= 'PE'	 then '10'
+     when act.Client_Residence_Region= 'QC'	 then '12'
+     when act.Client_Residence_Region= 'SK'	 then '17'
+     when act.Client_Residence_Region= 'YK'	 then '19'
+     when act.Client_Residence_Region= 'NT'	 then '16'
+     when act.Client_Residence_Region= 'NU'	 then '7'
+else '00'				 
+end as 	Client_Res,			 
+	act.A_C_Closing_Date,  t4.doc22,t4.doc31 from #t1 t1
+left join #t4 t4
+on t1.A_C_ID=t4.A_C_ID
+left join BACKOFFICE.IAVMACT act
+on t1.A_C_ID=act.A_C_ID
+
+</CommandText>
       </Query>
       <Fields>
         <Field Name="A_C_Representative">
@@ -111,17 +182,21 @@ where
           <DataField>Doc_Comments_1</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Doc_Desc">
-          <DataField>Doc_Desc</DataField>
+        <Field Name="Client_Res">
+          <DataField>Client_Res</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Doc_Type_2">
-          <DataField>Doc_Type_2</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="A_C_Closing_Date">
+          <DataField>A_C_Closing_Date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="advisor_province">
-          <DataField>advisor_province</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="doc22">
+          <DataField>doc22</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="doc31">
+          <DataField>doc31</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -198,6 +273,9 @@ GROUP BY 	repId </CommandText>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.21181in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -773,7 +851,7 @@ GROUP BY 	repId </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Doc Desc</Value>
+                                  <Value>Cleint Res</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontWeight>Bold</FontWeight>
@@ -813,7 +891,7 @@ GROUP BY 	repId </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Doc Type</Value>
+                                  <Value>Closed Date</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontWeight>Bold</FontWeight>
@@ -853,7 +931,7 @@ GROUP BY 	repId </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value EvaluationMode="Constant">Advisor Province</Value>
+                                  <Value>Doc22 Date</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontWeight>Bold</FontWeight>
@@ -875,6 +953,45 @@ GROUP BY 	repId </CommandText>
                             </BottomBorder>
                             <BackgroundColor>LightGrey</BackgroundColor>
                             <FontFamily />
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Doc31 Date</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -1393,24 +1510,26 @@ GROUP BY 	repId </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Doc_Desc">
+                        <Textbox Name="Client_Res">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Doc_Desc.Value</Value>
+                                  <Value>=Fields!Client_Res.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>8pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Doc_Desc</rd:DefaultName>
+                          <rd:DefaultName>Client_Res</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -1436,14 +1555,16 @@ GROUP BY 	repId </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Doc_Type_2.Value</Value>
+                                  <Value>=Fields!A_C_Closing_Date.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>8pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Doc_Type_2</rd:DefaultName>
@@ -1465,24 +1586,26 @@ GROUP BY 	repId </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Doc_Type_2">
+                        <Textbox Name="doc22">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!advisor_province.Value</Value>
+                                  <Value>=Fields!doc22.Value</Value>
                                   <Style>
                                     <FontFamily />
                                     <FontSize>8pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Doc_Type_2</rd:DefaultName>
+                          <rd:DefaultName>doc22</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -1499,12 +1622,50 @@ GROUP BY 	repId </CommandText>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="doc31">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!doc31.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>doc31</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -1547,14 +1708,14 @@ GROUP BY 	repId </CommandText>
             <DataSetName>DataSet1</DataSetName>
             <Top>0.06625in</Top>
             <Height>0.43in</Height>
-            <Width>17.58682in</Width>
+            <Width>18.58682in</Width>
             <Style />
           </Tablix>
         </ReportItems>
         <Height>0.59375in</Height>
         <Style />
       </Body>
-      <Width>17.58682in</Width>
+      <Width>18.58682in</Width>
       <Page>
         <PageHeader>
           <Height>0.74652in</Height>
@@ -1583,7 +1744,7 @@ GROUP BY 	repId </CommandText>
               </Paragraphs>
               <rd:DefaultName>textbox1</rd:DefaultName>
               <Height>0.65917in</Height>
-              <Width>16.26043in</Width>
+              <Width>18.58682in</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1611,7 +1772,7 @@ GROUP BY 	repId </CommandText>
               <Top>0.06944in</Top>
               <Left>0.125in</Left>
               <Height>0in</Height>
-              <Width>17.46182in</Width>
+              <Width>18.46182in</Width>
               <Style>
                 <Border>
                   <Style>Solid</Style>
@@ -1639,7 +1800,7 @@ GROUP BY 	repId </CommandText>
               <Top>0.13889in</Top>
               <Left>14.10417in</Left>
               <Height>0.25in</Height>
-              <Width>3.48265in</Width>
+              <Width>4.48265in</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border>
