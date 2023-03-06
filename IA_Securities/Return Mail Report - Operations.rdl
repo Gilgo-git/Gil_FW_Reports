@@ -64,7 +64,9 @@ SELECT DISTINCT
 	doc.Doc_Eff_Start_Date
 into #t2
 
-FROM BACKOFFICE.IAVMACT act
+FROM #t1 t1
+LEFT JOIN BACKOFFICE.IAVMACT act
+	ON t1.A_C_ID=act.A_C_ID
 LEFT JOIN BACKOFFICE.IAVMDOC doc 
 	ON act.A_C_Client = doc.Client
 
@@ -122,7 +124,6 @@ left join #t4 t4
 on t1.A_C_ID=t4.A_C_ID
 left join BACKOFFICE.IAVMACT act
 on t1.A_C_ID=act.A_C_ID
-
 </CommandText>
       </Query>
       <Fields>
