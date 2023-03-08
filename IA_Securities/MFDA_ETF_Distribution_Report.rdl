@@ -120,6 +120,24 @@ AND @parmDate &lt; getdate()
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="DataSet2">
+      <Query>
+        <DataSourceName>iAS_Portal</DataSourceName>
+        <CommandText>select 
+STUFF((SELECT DISTINCT
+             ' '  +  user_req_symbol  + ' , '
+        FROM [iAS_Portal].[REPORTS].[RPT_MFDA_ETF_Distribution_Report_SYMBOLS] 
+ 
+        FOR XML PATH (''), TYPE, ROOT)
+    .value('root[1]', 'nvarchar(max)'), 1, 1, '') AS AllSymbols </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="AllSymbols">
+          <DataField>AllSymbols</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -129,7 +147,7 @@ AND @parmDate &lt; getdate()
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>2.5cm</Width>
+                  <Width>2.20896cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.5cm</Width>
@@ -1145,9 +1163,9 @@ AND @parmDate &lt; getdate()
                 <Direction>Descending</Direction>
               </SortExpression>
             </SortExpressions>
-            <Top>0.67056cm</Top>
+            <Top>1.70244cm</Top>
             <Height>1.2cm</Height>
-            <Width>40.23054cm</Width>
+            <Width>39.9395cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1185,8 +1203,70 @@ AND @parmDate &lt; getdate()
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
+          <Textbox Name="Textbox2">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=First(Fields!AllSymbols.Value, "DataSet2")</Value>
+                    <Style />
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox1</rd:DefaultName>
+            <Top>0.67056cm</Top>
+            <Left>2.27951cm</Left>
+            <Height>0.6cm</Height>
+            <Width>38.95645cm</Width>
+            <ZIndex>2</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="Textbox3">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="Symbols Used: "</Value>
+                    <Style>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox3</rd:DefaultName>
+            <Top>0.63528cm</Top>
+            <Left>0.03528cm</Left>
+            <Height>0.6cm</Height>
+            <Width>2.17368cm</Width>
+            <ZIndex>3</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
         </ReportItems>
-        <Height>3.13542in</Height>
+        <Height>1.14269in</Height>
         <Style />
       </Body>
       <Width>17.5175in</Width>
