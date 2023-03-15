@@ -57,8 +57,16 @@
 			when TRAILER_5 like '%SOLLI%' OR TRAILER_5 like '%SOLI%' OR TRAILER_5 like '%UNSOL%' then TRAILER_5
 			else '' end as Solicited
 	
-	,case when	(TRAILER_1 like '%ISSUED%' or TRAILER_2 like '%ISSUED%' or
-	TRAILER_3 like '%ISSUED%' or TRAILER_4 like '%ISSUED%' or TRAILER_5 like '%ISSUED%' ) then 'IF, AS, AND WHEN ISSUED'
+	,case	when	TRAILER_1 like '%ISSUED%' then TRAILER_1
+			when	TRAILER_2 like '%ISSUED%' then TRAILER_2
+			when	TRAILER_3 like '%ISSUED%' then TRAILER_3
+			when	TRAILER_4 like '%ISSUED%' then TRAILER_4
+			when	TRAILER_5 like '%ISSUED%' then TRAILER_5
+			when	TRAILER_1 like '%CONDITIONNEL%' then TRAILER_1
+			when	TRAILER_2 like '%CONDITIONNEL%' then TRAILER_2
+			when	TRAILER_3 like '%CONDITIONNEL%' then TRAILER_3
+			when	TRAILER_4 like '%CONDITIONNEL%' then TRAILER_4
+			when	TRAILER_5 like '%CONDITIONNEL%' then TRAILER_5
 	else '' end as newIssues 
  																																																																																													
 FROM BACKOFFICE.CMSDT d 
@@ -77,7 +85,11 @@ where	d.process_date &gt;= @fromDate
 		and cancel_indicator = 'N'
 		and org_TRANSACTION_TYPE='TRD'
 		and (TRAILER_1 like '%ISSUED%' or TRAILER_2 like '%ISSUED%' or
-			TRAILER_3 like '%ISSUED%' or TRAILER_4 like '%ISSUED%' or TRAILER_5 like '%ISSUED%' )</CommandText>
+			TRAILER_3 like '%ISSUED%' or TRAILER_4 like '%ISSUED%' or TRAILER_5 like '%ISSUED%' or
+			TRAILER_1 like '%CONDITIONNEL%' or TRAILER_2 like '%CONDITIONNEL%' or
+			TRAILER_3 like '%CONDITIONNEL%' or TRAILER_4 like '%CONDITIONNEL%' or TRAILER_5 like '%CONDITIONNEL%' 
+			)
+</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -179,7 +191,7 @@ where	d.process_date &gt;= @fromDate
             </Paragraphs>
             <rd:DefaultName>textbox1</rd:DefaultName>
             <Height>0.27375in</Height>
-            <Width>26.61458in</Width>
+            <Width>27.07292in</Width>
             <Style>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -242,7 +254,7 @@ where	d.process_date &gt;= @fromDate
                   <Width>1.46875in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.88542in</Width>
+                  <Width>2.34375in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -1659,7 +1671,7 @@ where	d.process_date &gt;= @fromDate
             <Top>0.27375in</Top>
             <Left>0.02646cm</Left>
             <Height>1.055in</Height>
-            <Width>26.60417in</Width>
+            <Width>27.0625in</Width>
             <ZIndex>1</ZIndex>
             <Style />
           </Tablix>
@@ -1667,7 +1679,7 @@ where	d.process_date &gt;= @fromDate
         <Height>1.32875in</Height>
         <Style />
       </Body>
-      <Width>26.61458in</Width>
+      <Width>27.07292in</Width>
       <Page>
         <LeftMargin>1in</LeftMargin>
         <RightMargin>1in</RightMargin>
