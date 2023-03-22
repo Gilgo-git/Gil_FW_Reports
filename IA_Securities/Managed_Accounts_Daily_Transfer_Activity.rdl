@@ -3,168 +3,121 @@
   <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="FW_qtrade">
-      <DataSourceReference>FW_qtrade</DataSourceReference>
+    <DataSource Name="iAS_Portal">
+      <DataSourceReference>iAS_Portal</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
-      <rd:DataSourceID>0e1540cb-3293-4d19-bf12-07722aa6fc76</rd:DataSourceID>
+      <rd:DataSourceID>d45ce362-b7be-47a3-971b-8bfdf0bb1c31</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="DataSet1">
       <Query>
-        <DataSourceName>FW_qtrade</DataSourceName>
+        <DataSourceName>iAS_Portal</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@TradeDate">
-            <Value>=Parameters!TradeDate.Value</Value>
+          <QueryParameter Name="@processDate">
+            <Value>=Parameters!processDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>--DECLARE @DATE as date = '2020-12-15'
-
-
-		
-SELECT CLIENTS.first_name		 As First_Name
-		,CLIENTS.last_name         As Last_Name
-		,ACCOUNTS.acct                As Account_Number
-		,[S_ACCOUNT_TYPE].[description] as Account_Type
-		,TRADES.trd_dt AS Order_Executed
-		,TRADES.entr_dt AS Entry_Date
-		--,TRADES.order_dt AS Order_Executed
-		, TRADES.buy AS Action
-		, SECURITY_DETAILS.name1  AS Description1
-		, SECURITY_DETAILS.name2  AS Description2
-		, SECURITY_DETAILS.name3 AS Description3
-		, SECURITY_DETAILS.name4 AS Description4
-		, SECURITY_DETAILS.name5 AS Description5
-	
-
-		,  CONCAT(SECURITY_DETAILS.name1,' ', SECURITY_DETAILS.name2 , ' ',SECURITY_DETAILS.name3 ,' ', SECURITY_DETAILS.name4 
-		 ,' ', SECURITY_DETAILS.name5) AS Security_Description
-
-		, TRADES.stl_dt AS Settled_Date
-		, TRADES.fill_qty1 AS Quantity
-		, CASE WHEN SECURITY_DETAILS.strike_prc &lt;&gt; 0 THEN CONVERT(money, TRADES.fill_prc_ext1)*100 ELSE CONVERT(money, TRADES.fill_prc_ext1) END AS Price
-		, TRADES.gross AS Amount
-		,CONVERT(date, TRADES.loadstamp) Trades_LoadStamp
-FROM CLIENTS (nolock)		
-	INNER JOIN ACCOUNTS (nolock)	
-		ON CLIENTS.client_id = ACCOUNTS.client_id
-		AND CONVERT(date, CLIENTS.loadstamp) = CONVERT(date, ACCOUNTS.loadstamp)
-	LEFT OUTER JOIN [dbo].[S_ACCOUNT_TYPE] (nolock)	
-		ON ACCOUNTS.acct_type = [S_ACCOUNT_TYPE].account_type
-	INNER JOIN TRADES  (nolock)	
-		ON TRADES.acct = ACCOUNTS.acct
-	LEFT OUTER JOIN SECURITY_DETAILS  (nolock)	
-		ON SECURITY_DETAILS.cusip = TRADES.cusip
-		AND SECURITY_DETAILS.[language] = 'E'
-		AND CONVERT(date,SECURITY_DETAILS.loadstamp) = CONVERT(date,TRADES.loadstamp)
-WHERE CONVERT(date,CLIENTS.loadstamp) = @TradeDate --DATEADD(DAY, 1, @DATE)		
-AND CONVERT(date, TRADES.loadstamp) &lt;= @TradeDate--DATEADD(DAY, 1, @DATE)			</CommandText>
+        <CommandText>SELECT  
+   a.A_C_ID,
+   a.A_C_Name,
+   a.A_C_Representative,
+   b.repName,
+   d.Tran_Currency,
+   c.A_C_Summ_TD_Net_Amt,
+   c.A_C_Summ_SD_Net_Amt,
+   c.A_C_Summ_Equity,
+   c.A_C_Summ_Equity_Alt,
+   d.Tran_Process_Date,
+   d.Tran_Trade_Date,
+   d.Tran_Settlement_Date,
+   d.Tran_Qty,
+   d.Tran_Entry_Description,
+   d.Tran_User_Description,
+   d.Tran_Gross_Amt
+FROM BACKOFFICE.IAVMACT a (nolock)
+LEFT JOIN IAVM.rep b (nolock) ON
+   b.repId = a.A_C_Representative
+inner JOIN BACKOFFICE.IAVMVAL c (nolock) ON
+   c.A_C_ID = a.A_C_ID
+inner JOIN BACKOFFICE.IAVMBK d (nolock) ON
+   d.A_C_ID = a.A_C_ID 
+   --d.Tran_Process_Date = c.A_C_Summ_Balance_Bus_Date
+   AND LEFT(d.Tran_Entry_Description,3) = 'TFR'
+WHERE (
+		(a.ASC_3_Managed_Type IN ( 'L','M','N','Q','R','S','V','X' )
+		AND a.A_C_Account_Class = '038') OR 
+		LEFT(a.A_C_Representative,2) IN ('JG','JL')
+    )
+	--AND (d.Tran_Process_Date = (SELECT MAX(Mkt_Price_Date) FROM BACKOFFICE.IAVMPSN (nolock)) OR d.Tran_Process_Date IS NULL)
+	and d.Tran_Process_Date=@processDate
+and LEN(a.A_C_ID) &gt; 2 </CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
-        <Field Name="First_Name">
-          <DataField>First_Name</DataField>
+        <Field Name="A_C_ID">
+          <DataField>A_C_ID</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Last_Name">
-          <DataField>Last_Name</DataField>
+        <Field Name="A_C_Name">
+          <DataField>A_C_Name</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Account_Number">
-          <DataField>Account_Number</DataField>
+        <Field Name="A_C_Representative">
+          <DataField>A_C_Representative</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Account_Type">
-          <DataField>Account_Type</DataField>
+        <Field Name="repName">
+          <DataField>repName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Order_Executed">
-          <DataField>Order_Executed</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="Entry_Date">
-          <DataField>Entry_Date</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="Action">
-          <DataField>Action</DataField>
+        <Field Name="Tran_Currency">
+          <DataField>Tran_Currency</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Description1">
-          <DataField>Description1</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Description2">
-          <DataField>Description2</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Description3">
-          <DataField>Description3</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Description4">
-          <DataField>Description4</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Description5">
-          <DataField>Description5</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Security_Description">
-          <DataField>Security_Description</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Settled_Date">
-          <DataField>Settled_Date</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="Quantity">
-          <DataField>Quantity</DataField>
+        <Field Name="A_C_Summ_TD_Net_Amt">
+          <DataField>A_C_Summ_TD_Net_Amt</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Price">
-          <DataField>Price</DataField>
+        <Field Name="A_C_Summ_SD_Net_Amt">
+          <DataField>A_C_Summ_SD_Net_Amt</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Amount">
-          <DataField>Amount</DataField>
+        <Field Name="A_C_Summ_Equity">
+          <DataField>A_C_Summ_Equity</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Trades_LoadStamp">
-          <DataField>Trades_LoadStamp</DataField>
+        <Field Name="A_C_Summ_Equity_Alt">
+          <DataField>A_C_Summ_Equity_Alt</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Tran_Process_Date">
+          <DataField>Tran_Process_Date</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="Parameter_TradeDate">
-      <Query>
-        <DataSourceName>FW_qtrade</DataSourceName>
-        <CommandText>SELECT CAST(loadstamp AS Date) AS TD
-      ,CAST(CAST(loadstamp AS Date) AS VARCHAR) TradeDate
-FROM   TRADES
-GROUP BY CAST(loadstamp AS Date) ,CAST(CAST(loadstamp AS Date) AS VARCHAR)
-ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="TradeDate">
-          <DataField>TradeDate</DataField>
+        <Field Name="Tran_Trade_Date">
+          <DataField>Tran_Trade_Date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Tran_Settlement_Date">
+          <DataField>Tran_Settlement_Date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Tran_Qty">
+          <DataField>Tran_Qty</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Tran_Entry_Description">
+          <DataField>Tran_Entry_Description</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="TD">
-          <DataField>TD</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
+        <Field Name="Tran_User_Description">
+          <DataField>Tran_User_Description</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="DefaultDateForParameter">
-      <Query>
-        <DataSourceName>FW_qtrade</DataSourceName>
-        <CommandText>SELECT CAST(DATEADD(DAY, - 1, GETDATE()) AS DATE) AS TD</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="TD">
-          <DataField>TD</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
+        <Field Name="Tran_Gross_Amt">
+          <DataField>Tran_Gross_Amt</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -180,25 +133,16 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                   <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.96528in</Width>
+                  <Width>2.84375in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.15278in</Width>
+                  <Width>0.59375in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.24306in</Width>
+                  <Width>2.5in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.31944in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1.13194in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>5.08333in</Width>
+                  <Width>0.48958in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
@@ -208,6 +152,27 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.5in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
@@ -226,26 +191,32 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>First Name</Value>
+                                  <Value>Account</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox2</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -264,26 +235,29 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Last Name</Value>
+                                  <Value>Name</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox3</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -302,26 +276,29 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Account Number</Value>
+                                  <Value>Rep</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox4</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -340,26 +317,29 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Account Type</Value>
+                                  <Value>Rep Name</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox5</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -378,26 +358,29 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Order Executed</Value>
+                                  <Value>Cur</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox6</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -416,26 +399,30 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Entry Date</Value>
+                                  <Value>TD Net Amt</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox7</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -454,26 +441,30 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Action</Value>
+                                  <Value>SD Net Amt</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox8</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -485,33 +476,203 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox1">
+                        <Textbox Name="textbox9">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Security Description</Value>
+                                  <Value>TD Equity</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <rd:DefaultName>textbox9</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox10">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>SD Equity</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox10</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox11">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>PD</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox11</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox12">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>TD</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox12</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox13">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>SD</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox13</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
+                            <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -529,26 +690,30 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Settled Date</Value>
+                                  <Value>Qty</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox14</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -567,26 +732,29 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Quantity</Value>
+                                  <Value>Entry Desc</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox15</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -605,26 +773,29 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Price</Value>
+                                  <Value>User Desc</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox16</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -643,26 +814,30 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Amount</Value>
+                                  <Value>Gross Amt</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
+                                    <FontFamily>Calibri</FontFamily>
                                     <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
+                                    <Color>White</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>textbox17</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
+                            <BackgroundColor>Green</BackgroundColor>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -679,30 +854,71 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="First_Name">
+                        <Textbox Name="A_C_ID">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!First_Name.Value</Value>
+                                  <Value>=Fields!A_C_ID.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>First_Name</rd:DefaultName>
+                          <rd:DefaultName>A_C_ID</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <RightBorder>
                               <Style>Solid</Style>
+                            </RightBorder>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="A_C_Name">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!A_C_Name.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>A_C_Name</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -715,30 +931,31 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Last_Name">
+                        <Textbox Name="A_C_Representative">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Last_Name.Value</Value>
+                                  <Value>=Fields!A_C_Representative.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Last_Name</rd:DefaultName>
+                          <rd:DefaultName>A_C_Representative</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -751,30 +968,31 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Account_Number">
+                        <Textbox Name="repName">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Account_Number.Value</Value>
+                                  <Value>=Fields!repName.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Account_Number</rd:DefaultName>
+                          <rd:DefaultName>repName</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -787,30 +1005,33 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Account_Type">
+                        <Textbox Name="Tran_Currency">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Account_Type.Value</Value>
+                                  <Value>=Fields!Tran_Currency.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Account_Type</rd:DefaultName>
+                          <rd:DefaultName>Tran_Currency</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -823,31 +1044,72 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Order_Executed">
+                        <Textbox Name="A_C_Summ_TD_Net_Amt">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Order_Executed.Value</Value>
+                                  <Value>=Fields!A_C_Summ_TD_Net_Amt.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Format>dd-MMM-yy</Format>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Format>'$'#,0.00</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Order_Executed</rd:DefaultName>
+                          <rd:DefaultName>A_C_Summ_TD_Net_Amt</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <rd:FormatSymbolCulture>en-US</rd:FormatSymbolCulture>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="A_C_Summ_SD_Net_Amt">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!A_C_Summ_SD_Net_Amt.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Format>'$'#,0.00</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>A_C_Summ_SD_Net_Amt</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -860,31 +1122,34 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Entry_Date">
+                        <Textbox Name="A_C_Summ_Equity">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Entry_Date.Value</Value>
+                                  <Value>=Fields!A_C_Summ_Equity.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Format>dd-MMM-yy</Format>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Format>'$'#,0.00</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Entry_Date</rd:DefaultName>
+                          <rd:DefaultName>A_C_Summ_Equity</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -897,30 +1162,34 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Action">
+                        <Textbox Name="A_C_Summ_Equity_Alt">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Action.Value</Value>
+                                  <Value>=Fields!A_C_Summ_Equity_Alt.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Format>'$'#,0.00</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Action</rd:DefaultName>
+                          <rd:DefaultName>A_C_Summ_Equity_Alt</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -933,31 +1202,33 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Security_Description">
+                        <Textbox Name="Tran_Process_Date">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Security_Description.Value</Value>
+                                  <Value>=Fields!Tran_Process_Date.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Format>yyyy-MM-dd</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Security_Description</rd:DefaultName>
+                          <rd:DefaultName>Tran_Process_Date</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
-                            <BottomBorder>
-                              <Style>Solid</Style>
-                            </BottomBorder>
+                            <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -968,31 +1239,34 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Settled_Date">
+                        <Textbox Name="Tran_Trade_Date">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Settled_Date.Value</Value>
+                                  <Value>=Fields!Tran_Trade_Date.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Format>dd-MMM-yy</Format>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Format>yyyy-MM-dd</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Settled_Date</rd:DefaultName>
+                          <rd:DefaultName>Tran_Trade_Date</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -1005,30 +1279,34 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Quantity">
+                        <Textbox Name="Tran_Settlement_Date">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Quantity.Value</Value>
+                                  <Value>=Fields!Tran_Settlement_Date.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Format>yyyy-MM-dd</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Quantity</rd:DefaultName>
+                          <rd:DefaultName>Tran_Settlement_Date</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -1041,30 +1319,33 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Price">
+                        <Textbox Name="Tran_Qty">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Price.Value</Value>
+                                  <Value>=Fields!Tran_Qty.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Price</rd:DefaultName>
+                          <rd:DefaultName>Tran_Qty</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -1077,30 +1358,108 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Amount">
+                        <Textbox Name="Tran_Entry_Description">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Amount.Value</Value>
+                                  <Value>=Fields!Tran_Entry_Description.Value</Value>
                                   <Style>
-                                    <FontFamily>Calibri Light</FontFamily>
-                                    <Color>#333333</Color>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Amount</rd:DefaultName>
+                          <rd:DefaultName>Tran_Entry_Description</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
+                              <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Style>Solid</Style>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Tran_User_Description">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Tran_User_Description.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Tran_User_Description</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Tran_Gross_Amt">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Tran_Gross_Amt.Value</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Format>'$'#,0.00</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Tran_Gross_Amt</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
                             </BottomBorder>
                             <FontFamily />
                             <PaddingLeft>2pt</PaddingLeft>
@@ -1117,6 +1476,12 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember>
+                  <FixedData>true</FixedData>
+                </TablixMember>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -1151,23 +1516,24 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
+            <RepeatColumnHeaders>true</RepeatColumnHeaders>
+            <FixedColumnHeaders>true</FixedColumnHeaders>
             <DataSetName>DataSet1</DataSetName>
-            <PageName>iASProAccountReport</PageName>
+            <PageName>trsf act</PageName>
             <SortExpressions>
               <SortExpression>
-                <Value>=Fields!Order_Executed.Value</Value>
-                <Direction>Descending</Direction>
+                <Value>=Fields!repName.Value</Value>
               </SortExpression>
             </SortExpressions>
             <Height>0.43in</Height>
-            <Width>18.89583in</Width>
+            <Width>19.92708in</Width>
             <Style />
           </Tablix>
         </ReportItems>
-        <Height>0.44389in</Height>
+        <Height>0.63833in</Height>
         <Style />
       </Body>
-      <Width>18.89583in</Width>
+      <Width>19.92708in</Width>
       <Page>
         <LeftMargin>1in</LeftMargin>
         <RightMargin>1in</RightMargin>
@@ -1178,33 +1544,25 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="TradeDate">
-      <DataType>String</DataType>
+    <ReportParameter Name="processDate">
+      <DataType>DateTime</DataType>
       <DefaultValue>
-        <DataSetReference>
-          <DataSetName>Parameter_TradeDate</DataSetName>
-          <ValueField>TradeDate</ValueField>
-        </DataSetReference>
+        <Values>
+          <Value>=DateAdd("d",-1,Today)</Value>
+        </Values>
       </DefaultValue>
-      <Prompt>Select Date</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>Parameter_TradeDate</DataSetName>
-          <ValueField>TradeDate</ValueField>
-          <LabelField>TradeDate</LabelField>
-        </DataSetReference>
-      </ValidValues>
+      <Prompt>Process Date</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>1</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>TradeDate</ParameterName>
+          <ParameterName>processDate</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
@@ -1212,5 +1570,5 @@ ORDER BY CAST(loadstamp AS Date)  DESC</CommandText>
   <Language>en-US</Language>
   <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
-  <rd:ReportID>eecb063c-5229-4a7b-a3b4-0736980290b1</rd:ReportID>
+  <rd:ReportID>c78f057b-87fc-44b1-af1b-da16811c97d0</rd:ReportID>
 </Report>

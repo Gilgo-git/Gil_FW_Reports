@@ -1,0 +1,1371 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="iAS_PORTAL">
+      <DataSourceReference>iAS_Portal</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>574bc3b9-d4b5-43d3-8fce-6601ee6d6aa7</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>iAS_PORTAL</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Date">
+            <Value>=Parameters!Date.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>;WITH tmp(UserID, ImportDate, FinalData, Access) AS
+(
+    SELECT
+        UserID,
+		ImportDate,
+        LEFT(CONVERT(varchar(max),REPLACE(REPLACE(REPLACE(REPLACE(Access, 'ALL', 'Firm'),'BLNK', 'Firm'),'L06', 'Firm'),'SE88', 'Firm')), CHARINDEX(',', CONVERT(varchar(max),REPLACE(REPLACE(REPLACE(REPLACE(Access, 'ALL', 'Firm'),'BLNK', 'Firm'),'L06', 'Firm'),'SE88', 'Firm')) + ',') - 1),
+        STUFF(CONVERT(varchar(max),REPLACE(REPLACE(REPLACE(REPLACE(Access, 'ALL', 'Firm'),'BLNK', 'Firm'),'L06', 'Firm'),'SE88', 'Firm')), 1, CHARINDEX(',', CONVERT(varchar(max),REPLACE(REPLACE(REPLACE(REPLACE(Access, 'ALL', 'Firm'),'BLNK', 'Firm'),'L06', 'Firm'),'SE88', 'Firm')) + ','), '')
+    FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] 
+	WHERE [Platform] &lt;&gt; 'MyPortfolioIAPlus'
+
+    UNION all
+
+    SELECT
+        UserID,
+		ImportDate,
+        LEFT(CONVERT(varchar(max),REPLACE(REPLACE(REPLACE(REPLACE(Access, 'ALL', 'Firm'),'BLNK', 'Firm'),'L06', 'Firm'),'SE88', 'Firm')), CHARINDEX(',', CONVERT(varchar(max),REPLACE(REPLACE(REPLACE(REPLACE(Access, 'ALL', 'Firm'),'BLNK', 'Firm'),'L06', 'Firm'),'SE88', 'Firm')) + ',') - 1),
+        STUFF(CONVERT(varchar(max),REPLACE(REPLACE(REPLACE(REPLACE(Access, 'ALL', 'Firm'),'BLNK', 'Firm'),'L06', 'Firm'),'SE88', 'Firm')), 1, CHARINDEX(',', CONVERT(varchar(max),REPLACE(REPLACE(REPLACE(REPLACE(Access, 'ALL', 'Firm'),'BLNK', 'Firm'),'L06', 'Firm'),'SE88', 'Firm')) + ','), '')
+    FROM tmp
+    WHERE
+        CONVERT(varchar(max),REPLACE(REPLACE(REPLACE(REPLACE(Access, 'ALL', 'Firm'),'BLNK', 'Firm'),'L06', 'Firm'),'SE88', 'Firm')) &gt; ''
+)
+
+
+SELECT A.UserID,A.FullName
+	,STUFF((SELECT ', ' + C.Access 
+          FROM (
+					--SELECT UserID,Access
+					--FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] 
+					--WHERE ImportDate = A.ImportDate
+					--GROUP BY  UserID,Access
+					SELECT UserID, Access
+					FROM (
+							SELECT UserID, FinalData AS Access
+							FROM tmp
+							WHERE ImportDate = A.ImportDate
+					
+							UNION ALL 
+
+							SELECT C.[User_ID] AS UserID
+							, CASE WHEN Access_Level IN ('SYSADM','HELPDSK', 'FIRMUSER', 'FIRMMAN', 'FIRMADM') THEN 'Firm' WHEN Access_Level IN ('BRMAN','BRADM', 'MBMAN', 'REP', 'ASSIST')  THEN B.Code ELSE '' END  AS Access
+							--, CASE WHEN LEFT(C.Access_Level,4) IN ('FIRM','SYSA') THEN 'Firm' ELSE REPLACE(REPLACE(REPLACE(REPLACE(B.Code, '_FRM', 'Firm'),'_GBL','Firm'),'SE88','Firm'),'L06','Firm') END  AS Access
+							FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_CROESUS] AS C
+								LEFT OUTER JOIN  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_CROESUS_CODE] AS B
+									ON C.[User_ID] = B.[UserID]
+									AND B.ImportDate = C.ImportDate
+							WHERE C.ImportDate = A.ImportDate
+							AND C.[Is_Active] &lt;&gt; 'N'
+					) AS CODES
+					GROUP BY  UserID,Access
+					) C
+          WHERE C.UserID = A.UserID
+          FOR XML PATH('')), 1, 1, '') AS AccessCodes
+	, CASE WHEN (SELECT COUNT(*) FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] WHERE UserID = A.UserID AND ImportDate = A.ImportDate AND [Platform]= 'Compass') &gt; 0 THEN 1 ELSE 0 END AS Compass
+	, CASE WHEN (SELECT COUNT(*) FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] WHERE UserID = A.UserID AND ImportDate = A.ImportDate AND [Platform]= 'CRM') &gt; 0 THEN 1 ELSE 0 END AS CRM
+	, CASE WHEN (SELECT COUNT(*) FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] WHERE UserID = A.UserID AND ImportDate = A.ImportDate AND [Platform]= 'IMOST') &gt; 0 THEN 1 ELSE 0 END AS IMOST
+	, CASE WHEN (SELECT COUNT(*) FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] WHERE UserID = A.UserID AND ImportDate = A.ImportDate AND [Platform]= 'MaxLite') &gt; 0 THEN 1 ELSE 0 END AS MaxLite
+	, CASE WHEN (SELECT COUNT(*) FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] WHERE UserID = A.UserID AND ImportDate = A.ImportDate AND [Platform]= 'NextRep') &gt; 0 THEN 1 ELSE 0 END AS NextRep
+	, CASE WHEN (SELECT COUNT(*) FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] WHERE UserID = A.UserID AND ImportDate = A.ImportDate AND [Platform]= 'WebPanagon') &gt; 0 THEN 1 ELSE 0 END AS WebPanagon
+	, CASE WHEN (SELECT COUNT(*) FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] WHERE UserID = A.UserID AND ImportDate = A.ImportDate AND [Platform]= 'MyPortfolioIAPlus') &gt; 0 THEN 1 ELSE 0 END AS MyPortfolioIAPlus
+	, CASE WHEN (SELECT COUNT(*) FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_CROESUS] WHERE [Is_Active] &lt;&gt; 'N' AND [UserID] = A.UserID AND ImportDate = A.ImportDate) &gt; 0 THEN 1 ELSE 0 END AS CROESUS
+FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAW_EMPLOYEE_TERMINATED] AS A
+WHERE (A.UserID IN (SELECT UserID FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] WHERE ImportDate = A.ImportDate GROUP BY UserID)
+			OR A.UserID IN (SELECT [UserID] FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_CROESUS] WHERE [Is_Active] &lt;&gt; 'N' AND ImportDate = A.ImportDate GROUP BY [UserID])
+		)
+	AND ImportDate = @Date and fullname &lt;&gt; ''
+ORDER BY A.FullName
+</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="UserID">
+          <DataField>UserID</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="FullName">
+          <DataField>FullName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="AccessCodes">
+          <DataField>AccessCodes</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Compass">
+          <DataField>Compass</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CRM">
+          <DataField>CRM</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="IMOST">
+          <DataField>IMOST</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="MaxLite">
+          <DataField>MaxLite</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NextRep">
+          <DataField>NextRep</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="WebPanagon">
+          <DataField>WebPanagon</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="MyPortfolioIAPlus">
+          <DataField>MyPortfolioIAPlus</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CROESUS">
+          <DataField>CROESUS</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DefaultDate">
+      <Query>
+        <DataSourceName>iAS_PORTAL</DataSourceName>
+        <CommandText>SELECT CONVERT(nvarchar(10),CONVERT(Date,MAX(ImportDate))) AS DefaultDate
+FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAW_EMPLOYEE] AS A
+WHERE (A.UserID IN (SELECT UserID FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_ACCESS_NORMALIZED] WHERE ImportDate = A.ImportDate GROUP BY UserID)
+			OR A.UserID IN (SELECT [User_ID] FROM  IAS_PORTAL.[REPORTS].[ATTESTATION_IAS_CROESUS] WHERE ImportDate = A.ImportDate GROUP BY [User_ID])
+		)</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="DefaultDate">
+          <DataField>DefaultDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Dates">
+      <Query>
+        <DataSourceName>iAS_PORTAL</DataSourceName>
+        <CommandText>SELECT        CONVERT(nvarchar(10), CONVERT(date, ImportDate)) AS ImportDate
+FROM            REPORTS.ATTESTATION_IAW_EMPLOYEE AS A
+WHERE        (UserID IN
+                             (SELECT        UserID
+                               FROM            REPORTS.ATTESTATION_IAS_ACCESS_NORMALIZED
+                               WHERE        (ImportDate = A.ImportDate)
+                               GROUP BY UserID)) OR
+                         (UserID IN
+                             (SELECT        User_ID
+                               FROM            REPORTS.ATTESTATION_IAS_CROESUS
+                               WHERE        (ImportDate = A.ImportDate)
+                               GROUP BY User_ID))
+GROUP BY CONVERT(nvarchar(10), CONVERT(date, ImportDate))</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ImportDate">
+          <DataField>ImportDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="table1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>4in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>4in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.13542in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>6.53125in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox12">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox12</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox13">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox13</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox14">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>ACCÈS AU SYSTEME / SYSTEM ACCESS</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox14</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>8</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox22">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox22</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>None</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.95958in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>NOM D'UTILISATEUR
+USER NAME</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox3">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>CODE D'ACCES
+ACCESS CODES</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox3</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox4">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>COMPASS</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox4</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox5">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>CRM</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox5</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>IMOST</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox7">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>MAXLITE</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox7</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox8">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>NEXTREP</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox8</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox9">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>WEBPANAGON</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox9</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox11">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>CROESUS</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <FontFamily />
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox11</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox26">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>MY PORTFOLIO IAPLUS</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox26</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox23">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>NOTES D'ATTESTATION
+(ex. Supprimer l'utilisateur ou code, l'utilisateur n'est pas sous ma gestion) 
+ATTESTATION NOTES 
+(ex. Delete user or code, User not under my supervision)</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>White</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <RightBorder>
+                              <Style>Solid</Style>
+                            </RightBorder>
+                            <BackgroundColor>#333f4f</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.46625in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="FullName">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!FullName.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>FullName</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="AccessCodes">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=iif(isnothing(Fields!AccessCodes.Value), "No Rep. Code Access", Fields!AccessCodes.Value)</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>AccessCodes</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                            <FontFamily />
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle1">
+                          <ReportItems>
+                            <Image Name="Image9">
+                              <Source>Embedded</Source>
+                              <Value>=iif(Fields!Compass.Value = "1", "checkmarkpng40", "xpng40")</Value>
+                              <Sizing>FitProportional</Sizing>
+                              <Top>0.125in</Top>
+                              <Left>0.32167in</Left>
+                              <Height>0.22917in</Height>
+                              <Width>0.30208in</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Image>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle2">
+                          <ReportItems>
+                            <Image Name="Image10">
+                              <Source>Embedded</Source>
+                              <Value>=iif(Fields!CRM.Value = "1", "checkmarkpng40", "xpng40")</Value>
+                              <Sizing>FitProportional</Sizing>
+                              <Top>0.125in</Top>
+                              <Left>0.32167in</Left>
+                              <Height>0.22917in</Height>
+                              <Width>0.30208in</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Image>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle3">
+                          <ReportItems>
+                            <Image Name="Image11">
+                              <Source>Embedded</Source>
+                              <Value>=iif(Fields!IMOST.Value = "1", "checkmarkpng40", "xpng40")</Value>
+                              <Sizing>FitProportional</Sizing>
+                              <Top>0.125in</Top>
+                              <Left>0.32167in</Left>
+                              <Height>0.22917in</Height>
+                              <Width>0.30208in</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Image>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle4">
+                          <ReportItems>
+                            <Image Name="Image12">
+                              <Source>Embedded</Source>
+                              <Value>=iif(Fields!MaxLite.Value = "1", "checkmarkpng40", "xpng40")</Value>
+                              <Sizing>FitProportional</Sizing>
+                              <Top>0.125in</Top>
+                              <Left>0.32167in</Left>
+                              <Height>0.22917in</Height>
+                              <Width>0.30208in</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Image>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle5">
+                          <ReportItems>
+                            <Image Name="Image13">
+                              <Source>Embedded</Source>
+                              <Value>=iif(Fields!NextRep.Value = "1", "checkmarkpng40", "xpng40")</Value>
+                              <Sizing>FitProportional</Sizing>
+                              <Top>0.125in</Top>
+                              <Left>0.32167in</Left>
+                              <Height>0.22917in</Height>
+                              <Width>0.30208in</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Image>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle6">
+                          <ReportItems>
+                            <Image Name="Image14">
+                              <Source>Embedded</Source>
+                              <Value>=iif(Fields!WebPanagon.Value = "1", "checkmarkpng40", "xpng40")</Value>
+                              <Sizing>FitProportional</Sizing>
+                              <Top>0.125in</Top>
+                              <Left>0.32167in</Left>
+                              <Height>0.22917in</Height>
+                              <Width>0.30208in</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Image>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle7">
+                          <ReportItems>
+                            <Image Name="Image15">
+                              <Source>Embedded</Source>
+                              <Value>=iif(Fields!CROESUS.Value = "1", "checkmarkpng40", "xpng40")</Value>
+                              <Sizing>FitProportional</Sizing>
+                              <Top>0.125in</Top>
+                              <Left>0.32167in</Left>
+                              <Height>0.22917in</Height>
+                              <Width>0.30208in</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Image>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Rectangle Name="Rectangle8">
+                          <ReportItems>
+                            <Image Name="Image16">
+                              <Source>Embedded</Source>
+                              <Value>=iif(Fields!MyPortfolioIAPlus.Value = "1", "checkmarkpng40", "xpng40")</Value>
+                              <Sizing>FitProportional</Sizing>
+                              <Top>0.125in</Top>
+                              <Left>0.32167in</Left>
+                              <Height>0.22917in</Height>
+                              <Width>0.30208in</Width>
+                              <Style>
+                                <Border>
+                                  <Style>None</Style>
+                                </Border>
+                              </Style>
+                            </Image>
+                          </ReportItems>
+                          <KeepTogether>true</KeepTogether>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                          </Style>
+                        </Rectangle>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox24">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox24</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>=IIF(ROWNUMBER(NOTHING) MOD 2, "WHITE", "#d9d9d9")</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                </TablixMember>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="table1_Details_Group">
+                    <DataElementName>Detail</DataElementName>
+                  </Group>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                  <DataElementName>Detail_Collection</DataElementName>
+                  <DataElementOutput>Output</DataElementOutput>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DataSet1</DataSetName>
+            <Height>1.67583in</Height>
+            <Width>22.66667in</Width>
+            <Style />
+          </Tablix>
+        </ReportItems>
+        <Height>2.20708in</Height>
+        <Style />
+      </Body>
+      <Width>22.66667in</Width>
+      <Page>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
+        <TopMargin>1in</TopMargin>
+        <BottomMargin>1in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="Date">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DefaultDate</DataSetName>
+          <ValueField>DefaultDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>File Date</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Dates</DataSetName>
+          <ValueField>ImportDate</ValueField>
+          <LabelField>ImportDate</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Date</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <EmbeddedImages>
+    <EmbeddedImage Name="Check_10">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>/9j/4AAQSkZJRgABAQEAYABgAAD/4QBGRXhpZgAATU0AKgAAAAgABAESAAMAAAABAAEAAFEQAAEAAAABAQAAAFERAAQAAAABAAAAAFESAAQAAAABAAAAAAAAAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAAWABcDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/K5H44fHDw3+zv8ADi+8VeKr9bHS7EYAHzS3MhztiiXPzSNg4HQAEkhQSPDfBP8AwUZx+1X4
+j+HPjvwuPAlvp0U81he3d8shkSGNpy8xUeWqyW6tKpV2C7ChLMa8/wDgVp97/wAFLf2lrj4keI7WaP4VeAbo23hnSLjhL+6GG86Vf4iBskcdMmKPLhJd3iVs4hUSp4P3qkm4pNNWa3ck7Oy/HRLc+ZxHEVKrFUcvfNVlJxSaa5XH4pSTs0oqz7u6S309f+DPgfxR+1A0Hjv4o2sul6HcqZPDngcORb2cDjAutQHH2i5dTlY3Hlwg52iUkoV9A0V6FHB04RtP3n1b1bf9dFotloeth8to04WqLnl1lJJtvv5eSWiWiSSPkr/gpJ+xJJ+1B45+Hd7o99p2kaxdXcmhXl1dI7hrXyprtW2r95ovJn2plQxnILL1H0X8EvhHpfwH+E+g+ENHVv7P0K1W3V2ADXD5LSStjjfJIzu2ONzmiiuTC4SjHGVq8Y+87Jv5I4cBl+HhmWJxUIpTfKm/LlT9NXv36nVUUUV6x7x//9k=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="xmark_10">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>/9j/4AAQSkZJRgABAQEAYABgAAD/4QBGRXhpZgAATU0AKgAAAAgABAESAAMAAAABAAEAAFEQAAEAAAABAQAAAFERAAQAAAABAAAAAFESAAQAAAABAAAAAAAAAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAAXABcDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDvv22f2zv2lv2J/wDgpVceLvFl35ax7otJ0yF5D4f1XRt+RFGp65wC7n94sgzxhRX2p8T/APgv
+P8KfDv7H1n8QPD8yap4w1hWtLPwnLLi6s7xVBf7TjlYE3A+YP9YCAvJO2T/gvF8Vfg/4Z/ZRuPDvxBsk1rxdqyvL4UsrWRY7+zuQNv2sPg+XCp4fIIk+4ATyv4OxR7PLkljka3Z9pKnbvxgsA2CM4I7HGRxX4/nGcYzI8ZWw+Hre0VTX3tXBv9bbLta67/6OeHPh1w54p8N5dm+cZc8JPCNU26aUKeJpwWy68t/ilupc6jPV8v6Zf8EfP2gf2m/2k/2wfF3i/TtTj1vw/rCtJ4ok1tpF0eGXyyLaOBUyY5VO1VWMcRg7uMGiv0G/4JXfFT4R/En9kbQYfg/Zw6Poujxrb6hpEjBr7TrsjMn2k9ZJHOW83o45GMbVK+74dy50sDG9d1HL3rp3V3q7X6frd6bH8n+MnGUMw4qrqnldPCRo2pKnKFpqNPSLmk0ua1kraKKjFOSXM/z5/aB/4I+fGD9pT/gptqeneL/F0eseH9bQ63J4okkjE0GmCTYLdLbOUlQkRqqjy+jZxkV+hPxN/wCCWXwh+In7I1r8HY/D8Ok6HpKGTSr63UG+0+7IwbvzDy8jn7+7hxwcADBRTy7h3A0nXfLzOo2nzauz1td9Px7vRBxl4ycU5hTyumq/sY4SnCVNUl7NKaulNqOnNZWskopXUYpSlf4R/wCCZX/BL744/s5ftyeLoYPGFv4S0PwnCbO/1KyMV4niBJ4y1sq2zkjHKykygFCuBknIKKK1ybJcPg8O6VFytzS+0+7XRrscHiV4m5xxDm8cwzCNH2nsqKbVGm73pxk23KMm23J9bJWSSSSP/9k=</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="checkmarkpng40">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="xpng40">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <Language>en-US</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>a7f26fdd-3f9d-4704-883f-77513729c2a3</rd:ReportID>
+</Report>
