@@ -165,6 +165,22 @@ and 	DocTypes.In_DocTypeName='LOI Dilution'</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="DataSet2">
+      <Query>
+        <DataSourceName>SI_Investia</DataSourceName>
+        <CommandText>select cast(getdate() as date) as FromDate, cast(getdate() + 1 as date) as ToDate from dbo.main</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ToDate">
+          <DataField>ToDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="FromDate">
+          <DataField>FromDate</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -1754,10 +1770,22 @@ and 	DocTypes.In_DocTypeName='LOI Dilution'</CommandText>
   <ReportParameters>
     <ReportParameter Name="StartDate">
       <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DataSet2</DataSetName>
+          <ValueField>FromDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
       <Prompt>Start Date</Prompt>
     </ReportParameter>
     <ReportParameter Name="EndDate">
       <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DataSet2</DataSetName>
+          <ValueField>ToDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
       <Prompt>End Date</Prompt>
     </ReportParameter>
     <ReportParameter Name="StartTime">
