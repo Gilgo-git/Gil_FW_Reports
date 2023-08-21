@@ -34,6 +34,16 @@ SELECT * FROM OPENQUERY(LDAP,
   'SELECT cn, samaccountname FROM ''LDAP://10.95.0.5'' WHERE objectCategory = ''Person'' AND  objectClass = ''user'' and samaccountname = ''gf*'' or samaccountname = ''li*'' or samaccountname = ''lk*'' or samaccountname = ''lm*'' ')
 </CommandText>
       </Query>
+      <Fields>
+        <Field Name="samaccountname">
+          <DataField>samaccountname</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="cn">
+          <DataField>cn</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
     </DataSet>
     <DataSet Name="WFG">
       <Query>
