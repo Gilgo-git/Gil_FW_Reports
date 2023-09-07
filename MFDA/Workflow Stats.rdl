@@ -4,10 +4,7 @@
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="SI_INVESTIA">
-      <ConnectionProperties>
-        <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=IAWMISSQLTD0145.iawealth.net;Initial Catalog=SI_INVESTIA_UAT</ConnectString>
-      </ConnectionProperties>
+      <DataSourceReference>SI_Investia</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
       <rd:DataSourceID>0614a08c-e0df-4c47-90c1-4ccaed39b850</rd:DataSourceID>
     </DataSource>
@@ -15,8 +12,9 @@
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
         <ConnectString>Data Source=IAWMISSQLTD0145.iawealth.net;Initial Catalog=SI_WFG_UAT</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>None</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>1a2fd18f-5649-420e-90df-4abf7b3676b4</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -32,8 +30,92 @@
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_x_Workflow_Stats_Report</CommandText>
+        <CommandText>DECLARE @StartDateR as date = @StartDate
+DECLARE @EndDateR as date = @EndDate
+
+
+--DROP TABLE #DateUserTEMP
+IF OBJECT_ID('tempdb..#DateUserTEMP') IS NOT NULL              
+  BEGIN       
+    drop table #DateUserTEMP        
+  END 
+
+IF OBJECT_ID('tempdb..#DateRangeTEMP') IS NOT NULL              
+  BEGIN       
+    drop table #DateRangeTEMP        
+  END 
+
+
+;with GetDates As  
+(  
+	select 1 as counter, @StartDateR as DateFilter   
+	
+	UNION ALL  
+
+	select counter + 1, DATEADD(day,counter,@StartDateR )  
+	from GetDates  
+	where DATEADD(day, counter, @StartDateR ) &lt; @EndDateR 
+) 
+
+SELECT * 
+INTO #DateRangeTEMP
+FROM GetDates 
+option (maxrecursion 0);
+
+--,DateUser as (
+SELECT B.In_DocCreator, B.Out_Queue, B.In_Queue ,DateFilter 
+	INTO #DateUserTEMP
+	FROM #DateRangeTEMP CROSS JOIN (
+		SELECT right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName)) AS In_DocCreator 
+					,a.Workflow AS Out_Queue
+					,b.Workflow AS In_Queue
+		from WorkflowLog (nolock)
+				inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
+				inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
+				inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID	
+				inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'			
+		where CONVERT(date, DateOut) BETWEEN @StartDateR AND @EndDateR
+		 --AND a.WorkFlowID$ NOT in (10,15,16,17,18,26,27,28,29,30,31,32,55,57,60,61,62,63,77,78,79,80,81)
+		GROUP BY right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName))
+				,a.Workflow 
+				,b.Workflow
+		) AS B
+--) 
+option (maxrecursion 0)
+
+
+SELECT B.In_DocCreator
+		,B.Out_Queue
+		,B.In_Queue
+		,#DateRangeTEMP.DateFilter AS In_DocCreated
+		,B.total
+FROM #DateRangeTEMP
+LEFT OUTER JOIN (
+
+select DateUser.In_DocCreator AS In_DocCreator
+--,CONVERT(date, In_DocCreated) AS In_DocCreated
+		,DateUser.Out_Queue
+		,DateUser.In_Queue
+		,DateUser.DateFilter AS In_DocCreated
+		, count(DateOut)  AS total
+from  WorkflowLog (nolock)
+		inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
+		inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
+		inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID
+		inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'
+	RIGHT OUTER JOIN #DateUserTEMP AS DateUser  (nolock) 
+		ON CONVERT(date, DateOut) = DateUser.DateFilter 
+		and right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName)) = DateUser.In_DocCreator
+		and a.Workflow = DateUser.Out_Queue
+		and b.Workflow = DateUser.In_Queue
+--where a.WorkFlowID$ NOT in (10,15,16,17,18,26,27,28,29,30,31,32,55,57,60,61,62,63,77,78,79,80,81)
+--CONVERT(date, In_DocCreated) BETWEEN '2018-10-04' AND '2018-10-11'
+group by DateUser.In_DocCreator ,DateUser.Out_Queue ,DateUser.In_Queue, DateUser.DateFilter
+--ORDER BY DateUser.DateFilter
+) AS B
+ON B.In_DocCreated = #DateRangeTEMP.DateFilter
+ORDER BY #DateRangeTEMP.DateFilter
+</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -64,7 +146,7 @@
         <DataSourceName>SI_INVESTIA</DataSourceName>
         <CommandText>
           SELECT * FROM OPENQUERY(LDAP,
-          'SELECT cn, samaccountname FROM ''LDAP://10.95.0.5'' WHERE objectCategory = ''Person'' AND  objectClass = ''user'' and samaccountname =''nv*'' or samaccountname = ''uvs*'' or samaccountname = ''vm*'' or samaccountname = ''fx*''  ')
+          'SELECT cn, samaccountname FROM ''LDAP://10.95.0.5'' WHERE objectCategory = ''Person'' AND  objectClass = ''user'' and samaccountname =''nv*'' or samaccountname = ''uvs*'' or samaccountname = ''vm*'' ')
 
           UNION ALL
 
@@ -95,8 +177,92 @@
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_x_Workflow_Stats_Report</CommandText>
+        <CommandText>DECLARE @StartDateR as date = @StartDate
+DECLARE @EndDateR as date = @EndDate
+
+
+--DROP TABLE #DateUserTEMP
+IF OBJECT_ID('tempdb..#DateUserTEMP') IS NOT NULL              
+  BEGIN       
+    drop table #DateUserTEMP        
+  END 
+
+IF OBJECT_ID('tempdb..#DateRangeTEMP') IS NOT NULL              
+  BEGIN       
+    drop table #DateRangeTEMP        
+  END 
+
+
+;with GetDates As  
+(  
+	select 1 as counter, @StartDateR as DateFilter   
+	
+	UNION ALL  
+
+	select counter + 1, DATEADD(day,counter,@StartDateR )  
+	from GetDates  
+	where DATEADD(day, counter, @StartDateR ) &lt; @EndDateR 
+) 
+
+SELECT * 
+INTO #DateRangeTEMP
+FROM GetDates 
+option (maxrecursion 0);
+
+--,DateUser as (
+SELECT B.In_DocCreator, B.Out_Queue, B.In_Queue ,DateFilter 
+	INTO #DateUserTEMP
+	FROM #DateRangeTEMP CROSS JOIN (
+		SELECT right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName)) AS In_DocCreator 
+					,a.Workflow AS Out_Queue
+					,b.Workflow AS In_Queue
+		from WorkflowLog (nolock)
+				inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
+				inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
+				inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID	
+				inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID -- and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'			
+		where CONVERT(date, DateOut) BETWEEN @StartDateR AND @EndDateR
+		 --AND a.WorkFlowID$ NOT in (10,15,16,17,18,26,27,28,29,30,31,32,55,57,60,61,62,63,77,78,79,80,81)
+		GROUP BY right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName))
+				,a.Workflow 
+				,b.Workflow
+		) AS B
+--) 
+option (maxrecursion 0)
+
+
+SELECT B.In_DocCreator
+		,B.Out_Queue
+		,B.In_Queue
+		,#DateRangeTEMP.DateFilter AS In_DocCreated
+		,B.total
+FROM #DateRangeTEMP
+LEFT OUTER JOIN (
+
+select DateUser.In_DocCreator AS In_DocCreator
+--,CONVERT(date, In_DocCreated) AS In_DocCreated
+		,DateUser.Out_Queue
+		,DateUser.In_Queue
+		,DateUser.DateFilter AS In_DocCreated
+		, count(DateOut)  AS total
+from  WorkflowLog (nolock)
+		inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
+		inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
+		inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID
+		inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID
+ -- and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'
+	RIGHT OUTER JOIN #DateUserTEMP AS DateUser  (nolock) 
+		ON CONVERT(date, DateOut) = DateUser.DateFilter 
+		and right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName)) = DateUser.In_DocCreator
+		and a.Workflow = DateUser.Out_Queue
+		and b.Workflow = DateUser.In_Queue
+--where a.WorkFlowID$ NOT in (10,15,16,17,18,26,27,28,29,30,31,32,55,57,60,61,62,63,77,78,79,80,81)
+--CONVERT(date, In_DocCreated) BETWEEN '2018-10-04' AND '2018-10-11'
+group by DateUser.In_DocCreator ,DateUser.Out_Queue ,DateUser.In_Queue, DateUser.DateFilter
+--ORDER BY DateUser.DateFilter
+) AS B
+ON B.In_DocCreated = #DateRangeTEMP.DateFilter
+ORDER BY #DateRangeTEMP.DateFilter</CommandText>
       </Query>
       <Fields>
         <Field Name="In_DocCreator">
@@ -107,13 +273,13 @@
           <DataField>Out_Queue</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="In_DocCreated">
-          <DataField>In_DocCreated</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
         <Field Name="In_Queue">
           <DataField>In_Queue</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="In_DocCreated">
+          <DataField>In_DocCreated</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="total">
           <DataField>total</DataField>
@@ -124,8 +290,46 @@
     <DataSet Name="INV_SUMM">
       <Query>
         <DataSourceName>SI_INVESTIA</DataSourceName>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_x_Workflow_Queue_Summary</CommandText>
+        <CommandText>SELECT b.WorkFlowID$
+					,b.Workflow AS In_Queue
+					,count([In_DocCreated]) AS TOTAL
+					,MIN([In_DocCreated]) AS DOC_DATE
+		from Main (nolock)
+				--inner join WorkFlow as a on a.WorkFlowID$=WorkflowLog.FromQueueID
+				inner join WorkFlow (nolock) as b on b.WorkFlowID$=Main.WorkFlowID$
+		WHERE b.Workflow not like '%Complete%' AND b.Workflow not like '%Cancelled%' AND b.Workflow not like '%Rejected%'
+		AND b.Workflow not like 'CR %' AND b.Workflow not like '%Approved%' AND b.Workflow not like '%Compliance%'
+		AND ISNULL(Main.Dealer,'') &lt;&gt; 'FundEX'
+		AND b.Workflow NOT IN 
+('Undefined'
+,'Main Imaging Inbox'
+,'Imaging'
+,'FIN Archive'
+,'RBM Split Documents'
+,'RBM Settlement/Faxing'
+,'Nominee Final Review'
+,'CC Search'
+,'CC Pending'
+,'PAC/AWD Confirmation'
+,'PAC/AWD Pending'
+,'PAC/AWD Review'
+,'FIN Imaging'
+,'Fax Confirms Indexing'
+,'PAC/AWD DIP'
+,'RESP DIP'
+,'RESP Pending'
+,'RC Delays'
+,'FFS Confirmation'
+,'FFS Delay'
+,'FIN FFS'
+,'CC DIP'
+,'ESTT DIP'
+,'ESTT Processing'
+,'ESTT QC'
+)
+		GROUP BY b.Workflow,  b.WorkFlowID$
+
+</CommandText>
       </Query>
       <Fields>
         <Field Name="WorkFlowID_">
@@ -149,8 +353,44 @@
     <DataSet Name="WFG_SUMM">
       <Query>
         <DataSourceName>SI_WFG</DataSourceName>
-        <CommandType>StoredProcedure</CommandType>
-        <CommandText>usp_x_Workflow_Queue_Summary</CommandText>
+        <CommandText>SELECT b.WorkFlowID$
+					,b.Workflow AS In_Queue
+					,count([In_DocCreated]) AS TOTAL
+					,MIN([In_DocCreated]) AS DOC_DATE
+		from Main (nolock)
+				--inner join WorkFlow as a on a.WorkFlowID$=WorkflowLog.FromQueueID
+				inner join WorkFlow (nolock) as b on b.WorkFlowID$=Main.WorkFlowID$
+		WHERE b.Workflow not like '%Complete%' AND b.Workflow not like '%Cancelled%' AND b.Workflow not like '%Rejected%'
+		AND b.Workflow not like 'CR %' AND b.Workflow not like '%Approved%' AND b.Workflow not like '%Compliance%'
+--		AND ISNULL(Main.Dealer,'') &lt;&gt; 'FundEX'
+		AND b.Workflow NOT IN 
+('Undefined'
+,'Main Imaging Inbox'
+,'Imaging'
+,'FIN Archive'
+,'RBM Split Documents'
+,'RBM Settlement/Faxing'
+,'Nominee Final Review'
+,'CC Search'
+,'CC Pending'
+,'PAC/AWD Confirmation'
+,'PAC/AWD Pending'
+,'PAC/AWD Review'
+,'FIN Imaging'
+,'Fax Confirms Indexing'
+,'PAC/AWD DIP'
+,'RESP DIP'
+,'RESP Pending'
+,'RC Delays'
+,'FFS Confirmation'
+,'FFS Delay'
+,'FIN FFS'
+,'CC DIP'
+,'ESTT DIP'
+,'ESTT Processing'
+,'ESTT QC'
+)
+		GROUP BY b.Workflow,  b.WorkFlowID$</CommandText>
       </Query>
       <Fields>
         <Field Name="WorkFlowID_">
@@ -9337,7 +9577,7 @@
       <DataType>DateTime</DataType>
       <DefaultValue>
         <Values>
-          <Value>=CDate(CStr(YEAR(now))&amp;"-01-01")</Value>
+          <Value>=CDate(CStr(YEAR(now))&amp;"-08-01")</Value>
         </Values>
       </DefaultValue>
       <Prompt>Start Date</Prompt>
