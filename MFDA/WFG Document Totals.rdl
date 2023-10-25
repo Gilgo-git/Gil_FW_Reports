@@ -17,16 +17,30 @@
     <DataSet Name="DataSet1">
       <Query>
         <DataSourceName>SI_WFG</DataSourceName>
-        <CommandText>select In_DocTypeName, month(In_DocCreated) as doc_month, count(*) AS totals
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>DECLARE @StartDateR as date   = @StartDate
+DECLARE @EndDateR as date   = @EndDate
+select In_DocTypeName, month(In_DocCreated) as doc_month, count(*) AS totals
 	from main
 		inner join DocTypes 
 			on main.In_DocTypeID = DocTypes.In_DocTypeID
-where year(In_DocCreated) = YEAR(CONVERT(Date, dateadd(day, -1, dateadd(month, 0, dateadd(day, 1 - day(GETDATE()), GETDATE())))))
-AND In_DocCreated &lt;= CONVERT(Date, dateadd(day, -1, dateadd(month, 0, dateadd(day, 1 - day(GETDATE()), GETDATE()))))
+--where year(In_DocCreated) = YEAR(CONVERT(Date, dateadd(day, -1, dateadd(month, 0, --dateadd(day, 1 - day(GETDATE()), GETDATE())))))
+--AND In_DocCreated &lt;= CONVERT(Date, dateadd(day, -1, dateadd(month, 0, dateadd(day, 1 --- day(GETDATE()), GETDATE()))))
 --and month(In_DocCreated) between '11' and '11'
 --and day(In_DocCreated) between '01' and '31'
 ---and MiscInfo is null
 ---and DocVersion = 'Primary'
+
+
+where  In_DocCreated  &gt;= @StartDateR
+ AND In_DocCreated &lt;= @EndDateR
 group by In_DocTypeName, month(In_DocCreated)</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
@@ -42,6 +56,23 @@ group by In_DocTypeName, month(In_DocCreated)</CommandText>
         <Field Name="totals">
           <DataField>totals</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DataSet2">
+      <Query>
+        <DataSourceName>SI_WFG</DataSourceName>
+        <CommandText>SELECT       DATEADD(yy, DATEDIFF(yy, 0, GETDATE()) , 0) AS FromDate, CAST(GETDATE()   AS date) AS ToDate
+FROM            Main</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="FromDate">
+          <DataField>FromDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="ToDate">
+          <DataField>ToDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -832,10 +863,44 @@ group by In_DocTypeName, month(In_DocCreated)</CommandText>
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="StartDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DataSet2</DataSetName>
+          <ValueField>FromDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Start Date</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="EndDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>DataSet2</DataSetName>
+          <ValueField>ToDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>EndDate</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>StartDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>EndDate</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <Language>en-US</Language>
