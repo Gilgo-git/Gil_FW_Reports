@@ -16,8 +16,9 @@
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
         <ConnectString>Data Source=IAWMISSQLTD0145.iawealth.net;Initial Catalog=SI_INVESTIA_UAT</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>None</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>703cb106-3401-4c5b-a56e-19db45168859</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -226,23 +227,6 @@ ORDER BY #DateRangeTEMP.DateFilter</CommandText>
         </Field>
         <Field Name="DOC_DATE">
           <DataField>DOC_DATE</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="DataSet1">
-      <Query>
-        <DataSourceName>SI_WFG</DataSourceName>
-        <CommandText>SELECT        CAST(GETDATE() - 1 AS date) AS FromDate, CAST(GETDATE()   AS date) AS ToDate
-FROM            Main</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="FromDate">
-          <DataField>FromDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="ToDate">
-          <DataField>ToDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
@@ -5081,20 +5065,18 @@ FROM            Main</CommandText>
     <ReportParameter Name="StartDate">
       <DataType>DateTime</DataType>
       <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DataSet1</DataSetName>
-          <ValueField>FromDate</ValueField>
-        </DataSetReference>
+        <Values>
+          <Value>=CDate(CStr(YEAR(now))&amp;"-01-01")</Value>
+        </Values>
       </DefaultValue>
       <Prompt>Start Date</Prompt>
     </ReportParameter>
     <ReportParameter Name="EndDate">
       <DataType>DateTime</DataType>
       <DefaultValue>
-        <DataSetReference>
-          <DataSetName>DataSet1</DataSetName>
-          <ValueField>ToDate</ValueField>
-        </DataSetReference>
+        <Values>
+          <Value>=today</Value>
+        </Values>
       </DefaultValue>
       <Prompt>End Date</Prompt>
     </ReportParameter>

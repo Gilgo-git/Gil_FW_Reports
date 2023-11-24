@@ -73,7 +73,7 @@ SELECT B.In_DocCreator, B.Out_Queue, B.In_Queue ,DateFilter
 				inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
 				inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
 				inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID	
-				inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'			
+				inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID --and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'			
 		where CONVERT(date, DateOut) BETWEEN @StartDateR AND @EndDateR
 		 --AND a.WorkFlowID$ NOT in (10,15,16,17,18,26,27,28,29,30,31,32,55,57,60,61,62,63,77,78,79,80,81)
 		GROUP BY right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName))
@@ -102,7 +102,7 @@ from  WorkflowLog (nolock)
 		inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
 		inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
 		inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID
-		inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'
+		inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID -- and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'
 	RIGHT OUTER JOIN #DateUserTEMP AS DateUser  (nolock) 
 		ON CONVERT(date, DateOut) = DateUser.DateFilter 
 		and right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName)) = DateUser.In_DocCreator
@@ -114,8 +114,7 @@ group by DateUser.In_DocCreator ,DateUser.Out_Queue ,DateUser.In_Queue, DateUser
 --ORDER BY DateUser.DateFilter
 ) AS B
 ON B.In_DocCreated = #DateRangeTEMP.DateFilter
-ORDER BY #DateRangeTEMP.DateFilter
-</CommandText>
+ORDER BY #DateRangeTEMP.DateFilter</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
