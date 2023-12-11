@@ -4,8 +4,12 @@
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="SI_INVESTIA">
-      <DataSourceReference>SI_Investia</DataSourceReference>
-      <rd:SecurityType>None</rd:SecurityType>
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString>Data Source=IAWMISSQLTD0145.iawealth.net;Initial Catalog=SI_INVESTIA_UAT</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
+      </ConnectionProperties>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>0614a08c-e0df-4c47-90c1-4ccaed39b850</rd:DataSourceID>
     </DataSource>
     <DataSource Name="SI_WFG">
@@ -23,14 +27,13 @@
       <Query>
         <DataSourceName>SI_INVESTIA</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@StartDate">
-            <Value>=Parameters!StartDate.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@EndDate">
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE @StartDateR as date = @StartDate
+        <CommandText>
+
+DECLARE @StartDateR as date = DATEADD(m, DATEDIFF(m, 0,  DATEADD (dd, -1, DATEADD(mm, DATEDIFF(mm, 0, @EndDate ) , 0))), 0)
 DECLARE @EndDateR as date = @EndDate
 
 
@@ -169,16 +172,12 @@ ORDER BY #DateRangeTEMP.DateFilter</CommandText>
       <Query>
         <DataSourceName>SI_WFG</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@StartDate">
-            <Value>=Parameters!StartDate.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@EndDate">
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE @StartDateR as date = @StartDate
+        <CommandText>DECLARE @StartDateR as date = DATEADD(m, DATEDIFF(m, 0,  DATEADD (dd, -1, DATEADD(mm, DATEDIFF(mm, 0, @EndDate ) , 0))), 0)
 DECLARE @EndDateR as date = @EndDate
-
 
 --DROP TABLE #DateUserTEMP
 IF OBJECT_ID('tempdb..#DateUserTEMP') IS NOT NULL              
@@ -407,6 +406,249 @@ ORDER BY #DateRangeTEMP.DateFilter</CommandText>
         <Field Name="DOC_DATE">
           <DataField>DOC_DATE</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DataSet2">
+      <Query>
+        <DataSourceName>SI_INVESTIA</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>DECLARE @StartDateR as date =@StartDate
+DECLARE @EndDateR as date =@EndDate
+
+
+--DROP TABLE #DateUserTEMP
+IF OBJECT_ID('tempdb..#DateUserTEMP') IS NOT NULL              
+  BEGIN       
+    drop table #DateUserTEMP        
+  END 
+
+IF OBJECT_ID('tempdb..#DateRangeTEMP') IS NOT NULL              
+  BEGIN       
+    drop table #DateRangeTEMP        
+  END 
+
+
+;with GetDates As  
+(  
+	select 1 as counter, @StartDateR as DateFilter  , convert(varchar(7), @StartDateR, 126) as yymm
+	
+	UNION ALL  
+
+	select counter + 1, DATEADD(mm,counter,@StartDateR )  , convert(varchar(7), DATEADD(mm,counter,@StartDateR ), 126)
+	from GetDates  
+	where DATEADD(mm, counter, @StartDateR ) &lt; @EndDateR 
+) 
+
+SELECT * 
+INTO #DateRangeTEMP
+FROM GetDates 
+option (maxrecursion 0);
+ 
+-- select * from #DateRangeTEMP
+ 
+SELECT B.In_DocCreator, B.Out_Queue, B.In_Queue ,DateFilter ,yymm
+	INTO #DateUserTEMP
+	FROM #DateRangeTEMP CROSS JOIN (
+		SELECT right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName)) AS In_DocCreator 
+					,a.Workflow AS Out_Queue
+					,b.Workflow AS In_Queue
+		from WorkflowLog (nolock)
+				inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
+				inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
+				inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID	
+				inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID --and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'			
+		where   DateOut  BETWEEN @StartDateR AND @EndDateR
+		 --AND a.WorkFlowID$ NOT in (10,15,16,17,18,26,27,28,29,30,31,32,55,57,60,61,62,63,77,78,79,80,81)
+		GROUP BY right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName))
+				,a.Workflow 
+				,b.Workflow
+		) AS B
+--) 
+option (maxrecursion 0)
+
+
+SELECT B.In_DocCreator
+		,B.Out_Queue
+		,B.In_Queue
+		,#DateRangeTEMP.yymm AS In_DocCreated
+		,B.total  
+FROM #DateRangeTEMP
+LEFT OUTER JOIN (
+
+select DateUser.In_DocCreator AS In_DocCreator
+--,CONVERT(date, In_DocCreated) AS In_DocCreated
+		,DateUser.Out_Queue
+		,DateUser.In_Queue
+		,DateUser.yymm AS In_DocCreated
+		,count( convert(varchar(7), DateOut, 126))  AS total
+		 
+from  WorkflowLog (nolock)
+		inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
+		inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
+		inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID
+		inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID -- and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'
+RIGHT OUTER JOIN #DateUserTEMP AS DateUser  (nolock) 
+		ON convert(varchar(7), DateOut, 126)  = DateUser.yymm
+		and right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName)) = DateUser.In_DocCreator
+		and a.Workflow = DateUser.Out_Queue
+		and b.Workflow = DateUser.In_Queue
+--where a.WorkFlowID$ NOT in (10,15,16,17,18,26,27,28,29,30,31,32,55,57,60,61,62,63,77,78,79,80,81)
+--CONVERT(date, In_DocCreated) BETWEEN '2018-10-04' AND '2018-10-11'
+group by DateUser.In_DocCreator ,DateUser.Out_Queue ,DateUser.In_Queue, DateUser.yymm
+--ORDER BY DateUser.DateFilter
+) AS B
+ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="In_DocCreator">
+          <DataField>In_DocCreator</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Out_Queue">
+          <DataField>Out_Queue</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="In_Queue">
+          <DataField>In_Queue</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="In_DocCreated">
+          <DataField>In_DocCreated</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="total">
+          <DataField>total</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="WFG2">
+      <Query>
+        <DataSourceName>SI_WFG</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@EndDate">
+            <Value>=Parameters!EndDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>DECLARE @StartDateR as date =@StartDate
+DECLARE @EndDateR as date =@EndDate
+
+
+--DROP TABLE #DateUserTEMP
+IF OBJECT_ID('tempdb..#DateUserTEMP') IS NOT NULL              
+  BEGIN       
+    drop table #DateUserTEMP        
+  END 
+
+IF OBJECT_ID('tempdb..#DateRangeTEMP') IS NOT NULL              
+  BEGIN       
+    drop table #DateRangeTEMP        
+  END 
+
+
+;with GetDates As  
+(  
+	select 1 as counter, @StartDateR as DateFilter  , convert(varchar(7), @StartDateR, 126) as yymm
+	
+	UNION ALL  
+
+	select counter + 1, DATEADD(mm,counter,@StartDateR )  , convert(varchar(7), DATEADD(mm,counter,@StartDateR ), 126)
+	from GetDates  
+	where DATEADD(mm, counter, @StartDateR ) &lt; @EndDateR 
+) 
+
+SELECT * 
+INTO #DateRangeTEMP
+FROM GetDates 
+option (maxrecursion 0);
+ 
+-- select * from #DateRangeTEMP
+ 
+SELECT B.In_DocCreator, B.Out_Queue, B.In_Queue ,DateFilter ,yymm
+	INTO #DateUserTEMP
+	FROM #DateRangeTEMP CROSS JOIN (
+		SELECT right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName)) AS In_DocCreator 
+					,a.Workflow AS Out_Queue
+					,b.Workflow AS In_Queue
+		from WorkflowLog (nolock)
+				inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
+				inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
+				inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID	
+				inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID --and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'			
+		where   DateOut  BETWEEN @StartDateR AND @EndDateR
+		 --AND a.WorkFlowID$ NOT in (10,15,16,17,18,26,27,28,29,30,31,32,55,57,60,61,62,63,77,78,79,80,81)
+		GROUP BY right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName))
+				,a.Workflow 
+				,b.Workflow
+		) AS B
+--) 
+option (maxrecursion 0)
+
+
+SELECT B.In_DocCreator
+		,B.Out_Queue
+		,B.In_Queue
+		,#DateRangeTEMP.yymm AS In_DocCreated
+		,B.total  
+FROM #DateRangeTEMP
+LEFT OUTER JOIN (
+
+select DateUser.In_DocCreator AS In_DocCreator
+--,CONVERT(date, In_DocCreated) AS In_DocCreated
+		,DateUser.Out_Queue
+		,DateUser.In_Queue
+		,DateUser.yymm AS In_DocCreated
+		,count( convert(varchar(7), DateOut, 126))  AS total
+		 
+from  WorkflowLog (nolock)
+		inner join SynUsers (nolock) on SynUsers.UserID=WorkflowLog.UserProcessed
+		inner join WorkFlow as a (nolock) on a.WorkFlowID$=WorkflowLog.FromQueueID
+		inner join WorkFlow as b (nolock) on b.WorkFlowID$=WorkflowLog.ToQueueID
+		inner join Main as c  (nolock) on WorkflowLog.DocID=c.In_DocID -- and ISNULL(c.Dealer,'') &lt;&gt; 'FundEX'
+RIGHT OUTER JOIN #DateUserTEMP AS DateUser  (nolock) 
+		ON convert(varchar(7), DateOut, 126)  = DateUser.yymm
+		and right(SynUsers.UserName, len(SynUsers.UserName) - charindex('\', SynUsers.UserName)) = DateUser.In_DocCreator
+		and a.Workflow = DateUser.Out_Queue
+		and b.Workflow = DateUser.In_Queue
+--where a.WorkFlowID$ NOT in (10,15,16,17,18,26,27,28,29,30,31,32,55,57,60,61,62,63,77,78,79,80,81)
+--CONVERT(date, In_DocCreated) BETWEEN '2018-10-04' AND '2018-10-11'
+group by DateUser.In_DocCreator ,DateUser.Out_Queue ,DateUser.In_Queue, DateUser.yymm
+--ORDER BY DateUser.DateFilter
+) AS B
+ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm
+-- ORDER BY  In_DocCreator,  Out_Queue,In_Queue, #DateRangeTEMP.DateFilter</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="In_DocCreator">
+          <DataField>In_DocCreator</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Out_Queue">
+          <DataField>Out_Queue</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="In_Queue">
+          <DataField>In_Queue</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="In_DocCreated">
+          <DataField>In_DocCreated</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="total">
+          <DataField>total</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -2636,7 +2878,7 @@ ORDER BY #DateRangeTEMP.DateFilter</CommandText>
             </TablixRowHierarchy>
             <RepeatColumnHeaders>true</RepeatColumnHeaders>
             <RepeatRowHeaders>true</RepeatRowHeaders>
-            <DataSetName>DataSet1</DataSetName>
+            <DataSetName>DataSet2</DataSetName>
             <Top>21.39499in</Top>
             <Height>0.67in</Height>
             <Width>7in</Width>
@@ -4993,7 +5235,7 @@ ORDER BY #DateRangeTEMP.DateFilter</CommandText>
             </TablixRowHierarchy>
             <RepeatColumnHeaders>true</RepeatColumnHeaders>
             <RepeatRowHeaders>true</RepeatRowHeaders>
-            <DataSetName>WFG</DataSetName>
+            <DataSetName>WFG2</DataSetName>
             <Top>22.73417in</Top>
             <Height>0.67in</Height>
             <Width>7in</Width>
@@ -7900,7 +8142,7 @@ ORDER BY #DateRangeTEMP.DateFilter</CommandText>
             </TablixRowHierarchy>
             <RepeatColumnHeaders>true</RepeatColumnHeaders>
             <RepeatRowHeaders>true</RepeatRowHeaders>
-            <DataSetName>DataSet1</DataSetName>
+            <DataSetName>DataSet2</DataSetName>
             <Top>11.88154in</Top>
             <Height>0.92in</Height>
             <Width>4in</Width>
@@ -8435,7 +8677,7 @@ ORDER BY #DateRangeTEMP.DateFilter</CommandText>
             </TablixRowHierarchy>
             <RepeatColumnHeaders>true</RepeatColumnHeaders>
             <RepeatRowHeaders>true</RepeatRowHeaders>
-            <DataSetName>WFG</DataSetName>
+            <DataSetName>WFG2</DataSetName>
             <Top>13.72154in</Top>
             <Height>0.92in</Height>
             <Width>4in</Width>
@@ -9576,7 +9818,7 @@ ORDER BY #DateRangeTEMP.DateFilter</CommandText>
       <DataType>DateTime</DataType>
       <DefaultValue>
         <Values>
-          <Value>=CDate(CStr(YEAR(now))&amp;"-01-01")</Value>
+          <Value>01/01/2023 00:00:00</Value>
         </Values>
       </DefaultValue>
       <Prompt>Start Date</Prompt>
