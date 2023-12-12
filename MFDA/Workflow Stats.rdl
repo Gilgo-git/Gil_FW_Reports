@@ -1221,6 +1221,9 @@ ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm
                       </TablixMembers>
                     </TablixMember>
                   </TablixMembers>
+                  <Visibility>
+                    <Hidden>=IIf(Sum(iif(Fields!In_DocCreator.Value = "assynsrv" OR Fields!In_DocCreator.Value = "uvs_fax_p" OR Fields!In_DocCreator.Value = "iawsynindx", 0, Fields!total.Value))=0,True,False)</Hidden>
+                  </Visibility>
                   <DataElementOutput>Output</DataElementOutput>
                   <KeepTogether>true</KeepTogether>
                 </TablixMember>
@@ -1968,6 +1971,9 @@ ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm
                       </TablixMembers>
                     </TablixMember>
                   </TablixMembers>
+                  <Visibility>
+                    <Hidden>=IIf(Sum(iif(Fields!In_DocCreator.Value = "assynsrv" OR Fields!In_DocCreator.Value = "uvs_fax_p" OR Fields!In_DocCreator.Value = "iawsynindx", Nothing, Fields!total.Value))=0,True,False)</Hidden>
+                  </Visibility>
                   <DataElementOutput>Output</DataElementOutput>
                   <KeepTogether>true</KeepTogether>
                 </TablixMember>
@@ -3577,6 +3583,9 @@ ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm
                       </TablixMembers>
                     </TablixMember>
                   </TablixMembers>
+                  <Visibility>
+                    <Hidden>=IIf(Sum(iif(Fields!In_DocCreator.Value = "assynsrv" Or Fields!In_DocCreator.Value = "uvs_fax_p" Or Fields!In_DocCreator.Value = "iawsynindx", Nothing, Fields!total.Value))=0,True,False)</Hidden>
+                  </Visibility>
                   <DataElementOutput>Output</DataElementOutput>
                   <KeepTogether>true</KeepTogether>
                 </TablixMember>
@@ -4325,6 +4334,9 @@ ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm
                       </TablixMembers>
                     </TablixMember>
                   </TablixMembers>
+                  <Visibility>
+                    <Hidden>=IIf(Sum(iif(Fields!In_DocCreator.Value = "assynsrv" Or Fields!In_DocCreator.Value = "uvs_fax_p" Or Fields!In_DocCreator.Value = "iawsynindx", Nothing, Fields!total.Value))=0,True,False)</Hidden>
+                  </Visibility>
                   <DataElementOutput>Output</DataElementOutput>
                   <KeepTogether>true</KeepTogether>
                 </TablixMember>
