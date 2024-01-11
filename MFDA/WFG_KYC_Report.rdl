@@ -34,8 +34,7 @@
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>DECLARE @StartDateR as date   = @StartDate
-DECLARE @EndDateR as date   = @EndDate
+        <CommandText>
 
 select 
 	  Main.[FirstName] AS FirstName
@@ -50,7 +49,7 @@ select
 	,WorkflowLog.DateIn
 	,WorkflowLog.DateOut
 	,SynUsers.UserName 
-
+,Main.Was_a_KYC_updated
 from WorkflowLog
 inner join SynUsers on SynUsers.UserID=WorkflowLog.UserProcessed
 inner join WorkFlow as a on a.WorkFlowID$=WorkflowLog.FromQueueID
@@ -59,10 +58,11 @@ inner join WorkFlow as b on b.WorkFlowID$=WorkflowLog.ToQueueID
 		ON WorkflowLog.DocID = Main.In_DocID 
 	Inner JOIN [dbo].DocTypes
 		ON [Main].[In_DocTypeID] = DocTypes.[In_DocTypeID]
-where	FromQueueID IN (64,59,63) 
-	and Main.Was_a_KYC_updated = 'Yes'
-	--and DateOut &gt; getdate()-30 
-	AND DateOut BETWEEN @StartDateR AND  @EndDateR</CommandText>
+where	-- FromQueueID IN (64,59,63) 
+
+	  Main.Was_a_KYC_updated = 'Yes'  and
+FromQueueID IN (13,59,60,63,64,76,77,92)
+	AND DateOut &gt;= @StartDate  AND DateOut &lt; @EndDate + 1</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -114,6 +114,10 @@ where	FromQueueID IN (64,59,63)
           <DataField>UserName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="Was_a_KYC_updated">
+          <DataField>Was_a_KYC_updated</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="Users">
@@ -141,16 +145,16 @@ where	FromQueueID IN (64,59,63)
     <DataSet Name="DataSet2">
       <Query>
         <DataSourceName>SI_WFG</DataSourceName>
-        <CommandText>SELECT        CAST(GETDATE() - 1 AS date) AS FromDate, CAST(GETDATE()   AS date) AS ToDate
+        <CommandText>SELECT        CAST(GETDATE() - 7 AS date) AS StartDate,CAST(GETDATE() - 1 AS date) AS EndDate
 FROM            Main</CommandText>
       </Query>
       <Fields>
-        <Field Name="FromDate">
-          <DataField>FromDate</DataField>
+        <Field Name="StartDate">
+          <DataField>StartDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
-        <Field Name="ToDate">
-          <DataField>ToDate</DataField>
+        <Field Name="EndDate">
+          <DataField>EndDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
@@ -198,6 +202,9 @@ FROM            Main</CommandText>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.25in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -652,6 +659,43 @@ FROM            Main</CommandText>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Was a KYC updated</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -1069,12 +1113,47 @@ FROM            Main</CommandText>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Was_a_KYC_updated">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Was_a_KYC_updated.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Was_a_KYC_updated</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -1142,7 +1221,7 @@ FROM            Main</CommandText>
             <Top>1.68147in</Top>
             <Left>0.00004in</Left>
             <Height>0.43in</Height>
-            <Width>16.25in</Width>
+            <Width>17.25in</Width>
             <Style />
           </Tablix>
           <Rectangle Name="Rectangle1">
@@ -1806,8 +1885,8 @@ FROM            Main</CommandText>
                 <FilterExpression>=Fields!DateOut.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=DateAdd("d", -7, Parameters!EndDate.Value)</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=Parameters!StartDate.Value</FilterValue>
+                  <FilterValue>=DateAdd("d",1,Parameters!EndDate.Value)</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -2062,7 +2141,7 @@ FROM            Main</CommandText>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=FORMAT(Fields!DateOut.Value, "MM/dd/yy")</Value>
+                      <Value>=Fields!DateOut.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
@@ -2323,10 +2402,15 @@ FROM            Main</CommandText>
                 <Operator>Between</Operator>
                 <FilterValues>
                   <FilterValue>=DateAdd("ww", -5, Parameters!EndDate.Value)</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=DateAdd("d", 1,Parameters!EndDate.Value)</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
+            <SortExpressions>
+              <SortExpression>
+                <Value>=Fields!DateOut.Value</Value>
+              </SortExpression>
+            </SortExpressions>
             <Top>3.13374in</Top>
             <Left>0.00004in</Left>
             <Height>0.67in</Height>
@@ -2578,7 +2662,7 @@ FROM            Main</CommandText>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=FORMAT(Fields!DateOut.Value, "MM/dd/yy")</Value>
+                      <Value>=Fields!DateOut.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
@@ -2839,10 +2923,15 @@ FROM            Main</CommandText>
                 <Operator>Between</Operator>
                 <FilterValues>
                   <FilterValue>=Parameters!StartDate.Value</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=DateAdd("d",1,Parameters!EndDate.Value)</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
+            <SortExpressions>
+              <SortExpression>
+                <Value>=Fields!DateOut.Value</Value>
+              </SortExpression>
+            </SortExpressions>
             <Top>5.19514in</Top>
             <Left>0.00004in</Left>
             <Height>0.67in</Height>
@@ -2854,7 +2943,7 @@ FROM            Main</CommandText>
         <Height>6.40333in</Height>
         <Style />
       </Body>
-      <Width>16.25004in</Width>
+      <Width>17.25004in</Width>
       <Page>
         <PageFooter>
           <Height>1in</Height>
@@ -2990,7 +3079,7 @@ FROM            Main</CommandText>
       <DefaultValue>
         <DataSetReference>
           <DataSetName>DataSet2</DataSetName>
-          <ValueField>FromDate</ValueField>
+          <ValueField>StartDate</ValueField>
         </DataSetReference>
       </DefaultValue>
       <Prompt>Start Date</Prompt>
@@ -3000,7 +3089,7 @@ FROM            Main</CommandText>
       <DefaultValue>
         <DataSetReference>
           <DataSetName>DataSet2</DataSetName>
-          <ValueField>ToDate</ValueField>
+          <ValueField>EndDate</ValueField>
         </DataSetReference>
       </DefaultValue>
       <Prompt>End Date</Prompt>
