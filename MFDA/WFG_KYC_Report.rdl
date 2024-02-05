@@ -61,7 +61,7 @@ inner join WorkFlow as b on b.WorkFlowID$=WorkflowLog.ToQueueID
 where	-- FromQueueID IN (64,59,63) 
 
 	  Main.Was_a_KYC_updated = 'Yes'  and
-FromQueueID IN (13,59,60,63,64,76,77,92)
+FromQueueID IN (59,60,63,64,92,49)
 	AND DateOut &gt;= @StartDate  AND DateOut &lt; @EndDate + 1</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
