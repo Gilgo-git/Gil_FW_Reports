@@ -9980,6 +9980,11 @@ option (maxrecursion 0)</CommandText>
   <ReportParameters>
     <ReportParameter Name="StartDate">
       <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=CDate(CStr(YEAR(now))&amp;"-01-01")</Value>
+        </Values>
+      </DefaultValue>
       <Prompt>Start Date</Prompt>
     </ReportParameter>
     <ReportParameter Name="EndDate">
