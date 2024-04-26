@@ -6,7 +6,7 @@
     <DataSource Name="SI_WFG">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=IAWMISSQLTD0145.iawealth.net;Initial Catalog=SI_WFG_UAT</ConnectString>
+        <ConnectString>Data Source=IAWMISSQL0127.iawealth.net;Initial Catalog=SI_WFG</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -15,7 +15,7 @@
     <DataSource Name="SI_INVESTIA">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=IAWMISSQLTD0145.iawealth.net;Initial Catalog=SI_INVESTIA_UAT</ConnectString>
+        <ConnectString>Data Source=IAWMISSQL0127.iawealth.net;Initial Catalog=SI_INVESTIA</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -50,6 +50,7 @@ select
 	,WorkflowLog.DateOut
 	,SynUsers.UserName 
 ,Main.Was_a_KYC_updated
+,Main.dealercode
 from WorkflowLog
 inner join SynUsers on SynUsers.UserID=WorkflowLog.UserProcessed
 inner join WorkFlow as a on a.WorkFlowID$=WorkflowLog.FromQueueID
@@ -66,12 +67,16 @@ FromQueueID IN (59,60,63,64,92,49)
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
-        <Field Name="Doc_Type">
-          <DataField>Doc_Type</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
         <Field Name="FirstName">
           <DataField>FirstName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="LastName">
+          <DataField>LastName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Doc_Type">
+          <DataField>Doc_Type</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="REP_CD">
@@ -80,10 +85,6 @@ FromQueueID IN (59,60,63,64,92,49)
         </Field>
         <Field Name="DocID">
           <DataField>DocID</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="LastName">
-          <DataField>LastName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="FromQueueID">
@@ -116,6 +117,10 @@ FromQueueID IN (59,60,63,64,92,49)
         </Field>
         <Field Name="Was_a_KYC_updated">
           <DataField>Was_a_KYC_updated</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dealercode">
+          <DataField>dealercode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -202,6 +207,9 @@ FROM            Main</CommandText>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.25in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
@@ -696,6 +704,43 @@ FROM            Main</CommandText>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Dealer</Value>
+                                  <Style>
+                                    <FontFamily />
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <BackgroundColor>LightGrey</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -1147,12 +1192,47 @@ FROM            Main</CommandText>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dealercode">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!dealercode.Value</Value>
+                                  <Style>
+                                    <FontFamily />
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>dealercode</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -1221,7 +1301,7 @@ FROM            Main</CommandText>
             <Top>1.68147in</Top>
             <Left>0.00004in</Left>
             <Height>0.43in</Height>
-            <Width>17.25in</Width>
+            <Width>18.25in</Width>
             <Style />
           </Tablix>
           <Rectangle Name="Rectangle1">
@@ -2943,7 +3023,7 @@ FROM            Main</CommandText>
         <Height>6.40333in</Height>
         <Style />
       </Body>
-      <Width>17.25004in</Width>
+      <Width>18.34379in</Width>
       <Page>
         <PageFooter>
           <Height>1in</Height>
