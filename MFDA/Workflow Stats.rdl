@@ -2472,7 +2472,7 @@ ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=DatePart("M",Fields!In_DocCreated.Value)</Value>
+                      <Value>=Fields!In_DocCreated.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
@@ -2509,6 +2509,7 @@ ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm
                           <PaddingBottom>2pt</PaddingBottom>
                         </Style>
                       </Textbox>
+                      <rd:Selected>true</rd:Selected>
                     </CellContents>
                   </TablixHeader>
                   <DataElementOutput>Output</DataElementOutput>
@@ -9691,6 +9692,35 @@ ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm
               </Border>
             </Style>
           </Rectangle>
+          <Textbox Name="Textbox19">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value />
+                    <Style />
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox19</rd:DefaultName>
+            <Top>0.28in</Top>
+            <Height>0.25in</Height>
+            <Width>1.58333in</Width>
+            <ZIndex>28</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
         </ReportItems>
         <Height>23.50611in</Height>
         <Style />
@@ -9830,7 +9860,7 @@ ON convert(varchar(7), B.In_DocCreated, 126) = #DateRangeTEMP.yymm
       <DataType>DateTime</DataType>
       <DefaultValue>
         <Values>
-          <Value>01/01/2023 00:00:00</Value>
+          <Value>=CDate(CStr(YEAR(now))&amp;"-01-01")</Value>
         </Values>
       </DefaultValue>
       <Prompt>Start Date</Prompt>
