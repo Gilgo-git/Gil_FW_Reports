@@ -27,13 +27,15 @@
       <Query>
         <DataSourceName>SI_Investia</DataSourceName>
         <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
           <QueryParameter Name="@EndDate">
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandText>
-DECLARE @StartDateR as date -- ='2024-01-01' -- @StartDate --'2020-06-01' 
-set @StartDateR=DATEADD(yy, DATEDIFF(yy, 0,  @EndDate), 0)
+DECLARE @StartDateR as date = @StartDate --'2020-06-01' 
 DECLARE @EndDateR as date = @EndDate
 
 
@@ -59,18 +61,11 @@ right(Indexer, len(Indexer) - charindex('\', Indexer)) ) AS B
 )
 
 
-<<<<<<< HEAD
 select DateUser.Indexer AS Indexer 
  
 ,DateUser.DateFilter AS IndexDate
 , count(case when DateUser.Indexer&lt;&gt;'hidden' then 1 else null end)  AS total
  
-=======
-select DateUser.In_DocCreator AS In_DocCreator 
---,CONVERT(date, In_DocCreated) AS In_DocCreated
-,DateUser.DateFilter AS In_DocCreated
-, count(case when DateUser.In_DocCreator&lt;&gt;'hidden' then 1 else null end)  AS total
->>>>>>> e55d766704c6db3365a28195952598e774db4091
 from main
 	RIGHT JOIN DateUser 
 	ON CONVERT(date, IndexDate) = DateUser.DateFilter 
@@ -79,13 +74,8 @@ from main
 WHERE In_DocVerIsCur=1  or DateUser.Indexer='hidden'
 --and ISNULL([Dealer],' ') &lt;&gt; 'FundEX'
 group by
-<<<<<<< HEAD
 DateUser.Indexer, DateUser.DateFilter 
 ORDER BY DateUser.DateFilter,DateUser.Indexer
-=======
-DateUser.In_DocCreator, DateUser.DateFilter 
-ORDER BY DateUser.DateFilter
->>>>>>> e55d766704c6db3365a28195952598e774db4091
 
 option (maxrecursion 0)</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
@@ -132,13 +122,15 @@ option (maxrecursion 0)</CommandText>
       <Query>
         <DataSourceName>SI_WFG</DataSourceName>
         <QueryParameters>
+          <QueryParameter Name="@StartDate">
+            <Value>=Parameters!StartDate.Value</Value>
+          </QueryParameter>
           <QueryParameter Name="@EndDate">
             <Value>=Parameters!EndDate.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandText>
-DECLARE @StartDateR as date   -- = @StartDate --'2020-06-01' 
-set @StartDateR=DATEADD(yy, DATEDIFF(yy, 0,  @EndDate), 0)
+DECLARE @StartDateR as date = @StartDate --'2020-06-01' 
 DECLARE @EndDateR as date = @EndDate
 
 ;with GetDates As  
@@ -456,7 +448,7 @@ option (maxrecursion 0)</CommandText>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=WeekdayName(Weekday(Fields!Indexer.Value))&amp;" "&amp;FORMAT(Fields!Indexer.Value, "MM/dd/yy")</Value>
+                                <Value>=WeekdayName(Weekday(Fields!IndexDate.Value))&amp;" "&amp;FORMAT(Fields!IndexDate.Value, "MM/dd/yy")</Value>
                                 <Style>
                                   <FontFamily>Arial</FontFamily>
                                   <FontWeight>Bold</FontWeight>
@@ -706,20 +698,17 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!IndexDate.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=Parameters!StartDate.Value</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=dateadd("d",-7,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
             <Top>0.8675in</Top>
             <Height>0.67in</Height>
             <Width>5in</Width>
-<<<<<<< HEAD
             <Visibility>
               <Hidden>=Iif(Fields!Indexer.Value="hidden",True,False)</Hidden>
             </Visibility>
-=======
->>>>>>> e55d766704c6db3365a28195952598e774db4091
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -1234,8 +1223,8 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!In_DocCreated.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=Parameters!StartDate.Value</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=dateadd("d",-7,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -1243,6 +1232,9 @@ option (maxrecursion 0)</CommandText>
             <Height>0.67in</Height>
             <Width>5in</Width>
             <ZIndex>1</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style />
           </Tablix>
           <Tablix Name="matrix4">
@@ -1775,8 +1767,8 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!IndexDate.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=Parameters!StartDate.Value</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=DATEADD("d",-7,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -2302,8 +2294,8 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!IndexDate.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=Parameters!StartDate.Value</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=DATEADD("d",-7,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -2847,8 +2839,8 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!In_DocCreated.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=Parameters!StartDate.Value</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=dateadd("d",-7,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -2856,6 +2848,9 @@ option (maxrecursion 0)</CommandText>
             <Height>0.71in</Height>
             <Width>5in</Width>
             <ZIndex>4</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -3374,8 +3369,8 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!In_DocCreated.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=Parameters!StartDate.Value</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=dateadd("d",-7,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -3383,6 +3378,9 @@ option (maxrecursion 0)</CommandText>
             <Height>0.75in</Height>
             <Width>5in</Width>
             <ZIndex>5</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -3901,8 +3899,8 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!IndexDate.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=dateadd("ww",-5,Parameters!EndDate.Value)</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=dateadd("ww",-5,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -4420,8 +4418,8 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!In_DocCreated.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=DATEADD("ww",-5,Parameters!EndDate.Value)</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=DATEADD("ww",-5,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -4429,6 +4427,9 @@ option (maxrecursion 0)</CommandText>
             <Height>0.67in</Height>
             <Width>5in</Width>
             <ZIndex>7</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style />
           </Tablix>
           <Tablix Name="matrix13">
@@ -4951,7 +4952,6 @@ option (maxrecursion 0)</CommandText>
             <DataSetName>Investia</DataSetName>
             <Filters>
               <Filter>
-<<<<<<< HEAD
                 <FilterExpression>=iif(Fields!Indexer.Value = "assynsrv" OR Fields!Indexer.Value = "uvs_fax_p" OR Fields!Indexer.Value = "asiasyn" OR Fields!Indexer.Value = "iawsynindx", "1", "0")</FilterExpression>
                 <Operator>Equal</Operator>
                 <FilterValues>
@@ -4960,13 +4960,10 @@ option (maxrecursion 0)</CommandText>
               </Filter>
               <Filter>
                 <FilterExpression>=Fields!IndexDate.Value</FilterExpression>
-=======
-                <FilterExpression>=Fields!In_DocCreated.Value</FilterExpression>
->>>>>>> e55d766704c6db3365a28195952598e774db4091
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=dateadd("ww",-5,Parameters!EndDate.Value)</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=DATEADD("ww",-5,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -5492,8 +5489,8 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!IndexDate.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=dateadd("ww",-5,Parameters!EndDate.Value)</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=DATEADD("ww",-5,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -6027,11 +6024,18 @@ option (maxrecursion 0)</CommandText>
             <DataSetName>WFG</DataSetName>
             <Filters>
               <Filter>
+                <FilterExpression>=iif(Fields!In_DocCreator.Value = "assynsrv" OR Fields!In_DocCreator.Value = "uvs_fax_p" OR Fields!In_DocCreator.Value = "iawsynindx" OR Fields!In_DocCreator.Value = "asiasyn", "1", "0")</FilterExpression>
+                <Operator>Equal</Operator>
+                <FilterValues>
+                  <FilterValue>1</FilterValue>
+                </FilterValues>
+              </Filter>
+              <Filter>
                 <FilterExpression>=Fields!In_DocCreated.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=dateadd("ww",-5,Parameters!EndDate.Value)</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=DATEADD("ww",-5,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -6039,6 +6043,9 @@ option (maxrecursion 0)</CommandText>
             <Height>0.71in</Height>
             <Width>5in</Width>
             <ZIndex>10</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -6557,8 +6564,8 @@ option (maxrecursion 0)</CommandText>
                 <FilterExpression>=Fields!In_DocCreated.Value</FilterExpression>
                 <Operator>Between</Operator>
                 <FilterValues>
-                  <FilterValue>=dateadd("ww",-5,Parameters!EndDate.Value)</FilterValue>
-                  <FilterValue>=Parameters!EndDate.Value</FilterValue>
+                  <FilterValue>=DATEADD("ww",-5,today)</FilterValue>
+                  <FilterValue>=today</FilterValue>
                 </FilterValues>
               </Filter>
             </Filters>
@@ -6566,6 +6573,9 @@ option (maxrecursion 0)</CommandText>
             <Height>0.75in</Height>
             <Width>5in</Width>
             <ZIndex>11</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -7594,6 +7604,9 @@ option (maxrecursion 0)</CommandText>
             <Height>0.67in</Height>
             <Width>5in</Width>
             <ZIndex>13</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style />
           </Tablix>
           <Tablix Name="matrix22">
@@ -8113,7 +8126,6 @@ option (maxrecursion 0)</CommandText>
             <RepeatColumnHeaders>true</RepeatColumnHeaders>
             <RepeatRowHeaders>true</RepeatRowHeaders>
             <DataSetName>Investia</DataSetName>
-<<<<<<< HEAD
             <Filters>
               <Filter>
                 <FilterExpression>=iif(Fields!Indexer.Value = "assynsrv" OR Fields!Indexer.Value = "uvs_fax_p" OR Fields!Indexer.Value = "iawsynindx" OR Fields!Indexer.Value = "asiasyn", "1", "0")</FilterExpression>
@@ -8123,8 +8135,6 @@ option (maxrecursion 0)</CommandText>
                 </FilterValues>
               </Filter>
             </Filters>
-=======
->>>>>>> e55d766704c6db3365a28195952598e774db4091
             <Top>16.03139in</Top>
             <Height>0.71in</Height>
             <Width>5in</Width>
@@ -9168,10 +9178,22 @@ option (maxrecursion 0)</CommandText>
             <RepeatColumnHeaders>true</RepeatColumnHeaders>
             <RepeatRowHeaders>true</RepeatRowHeaders>
             <DataSetName>WFG</DataSetName>
+            <Filters>
+              <Filter>
+                <FilterExpression>=iif(Fields!In_DocCreator.Value = "assynsrv" OR Fields!In_DocCreator.Value = "uvs_fax_p" OR Fields!In_DocCreator.Value = "iawsynindx" OR Fields!In_DocCreator.Value = "asiasyn", "1", "0")</FilterExpression>
+                <Operator>Equal</Operator>
+                <FilterValues>
+                  <FilterValue>1</FilterValue>
+                </FilterValues>
+              </Filter>
+            </Filters>
             <Top>20.29in</Top>
             <Height>0.71in</Height>
             <Width>5in</Width>
             <ZIndex>16</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -9688,6 +9710,9 @@ option (maxrecursion 0)</CommandText>
             <Height>0.75in</Height>
             <Width>5in</Width>
             <ZIndex>17</ZIndex>
+            <Visibility>
+              <Hidden>true</Hidden>
+            </Visibility>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -9701,7 +9726,7 @@ option (maxrecursion 0)</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="Indexing Volume Daily from " + CStr(FORMAT(Parameters!StartDate.Value, "yyyy-MM-dd")) + " to " + CStr(FORMAT(Parameters!EndDate.Value, "yyyy-MM-dd"))</Value>
+                    <Value>="Indexing Volume Daily from " + CStr(FORMAT(dateadd("d",-7,Parameters!EndDate.Value), "yyyy-MM-dd")) + " to " + CStr(FORMAT(Parameters!EndDate.Value, "yyyy-MM-dd"))</Value>
                     <Style>
                       <FontFamily>Segoe UI Light</FontFamily>
                       <FontSize>12pt</FontSize>
@@ -9750,7 +9775,7 @@ option (maxrecursion 0)</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="Indexing Volume Weekly from " + CStr(FORMAT(Parameters!StartDate.Value, "yyyy-MM-dd")) + " to " + CStr(FORMAT(Parameters!EndDate.Value, "yyyy-MM-dd"))</Value>
+                    <Value>="Indexing Volume Weekly from " + CStr(FORMAT(dateadd("ww",-5,Parameters!EndDate.Value), "yyyy-MM-dd")) + " to " + CStr(FORMAT(Parameters!EndDate.Value, "yyyy-MM-dd"))</Value>
                     <Style>
                       <FontFamily>Segoe UI Light</FontFamily>
                       <FontSize>12pt</FontSize>
@@ -9802,7 +9827,7 @@ option (maxrecursion 0)</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="Indexing Volume Monthly from "  + CStr(FORMAT(Parameters!ReportParameter1.Value, "yyyy-MM-dd"))  +  " to " + CStr(FORMAT(Parameters!EndDate.Value, "yyyy-MM-dd"))</Value>
+                    <Value>="Indexing Volume Monthly from " + CStr(FORMAT(Parameters!StartDate.Value, "yyyy-MM-dd")) + " to " + CStr(FORMAT(Parameters!EndDate.Value, "yyyy-MM-dd"))</Value>
                     <Style>
                       <FontFamily>Segoe UI Light</FontFamily>
                       <FontSize>12pt</FontSize>
@@ -9851,7 +9876,7 @@ option (maxrecursion 0)</CommandText>
         <Height>21.86722in</Height>
         <Style />
       </Body>
-      <Width>6.5625in</Width>
+      <Width>5in</Width>
       <Page>
         <PageFooter>
           <Height>0.88542in</Height>
@@ -9990,27 +10015,10 @@ option (maxrecursion 0)</CommandText>
       <DataType>DateTime</DataType>
       <DefaultValue>
         <Values>
-          <Value>=Today()</Value>
+          <Value>=today</Value>
         </Values>
       </DefaultValue>
       <Prompt>End Date</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="ReportParameter1">
-      <DataType>DateTime</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>=DateAdd("d",-DatePart(DateInterval.DayOfYear,Parameters!StartDate.Value,0,0)+1,Parameters!StartDate.Value)</Value>
-        </Values>
-      </DefaultValue>
-      <Prompt>ReportParameter1</Prompt>
-      <Hidden>true</Hidden>
-      <ValidValues>
-        <ParameterValues>
-          <ParameterValue>
-            <Value>=DateAdd("d",-DatePart(DateInterval.DayOfYear,Parameters!StartDate.Value,0,0)+1,Parameters!StartDate.Value)</Value>
-          </ParameterValue>
-        </ParameterValues>
-      </ValidValues>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
@@ -10027,11 +10035,6 @@ option (maxrecursion 0)</CommandText>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>EndDate</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>3</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>ReportParameter1</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
